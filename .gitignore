@@ -1,0 +1,26 @@
+# Python
+.venv/
+bin/
+include/
+lib/
+share/
+pyvenv.cfg
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/
+logs/
+results/
+models/*.zip
+
+# IDEs
+.vscode/
+.idea/
+.gemini/
