@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EconOS | Economic Operating System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-black text-white/80 font-sans overflow-hidden">
+
+    <div id="desktop">
+        
+        <!-- Desktop Icons -->
+        <div id="desktop-icons">
+            <div class="desktop-icon" onclick="launchWindow('process-explorer')">
+                <i class="ph-fill ph-cpu"></i>
+                <span>Processes</span>
+            </div>
+            <div class="desktop-icon" onclick="launchWindow('macro-monitor')">
+                <i class="ph-fill ph-chart-line-up"></i>
+                <span>Macro Viz</span>
+            </div>
+            <div class="desktop-icon" onclick="launchWindow('econ-shell')">
+                <i class="ph-fill ph-terminal-window"></i>
+                <span>Econ Shell</span>
+            </div>
+        </div>
+
+        <!-- Taskbar -->
+        <div id="taskbar">
+            <div class="task-icon text-terminal-gold" onclick="launchWindow('system-menu')"><i class="ph-fill ph-microsoft-logo"></i></div>
+            <div class="h-6 w-[1px] bg-white/10 mx-2"></div>
+            <div class="task-icon" onclick="launchWindow('macro-monitor')"><i class="ph ph-chart-line"></i></div>
+            <div class="task-icon" onclick="launchWindow('process-explorer')"><i class="ph ph-cpu"></i></div>
+            <div class="task-icon" onclick="launchWindow('econ-shell')"><i class="ph ph-terminal"></i></div>
+            <div class="task-icon" onclick="launchWindow('policy-manager')"><i class="ph ph-gear"></i></div>
+            
+            <div class="ml-auto flex items-center gap-4 px-4 font-mono text-[10px] text-white/40">
+                <span id="sys-time">23:25:51</span>
+                <span>ECONOS v5.4</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
