@@ -1,0 +1,8 @@
+pettingzoo
+supersuit
+stable-baselines3
+gymnasium
+numpy
+pandas
+matplotlib
+pytest
