@@ -153,6 +153,7 @@ class KernelClient {
             if (msg.auth && msg.auth.is_admin && !this.isAdmin) {
                 this.isAdmin = true;
                 this._notifyAdmin();
+                if (typeof window.va === 'function') window.va('event', { name: 'sudo_succeeded' });
             }
             return;
         }
@@ -353,14 +354,28 @@ window.launchWindow = function(type) {
         slider.addEventListener('pointerup',   () => { userIsDragging = false; });
         slider.addEventListener('input',  () => { taxLabel.textContent = parseInt(slider.value, 10).toFixed(2) + '%'; });
         slider.addEventListener('change', async () => {
-            try { await kc.sendCommand(`tax ${slider.value}`); }
-            catch (err) { console.warn('tax cmd failed:', err.message); }
+            try {
+                await kc.sendCommand(`tax ${slider.value}`);
+                if (typeof window.va === 'function') {
+                    window.va('event', {
+                        name: 'policy_tax_changed',
+                        data: { pct: slider.value },
+                    });
+                }
+            } catch (err) { console.warn('tax cmd failed:', err.message); }
         });
 
         document.querySelectorAll('#policy-manager [data-shock]').forEach((btn) => {
             btn.addEventListener('click', async () => {
-                try { await kc.sendCommand(`shock ${btn.dataset.shock} ${btn.dataset.pct}`); }
-                catch (err) { console.warn('shock cmd failed:', err.message); }
+                try {
+                    await kc.sendCommand(`shock ${btn.dataset.shock} ${btn.dataset.pct}`);
+                    if (typeof window.va === 'function') {
+                        window.va('event', {
+                            name: 'admin_shock_fired',
+                            data: { kind: btn.dataset.shock, pct: btn.dataset.pct },
+                        });
+                    }
+                } catch (err) { console.warn('shock cmd failed:', err.message); }
             });
         });
         document.querySelectorAll('#policy-manager [data-cmd]').forEach((btn) => {
@@ -452,6 +467,13 @@ window.launchWindow = function(type) {
 
             const echoed = /^\s*sudo\s+/i.test(line) ? 'sudo ****' : line;
             append('> ' + echoed, 'text-white/80');
+
+            // Only the verb — never args. 'sudo abc123' becomes 'sudo'; tokens stay private.
+            const verb = (line.trim().split(/\s+/)[0] || '').slice(0, 24);
+            if (typeof window.va === 'function') {
+                window.va('event', { name: 'shell_command_run', data: { cmd: verb } });
+            }
+
             try {
                 const ack = await kc.sendCommand(line);
                 if (ack.output) append(ack.output, 'text-terminal-green');
@@ -725,6 +747,7 @@ function startTour() {
     // Close README if open so it doesn't block the tour visually
     const aboutWin = document.getElementById('about');
     if (aboutWin) aboutWin.remove();
+    if (typeof window.va === 'function') window.va('event', { name: 'tour_started' });
 
     const overlay = document.createElement('div');
     overlay.id = 'tour-overlay';
@@ -813,13 +836,22 @@ function startTour() {
     };
 
     nextBtn.addEventListener('click', () => {
-        if (stepIdx === TOUR_STEPS.length - 1) return cleanup(true);
+        if (stepIdx === TOUR_STEPS.length - 1) {
+            if (typeof window.va === 'function') window.va('event', { name: 'tour_completed' });
+            return cleanup(true);
+        }
         stepIdx++; renderStep();
     });
     prevBtn.addEventListener('click', () => {
         if (stepIdx > 0) { stepIdx--; renderStep(); }
     });
-    skipBtn.addEventListener('click', () => cleanup(true));
+    skipBtn.addEventListener('click', () => {
+        if (typeof window.va === 'function') {
+            // step is 1-indexed in event data so we can see *where* people drop off
+            window.va('event', { name: 'tour_skipped', data: { step: stepIdx + 1 } });
+        }
+        cleanup(true);
+    });
 
     renderStep();
 }

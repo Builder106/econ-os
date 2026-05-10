@@ -13,7 +13,14 @@ const { test, expect } = require('@playwright/test');
 test('dashboard renders live kernel feed (boot → WS → tick advance)', async ({ page }) => {
   const errors = [];
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push(`console.error: ${m.text()}`); });
+  page.on('console', (m) => {
+    if (m.type() !== 'error') return;
+    const url = (m.location && m.location().url) || '';
+    // Vercel Analytics' /_vercel/insights/script.js is served by Vercel's edge in production;
+    // under local uvicorn it 404s — expected, not an app error.
+    if (url.includes('/_vercel/insights/script.js')) return;
+    errors.push(`console.error: ${m.text()} (${url})`);
+  });
 
   await page.goto('/');
 
