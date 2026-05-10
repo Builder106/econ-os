@@ -4,7 +4,29 @@
 
 EconOS is a sophisticated "Operating System" for market simulations. It treats economic agents as system processes, providing a unique, glassmorphic desktop interface to monitor and interact with emergent market behaviors. Using state-of-the-art RL (PPO), agents discover optimal pricing, wage-setting, and consumption strategies within a closed-loop economy.
 
-![EconOS Desktop Showcase](econos_full_walkthrough_final_1775621404633.png)
+**Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app) — multi-tenant, shared mainframe. Every visitor sees the same simulation in real time.
+
+![EconOS boot + live kernel feed](docs/media/01-boot-and-live.gif)
+
+<details>
+<summary><b>Fed mode — admin tax propagates from shell to Policy Manager</b></summary>
+
+After `sudo <token>` elevates the connection, `tax 25` in the shell mutates the running kernel and the Policy Manager UI snaps to 25.00% on the next tick.
+
+![admin tax propagation](docs/media/02-admin-tax-propagation.gif)
+
+</details>
+
+<details>
+<summary><b>Broadcast events — admin shocks visible to every viewer</b></summary>
+
+`shock wage 10` issued by one admin's shell broadcasts as a `* [ADMIN] shock_applied` event to every connected viewer's shell. The kernel applies the multiplicative shock on the next tick.
+
+![admin shock broadcast](docs/media/03-admin-shock-broadcast.gif)
+
+</details>
+
+> **Regenerate demos:** `./scripts/record-demos.sh` (requires `ffmpeg`; uses Playwright's bundled Chromium with `RECORD_DEMOS=1` mode in [playwright.config.js](playwright.config.js)).
 
 ## Key Features
 

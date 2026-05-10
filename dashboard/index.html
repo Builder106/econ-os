@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Pin background BEFORE Tailwind CDN loads to avoid the white flash
+         visible in screen recordings and on very slow connections. -->
+    <style>html,body{background:#0a0b0e;color:#fff;margin:0}</style>
     <meta name="theme-color" content="#0a0b0e">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <title>EconOS | Economic Operating System</title>
