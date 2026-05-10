@@ -30,3 +30,7 @@ node_modules/
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Deploy secrets / state
+deploy/.env
+deploy/oci-state.json

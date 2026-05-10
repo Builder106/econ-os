@@ -1,0 +1,25 @@
+# Vercel only needs dashboard/ + scripts/build-config.js.
+# Skip the Python backend, tests, caches, and trained artifacts.
+.venv/
+.pytest_cache/
+__pycache__/
+**/__pycache__/
+*.pyc
+
+node_modules/
+test-results/
+playwright-report/
+playwright/.cache/
+
+e2e/
+playwright.config.js
+
+simulation/
+server/
+data/
+models/
+deploy/
+Dockerfile
+.dockerignore
+Procfile
+requirements.txt

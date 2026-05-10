@@ -1,0 +1,41 @@
+# Oracle Always Free deploy (or any plain Linux VM): Caddy in front of the kernel.
+# Caddy auto-issues a Let's Encrypt cert for $ECONOS_DOMAIN and proxies WS traffic.
+# Single-process kernel — multi-tenant shared state lives in this one container.
+
+services:
+  kernel:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      - ECONOS_DOMAIN=${ECONOS_DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - kernel
+
+volumes:
+  caddy_data:
+  caddy_config:

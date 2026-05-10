@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/build-config.js",
+  "outputDirectory": "dashboard",
+  "installCommand": "echo 'no install needed (static)'",
+  "framework": null,
+  "cleanUrls": true
+}

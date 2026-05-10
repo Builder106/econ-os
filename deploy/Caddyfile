@@ -1,0 +1,14 @@
+# Caddy auto-issues a TLS cert from Let's Encrypt for $ECONOS_DOMAIN, then
+# proxies everything to the kernel container. WS upgrade headers are handled
+# automatically by reverse_proxy — no extra config needed.
+
+{$ECONOS_DOMAIN} {
+    encode gzip zstd
+    reverse_proxy kernel:8000
+
+    log {
+        output stdout
+        format console
+        level INFO
+    }
+}
