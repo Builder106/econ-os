@@ -163,7 +163,7 @@ EOF
 
 echo
 echo "=========================================="
-echo "  ✔ provisioned"
+echo "  [OK] provisioned"
 echo "  shape     VM.Standard.E2.1.Micro"
 echo "  public IP ${PUBLIC_IP}"
 echo "  ssh       ssh ubuntu@${PUBLIC_IP}"

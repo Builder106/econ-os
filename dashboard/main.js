@@ -376,12 +376,16 @@ window.launchWindow = function(type) {
             }
             document.getElementById('pm-step').textContent = s.step;
             document.getElementById('pm-uptime').textContent = s.uptime_s;
-            document.getElementById('pm-policies').textContent = s.policies_loaded ? 'PPO ✓' : 'RANDOM';
+            document.getElementById('pm-policies').innerHTML = s.policies_loaded
+                ? '<i class="ph-bold ph-check-circle text-terminal-green"></i>&nbsp; PPO loaded'
+                : '<i class="ph-bold ph-dice-five text-white/50"></i>&nbsp; random fallback';
         });
 
         const unsubAdmin = kc.onAdminChange((isAdmin) => {
             if (!document.getElementById('pm-auth')) { unsubAdmin(); return; }
-            authLabel.textContent = isAdmin ? '🔓 admin' : '🔒 visitor';
+            authLabel.innerHTML = isAdmin
+                ? '<i class="ph-fill ph-lock-open"></i>&nbsp; admin'
+                : '<i class="ph-fill ph-lock"></i>&nbsp; visitor';
             authLabel.className = isAdmin ? 'text-terminal-green' : 'text-terminal-red';
             slider.disabled = !isAdmin;
             slider.classList.toggle('opacity-40', !isAdmin);
@@ -479,7 +483,9 @@ window.launchWindow = function(type) {
                 <div class="bg-terminal-cyan/5 border border-terminal-cyan/20 rounded p-3 space-y-1">
                     <div class="flex justify-between items-baseline">
                         <span class="text-white/55 uppercase text-[11px] tracking-wide">Live now</span>
-                        <span class="text-terminal-green text-[11px] uppercase animate-pulse">● broadcasting</span>
+                        <span class="text-terminal-green text-[11px] uppercase animate-pulse flex items-center gap-1.5">
+                            <i class="ph-fill ph-circle text-[8px]"></i> broadcasting
+                        </span>
                     </div>
                     <div class="grid grid-cols-3 gap-3 mt-2">
                         <div>
@@ -684,13 +690,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const linkBadge = document.createElement('span');
     linkBadge.id = 'sys-link';
-    linkBadge.textContent = '● OFFLINE';
-    linkBadge.className = 'text-terminal-red';
+    linkBadge.className = 'text-terminal-red flex items-center gap-1.5';
+    linkBadge.innerHTML = '<i class="ph-fill ph-circle text-[8px]"></i> OFFLINE';
     taskMeta.insertBefore(linkBadge, taskMeta.firstChild);
 
     window.kernelClient.subscribe((s, connected) => {
-        linkBadge.textContent = connected ? '● LIVE' : (s ? '● RECONNECTING' : '● CONNECTING');
-        linkBadge.className = connected ? 'text-terminal-green' : 'text-terminal-gold';
+        const label = connected ? 'LIVE' : (s ? 'RECONNECTING' : 'CONNECTING');
+        linkBadge.innerHTML = `<i class="ph-fill ph-circle text-[8px]"></i> ${label}`;
+        linkBadge.className = (connected ? 'text-terminal-green' : 'text-terminal-gold') + ' flex items-center gap-1.5';
         if (s) stepBadge.textContent = `STEP ${s.step}`;
     });
 });

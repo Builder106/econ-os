@@ -16,7 +16,7 @@ def train_and_sim():
     os.makedirs(MODELS_DIR, exist_ok=True)
     os.makedirs(DATA_DIR, exist_ok=True)
 
-    print("🚀 Initializing PPO Training (parameter-shared, per role)...")
+    print("[train] Initializing PPO training (parameter-shared, per role)...")
 
     c_gym_env = MarketGymEnv(agent_filter="consumers")
     p_gym_env = MarketGymEnv(agent_filter="producers")
@@ -65,7 +65,7 @@ def train_and_sim():
 
     with open(TRACE_PATH, "w") as f:
         json.dump(data_log, f, indent=4)
-    print(f"✅ Wrote {len(data_log)} cycles → {TRACE_PATH}")
+    print(f"[train] Wrote {len(data_log)} cycles -> {TRACE_PATH}")
 
 
 if __name__ == "__main__":

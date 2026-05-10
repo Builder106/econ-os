@@ -1,4 +1,4 @@
-# EconOS | Economic Operating System 📈🤖
+# EconOS | Economic Operating System
 
 > **A high-fidelity Multi-Agent Reinforcement Learning (MARL) desktop environment for decentralized economic simulation.**
 
@@ -6,7 +6,7 @@ EconOS is a sophisticated "Operating System" for market simulations. It treats e
 
 ![EconOS Desktop Showcase](econos_full_walkthrough_final_1775621404633.png)
 
-## 🌟 Key Features
+## Key Features
 
 - **EconOS Desktop**: A custom, library-free window management system in vanilla JS.
 - **MARL Core**: Built on [PettingZoo](https://pettingzoo.farama.org/) and [Stable-Baselines3](https://stable-baselines3.readthedocs.io/).
@@ -15,13 +15,13 @@ EconOS is a sophisticated "Operating System" for market simulations. It treats e
 - **Root Shell**: Interactive terminal for kernel commands and policy overrides.
 - **Deep Macro Analytics**: Real-time Gini Index, Lorenz Curves, and CPI tracking.
 
-## 🏗️ Architecture
+## Architecture
 
 - **`simulation/`**: Core Gym/PettingZoo environment and economic logic.
 - **`dashboard/`**: Glassmorphic terminal interface (Tailwind + Chart.js).
 - **`logic.py`**: Mathematical bedrock (Utility, Production functions).
 
-## 🚀 Getting Started
+## Getting Started
 
 1. **Setup**:
    ```bash
@@ -38,7 +38,7 @@ EconOS is a sophisticated "Operating System" for market simulations. It treats e
 3. **View Dashboard**:
    Open `dashboard/index.html` in your browser.
 
-## 🧠 Theory vs. Agentic Emergence
+## Theory vs. Agentic Emergence
 
 The simulation is built on formal economic objective functions, but the market dynamics are purely emergent from agent learning.
 

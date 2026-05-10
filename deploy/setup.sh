@@ -68,7 +68,7 @@ TS_STATUS=$(sudo tailscale status --json 2>/dev/null || echo '{}')
 if ! echo "$TS_STATUS" | grep -q '"BackendState":\s*"Running"'; then
     echo
     echo "============================================================"
-    echo "  ✋ Tailscale not authenticated yet."
+    echo "  [!] Tailscale not authenticated yet."
     echo "  Run:  sudo tailscale up"
     echo "  Visit the URL it prints, log in, then re-run this script."
     echo "============================================================"
@@ -89,7 +89,7 @@ fi
 
 echo
 echo "============================================================"
-echo "  ✔ EconOS kernel up via Tailscale Funnel"
+echo "  [OK] EconOS kernel up via Tailscale Funnel"
 echo "  Public URL: ${PUBLIC_URL}"
 echo "  Verify:    curl ${PUBLIC_URL}/healthz"
 echo "  Logs:      sudo docker compose -f ${DEPLOY_DIR}/docker-compose.yml logs -f"
