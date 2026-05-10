@@ -1,6 +1,6 @@
 /**
- * EconOS Window Manager & Kernel Shell
- * AESTHETIC_DNA: Glassmorphic Desktop OS
+ * EconOS Window Manager + Kernel Client
+ * AESTHETIC_DNA: Glassmorphic Bloomberg-grade desktop OS, fed by live WebSocket telemetry.
  */
 
 class WindowManager {
@@ -9,7 +9,6 @@ class WindowManager {
         this.activeWindow = null;
         this.highestZ = 100;
         this.desktop = document.getElementById('desktop');
-        
         this.initEvents();
     }
 
@@ -18,12 +17,14 @@ class WindowManager {
             const win = e.target.closest('.window');
             if (win) this.focusWindow(win);
         });
-
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.stopDragging());
     }
 
     createWindow(id, title, x, y, w, h, contentHTML) {
+        const existing = document.getElementById(id);
+        if (existing) { this.focusWindow(existing); return existing; }
+
         const win = document.createElement('div');
         win.id = id;
         win.className = 'window active';
@@ -83,211 +84,499 @@ class WindowManager {
     }
 }
 
-// Launch Window Helper
-window.launchWindow = function(type) {
-    const wm = window.econWM;
-    if (type === 'process-explorer') {
-        wm.createWindow('processes', 'Process Telemetry Hub', 150, 150, 500, 350, 
-            `<div class="space-y-4 font-mono text-[9px]">
-                <div class="flex justify-between text-white/20 uppercase pb-1 border-b border-white/5">
-                    <span>Process ID</span><span>Node_Telemetry</span><span>Resource</span><span>Health</span>
-                </div>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between">
-                        <span class="text-terminal-cyan">001</span>
-                        <div class="flex flex-col">
-                            <span>KERNEL_CORE_INIT</span>
-                            <div class="sparkline-container bg-white/5 h-2 w-32 mt-1 relative overflow-hidden">
-                                <div class="absolute inset-0 bg-terminal-cyan/20 animate-pulse"></div>
-                            </div>
-                        </div>
-                        <span class="text-white/40">1.2GB</span>
-                        <div class="status-pulse"></div>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-terminal-cyan">A-42</span>
-                        <div class="flex flex-col">
-                            <span>CONSUMER_POLICY_NET</span>
-                            <div class="sparkline-container bg-white/5 h-2 w-32 mt-1 relative overflow-hidden">
-                                <div class="absolute inset-0 bg-terminal-green/20 w-3/4"></div>
-                            </div>
-                        </div>
-                        <span class="text-white/40">4.5GB</span>
-                        <div class="status-pulse" style="background: var(--terminal-cyan); box-shadow: 0 0 8px var(--terminal-cyan);"></div>
-                    </div>
-                    <div class="flex items-center justify-between border-t border-white/5 pt-3">
-                        <span class="text-terminal-cyan">P-112</span>
-                        <div class="flex flex-col">
-                            <span>PRODUCER_RL_OPTIMIZER</span>
-                            <div class="sparkline-container bg-white/5 h-2 w-32 mt-1 relative overflow-hidden">
-                                <div class="absolute inset-0 bg-terminal-gold/20 w-1/2"></div>
-                            </div>
-                        </div>
-                        <span class="text-white/40">12.1GB</span>
-                        <div class="status-pulse" style="background: var(--terminal-gold); box-shadow: 0 0 8px var(--terminal-gold);"></div>
-                    </div>
-                </div>
-            </div>`);
-    } else if (type === 'macro-monitor') {
-        wm.createWindow('macro-monitor', 'Market Analytics Suite', 200, 100, 600, 450, 
-            `<div class="grid grid-cols-2 gap-4 h-full font-mono text-[9px]">
-                <div class="col-span-2 border-b border-white/10 pb-2">
-                    <div class="flex justify-between items-center mb-1">
-                        <span class="text-white/40 uppercase">Global Asset Equilibrium (Price vs Wage)</span>
-                        <span class="text-terminal-green">LIVE Telemetry</span>
-                    </div>
-                    <div class="h-32 w-full"><canvas id="mainChart"></canvas></div>
-                </div>
-                <div class="space-y-2 border-r border-white/5 pr-2">
-                    <span class="text-white/20 uppercase">Structural Inequality (Gini)</span>
-                    <div class="flex items-end gap-1 h-12">
-                        <div class="bg-terminal-cyan/80 w-2 h-3/4"></div>
-                        <div class="bg-terminal-cyan/80 w-2 h-1/2"></div>
-                        <div class="bg-terminal-cyan/80 w-2 h-4/5"></div>
-                        <div class="bg-terminal-cyan/80 w-2 h-1/4"></div>
-                        <div class="bg-terminal-cyan/80 w-2 h-2/3"></div>
-                    </div>
-                    <div class="flex justify-between text-terminal-cyan font-bold">
-                        <span>GA-22</span> <span>0.341</span>
-                    </div>
-                </div>
-                <div class="space-y-2 pl-2">
-                    <span class="text-white/20 uppercase">System Liquidity</span>
-                    <div class="text-2xl font-bold text-white tracking-tighter">$142.1M</div>
-                    <div class="flex gap-2">
-                        <span class="text-terminal-green">▲ 2.4%</span>
-                        <span class="text-white/20">W-AVG_VOL</span>
-                    </div>
-                </div>
-            </div>`);
-        initSimulation();
-    } else if (type === 'policy-manager') {
-        wm.createWindow('policy-manager', 'Monetary Command Center', 250, 250, 320, 250, 
-            `<div class="space-y-6 font-mono text-[10px]">
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center uppercase">
-                        <span class="text-white/40">Income Tax Rate</span> 
-                        <span class="text-terminal-cyan text-sm">15.00%</span>
-                    </div>
-                    <input type="range" min="0" max="50" value="15" class="w-full accent-terminal-cyan appearance-none h-1 bg-white/10 rounded">
-                    <div class="flex justify-between text-[8px] text-white/20">
-                        <span>L-BOUND: 0.0</span> <span>U-BOUND: 50.0</span>
-                    </div>
-                </div>
-                <div class="space-y-2 border-t border-white/5 pt-4">
-                    <div class="flex justify-between items-center uppercase">
-                        <span class="text-white/40">Target Interest</span> 
-                        <span class="text-terminal-gold text-sm">2.45%</span>
-                    </div>
-                    <input type="range" min="0" max="100" value="25" class="w-full accent-terminal-gold appearance-none h-1 bg-white/10 rounded">
-                    <div class="flex justify-between text-[8px] text-white/20">
-                        <span>YIELD: 1.25</span> <span>FED_LIMIT: 5.00</span>
-                    </div>
-                </div>
-                <button class="w-full py-2 bg-terminal-cyan/10 border border-terminal-cyan/30 text-terminal-cyan uppercase font-bold text-[9px] hover:bg-terminal-cyan/20 transition-all">
-                    Commit Policy Overrides
-                </button>
-            </div>`);
-    } else if (type === 'econ-shell') {
-        wm.createWindow('econ-shell', 'EconOS Institutional Terminal', 720, 50, 450, 300, 
-            `<div class="flex flex-col h-full font-mono text-[9px]">
-                <div id="shell-output" class="flex-1 text-white/50 overflow-auto mb-2 space-y-1">
-                    <div class="text-terminal-cyan">>>> [SYSTEM_AUTH] Admin Session Started</div>
-                    <div>$ initializing node_modules... [DONE]</div>
-                    <div>$ connecting to market_shard_01... [DONE]</div>
-                    <div class="text-terminal-gold">$ WARNING: Inequality (Gini) exceeding threshold (0.42)</div>
-                    <div class="animate-pulse">_</div>
-                </div>
-                <div class="flex items-center gap-2 border-t border-white/5 pt-2">
-                    <span class="text-terminal-cyan font-bold">root@econos:~$</span>
-                    <input id="shell-input" class="flex-1 bg-transparent border-none outline-none text-white font-mono" placeholder="await input...">
-                </div>
-            </div>`);
-    } else if (type === 'system-menu') {
-        wm.createWindow('sys-menu', 'EconOS System', 50, 300, 200, 150, 
-            `<div class="space-y-2 text-[10px] text-white/60">
-                <div class="hover:text-white cursor-pointer"><i class="ph ph-user"></i> User Settings</div>
-                <div class="hover:text-white cursor-pointer"><i class="ph ph-hard-drive"></i> Kernel Logs</div>
-                <div class="hover:text-white cursor-pointer" onclick="launchWindow('policy-manager')"><i class="ph ph-shield-check"></i> Security Policy</div>
-                <div class="border-t border-white/5 pt-2 hover:text-terminal-red cursor-pointer"><i class="ph ph-power"></i> Shutdown</div>
-            </div>`);
+/**
+ * KernelClient — single WebSocket to the shared kernel, multiplexed:
+ *   - inbound `tick`   → state cache + .subscribe(cb) listeners
+ *   - inbound `event`  → .onEvent(cb) listeners (admin shocks, resets)
+ *   - inbound `ack`    → resolves the matching .sendCommand() promise
+ *   - per-connection `isAdmin` flag flips on a successful `sudo` ack
+ *
+ * Reconnect drops admin elevation by design — the server-side connection is
+ * gone and conn.is_admin lives there.
+ */
+class KernelClient {
+    constructor() {
+        // In split-host deploys (dashboard on Vercel, kernel on Koyeb) the URL is
+        // injected via dashboard/config.js. Same-origin fallback keeps local dev
+        // (FastAPI serving the dashboard at /) working unchanged.
+        const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+        this.url = window.ECONOS_KERNEL_WS_URL || `${proto}//${location.host}/ws`;
+        this.tickListeners = new Set();
+        this.eventListeners = new Set();
+        this.adminListeners = new Set();
+        this.state = null;
+        this.connected = false;
+        this.isAdmin = false;
+        this._reconnectMs = 800;
+        this._cmdSeq = 0;
+        this._pendingAcks = new Map();
+        this._connect();
+    }
+
+    _connect() {
+        try { this.ws = new WebSocket(this.url); }
+        catch (e) { this._scheduleReconnect(); return; }
+        this.ws.onopen = () => { this.connected = true; this._reconnectMs = 800; this._notifyTick(); };
+        this.ws.onmessage = (e) => this._onMessage(e);
+        this.ws.onclose = () => {
+            this.connected = false;
+            if (this.isAdmin) { this.isAdmin = false; this._notifyAdmin(); }
+            this._failPendingAcks(new Error('disconnected'));
+            this._notifyTick();
+            this._scheduleReconnect();
+        };
+        this.ws.onerror = () => { try { this.ws.close(); } catch (_) {} };
+    }
+
+    _scheduleReconnect() {
+        const delay = this._reconnectMs;
+        this._reconnectMs = Math.min(this._reconnectMs * 2, 8000);
+        setTimeout(() => this._connect(), delay);
+    }
+
+    _onMessage(e) {
+        let msg;
+        try { msg = JSON.parse(e.data); } catch { return; }
+        if (msg.type === 'tick' || (msg.market && msg.agents)) {
+            this.state = msg;
+            this._notifyTick();
+            return;
+        }
+        if (msg.type === 'ack') {
+            const p = this._pendingAcks.get(msg.id);
+            if (p) {
+                clearTimeout(p.timer);
+                this._pendingAcks.delete(msg.id);
+                if (msg.ok) p.resolve(msg);
+                else p.reject(Object.assign(new Error(msg.error || 'command failed'), { ack: msg }));
+            }
+            if (msg.auth && msg.auth.is_admin && !this.isAdmin) {
+                this.isAdmin = true;
+                this._notifyAdmin();
+            }
+            return;
+        }
+        if (msg.type === 'event') {
+            for (const cb of this.eventListeners) { try { cb(msg); } catch (err) { console.error(err); } }
+            return;
+        }
+    }
+
+    sendCommand(line) {
+        return new Promise((resolve, reject) => {
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                reject(new Error('not connected'));
+                return;
+            }
+            const id = `c${++this._cmdSeq}`;
+            const timer = setTimeout(() => {
+                this._pendingAcks.delete(id);
+                reject(new Error('command timed out'));
+            }, 8000);
+            this._pendingAcks.set(id, { resolve, reject, timer });
+            this.ws.send(JSON.stringify({ type: 'cmd', id, line }));
+        });
+    }
+
+    _failPendingAcks(err) {
+        for (const [, p] of this._pendingAcks) { clearTimeout(p.timer); p.reject(err); }
+        this._pendingAcks.clear();
+    }
+
+    subscribe(cb) {
+        this.tickListeners.add(cb);
+        if (this.state) { try { cb(this.state, this.connected); } catch (e) { console.error(e); } }
+        return () => this.tickListeners.delete(cb);
+    }
+
+    onEvent(cb) {
+        this.eventListeners.add(cb);
+        return () => this.eventListeners.delete(cb);
+    }
+
+    onAdminChange(cb) {
+        this.adminListeners.add(cb);
+        try { cb(this.isAdmin); } catch (e) { console.error(e); }
+        return () => this.adminListeners.delete(cb);
+    }
+
+    _notifyTick() {
+        for (const cb of this.tickListeners) { try { cb(this.state, this.connected); } catch (err) { console.error(err); } }
+    }
+
+    _notifyAdmin() {
+        for (const cb of this.adminListeners) { try { cb(this.isAdmin); } catch (err) { console.error(err); } }
     }
 }
 
-// OS Logic
-document.addEventListener('DOMContentLoaded', () => {
-    window.econWM = new WindowManager();
+// --- helpers ---
+
+const fmtMoney = (n) => {
+    if (n == null || isNaN(n)) return '—';
+    const v = Math.abs(n);
+    if (v >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (v >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+    return n.toFixed(2);
+};
+
+const procIdFor = (agentId) => {
+    const m = agentId.match(/(consumer|producer)_(\d+)/);
+    if (!m) return agentId;
+    return (m[1] === 'consumer' ? 'C-' : 'P-') + String(m[2]).padStart(2, '0');
+};
+
+const procNameFor = (agentId) =>
+    agentId.startsWith('consumer') ? 'CONSUMER_POLICY_NET' : 'PRODUCER_RL_OPTIMIZER';
+
+// --- window launchers ---
+
+window.launchWindow = function(type) {
     const wm = window.econWM;
-    
-    // Boot Sequence Terminal
-    const bootWin = wm.createWindow('boot-loader', 'EconOS Boot', 100, 50, 400, 300, 
-        '<div id="boot-log" class="font-mono text-[9px] text-terminal-green space-y-1"></div>'
-    );
-    
-    const bootLog = document.getElementById('boot-log');
-    const messages = [
-        '[    0.000] Initializing EconOS Kernel v5.4...',
-        '[    0.124] Loading Multi-Agent Resource Allocator...',
-        '[    0.450] Mounting /dev/agents...',
-        '[    0.782] Spawning Consumer Processes (100 total)...',
-        '[    1.120] Initializing PPO Learning Pipeline...',
-        '[    1.540] Checking Market Synchronization...',
-        '[    2.100] SUCCESS: Economic Loopback Established.',
-        '[    2.500] Starting Web_Desktop_System...'
-    ];
+    const kc = window.kernelClient;
 
-    let i = 0;
-    const bootInterval = setInterval(() => {
-        if (i < messages.length) {
-            bootLog.innerHTML += `<div>${messages[i]}</div>`;
-            i++;
-        } else {
-            clearInterval(bootInterval);
-            setTimeout(() => {
-                bootWin.remove();
-                launchWindow('macro-monitor');
-                launchWindow('econ-shell');
-            }, 1000);
-        }
-    }, 400);
+    if (type === 'process-explorer') {
+        wm.createWindow('processes', 'Process Telemetry Hub', 150, 150, 540, 380,
+            `<div class="font-mono text-[9px]">
+                <div class="grid grid-cols-[60px_1fr_80px_60px_20px] gap-2 text-white/30 uppercase pb-1 border-b border-white/5 mb-2">
+                    <span>PID</span><span>Process</span><span>Balance</span><span>Δ Reward</span><span></span>
+                </div>
+                <div id="proc-rows" class="space-y-1.5 text-[9px]">
+                    <div class="text-white/30 italic">awaiting kernel feed...</div>
+                </div>
+            </div>`);
+        const rowsEl = document.getElementById('proc-rows');
+        const unsub = kc.subscribe((s) => {
+            if (!document.getElementById('proc-rows')) { unsub(); return; }
+            if (!s) return;
+            rowsEl.innerHTML = s.agents.map((a) => {
+                const isCons = a.role === 'consumer';
+                const dotColor = isCons ? 'var(--terminal-cyan)' : 'var(--terminal-gold)';
+                const reward = (a.reward >= 0 ? '+' : '') + a.reward.toFixed(3);
+                const rewardCls = a.reward >= 0 ? 'text-terminal-green' : 'text-terminal-red';
+                return `<div class="grid grid-cols-[60px_1fr_80px_60px_20px] gap-2 items-center">
+                    <span class="text-terminal-cyan">${procIdFor(a.id)}</span>
+                    <span class="text-white/70">${procNameFor(a.id)}</span>
+                    <span class="text-white/60">${fmtMoney(a.balance)}</span>
+                    <span class="${rewardCls}">${reward}</span>
+                    <div class="status-pulse" style="background:${dotColor};box-shadow:0 0 8px ${dotColor};"></div>
+                </div>`;
+            }).join('');
+        });
 
-    // Update Clock
-    setInterval(() => {
-        document.getElementById('sys-time').innerText = new Date().toLocaleTimeString();
-    }, 1000);
-});
+    } else if (type === 'macro-monitor') {
+        wm.createWindow('macro-monitor', 'Market Analytics Suite', 200, 100, 640, 470,
+            `<div class="grid grid-cols-2 gap-4 h-full font-mono text-[9px]">
+                <div class="col-span-2 border-b border-white/10 pb-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-white/40 uppercase">Global Asset Equilibrium (Wage vs Price)</span>
+                        <span id="macro-status" class="text-terminal-green">CONNECTING…</span>
+                    </div>
+                    <div class="h-40 w-full"><canvas id="mainChart"></canvas></div>
+                </div>
+                <div class="space-y-2 border-r border-white/5 pr-2">
+                    <span class="text-white/30 uppercase">Structural Inequality (Gini)</span>
+                    <div class="text-3xl font-bold text-terminal-cyan tracking-tight" id="macro-gini">—</div>
+                    <div class="text-[8px] text-white/30">consumer wealth distribution</div>
+                </div>
+                <div class="space-y-2 pl-2">
+                    <span class="text-white/30 uppercase">System Liquidity</span>
+                    <div class="text-2xl font-bold text-white tracking-tighter" id="macro-money">—</div>
+                    <div class="flex gap-3 text-[8px] text-white/40">
+                        <span>TREASURY <span id="macro-treasury" class="text-terminal-gold">—</span></span>
+                        <span>τ <span id="macro-tax" class="text-terminal-magenta">—</span></span>
+                    </div>
+                </div>
+            </div>`);
+        initMacroChart(kc);
 
-// Re-using simulation logic but mapped to EconOS Windows
-function initSimulation() {
-    const mainCtx = document.getElementById('mainChart').getContext('2d');
-    
-    // --- Chart.js Setup ---
-    const mainChart = new Chart(mainCtx, {
+    } else if (type === 'policy-manager') {
+        wm.createWindow('policy-manager', 'Monetary Command Center', 250, 200, 380, 420,
+            `<div class="space-y-3 font-mono text-[10px]">
+                <div class="flex justify-between items-center text-[8px] uppercase pb-2 border-b border-white/5">
+                    <span class="text-white/30">FED MODE</span>
+                    <span id="pm-auth" class="text-terminal-red">visitor</span>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center uppercase">
+                        <span class="text-white/40">Income Tax τ</span>
+                        <span id="pm-tax" class="text-terminal-cyan text-sm">—</span>
+                    </div>
+                    <input id="pm-tax-slider" type="range" min="0" max="100" step="1" value="0" disabled
+                        class="w-full accent-terminal-cyan h-1 bg-white/10 rounded opacity-40">
+                    <div class="flex justify-between text-[8px] text-white/20"><span>0%</span><span>100%</span></div>
+                </div>
+                <div class="space-y-1 border-t border-white/5 pt-2">
+                    <span class="text-white/40 uppercase text-[8px]">Wage Shock</span>
+                    <div class="grid grid-cols-4 gap-1" id="pm-wage-shocks"></div>
+                </div>
+                <div class="space-y-1">
+                    <span class="text-white/40 uppercase text-[8px]">Price Shock</span>
+                    <div class="grid grid-cols-4 gap-1" id="pm-price-shocks"></div>
+                </div>
+                <div class="grid grid-cols-3 gap-1 border-t border-white/5 pt-2">
+                    <button data-cmd="pause"  class="pm-admin py-1 text-[9px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Pause</button>
+                    <button data-cmd="resume" class="pm-admin py-1 text-[9px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Resume</button>
+                    <button data-cmd="reset"  class="pm-admin py-1 text-[9px] uppercase border border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10">Reset</button>
+                </div>
+                <div class="text-[8px] text-white/30 flex justify-between border-t border-white/5 pt-2">
+                    <span>STEP <span id="pm-step" class="text-terminal-gold">—</span></span>
+                    <span>UPTIME <span id="pm-uptime">—</span>s</span>
+                    <span id="pm-policies">—</span>
+                </div>
+            </div>`);
+
+        const SHOCKS = [-10, -5, 5, 10];
+        const mkBtn = (target, pct) => {
+            const sign = pct > 0 ? '+' : '';
+            const cls = pct > 0 ? 'text-terminal-green' : 'text-terminal-red';
+            return `<button class="pm-admin py-1 text-[9px] border border-white/10 ${cls} hover:bg-white/5"
+                data-shock="${target}" data-pct="${pct}">${sign}${pct}%</button>`;
+        };
+        document.getElementById('pm-wage-shocks').innerHTML  = SHOCKS.map(p => mkBtn('wage', p)).join('');
+        document.getElementById('pm-price-shocks').innerHTML = SHOCKS.map(p => mkBtn('price', p)).join('');
+
+        const slider = document.getElementById('pm-tax-slider');
+        const taxLabel = document.getElementById('pm-tax');
+        const authLabel = document.getElementById('pm-auth');
+
+        let userIsDragging = false;
+        slider.addEventListener('pointerdown', () => { userIsDragging = true; });
+        slider.addEventListener('pointerup',   () => { userIsDragging = false; });
+        slider.addEventListener('input',  () => { taxLabel.textContent = parseInt(slider.value, 10).toFixed(2) + '%'; });
+        slider.addEventListener('change', async () => {
+            try { await kc.sendCommand(`tax ${slider.value}`); }
+            catch (err) { console.warn('tax cmd failed:', err.message); }
+        });
+
+        document.querySelectorAll('#policy-manager [data-shock]').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                try { await kc.sendCommand(`shock ${btn.dataset.shock} ${btn.dataset.pct}`); }
+                catch (err) { console.warn('shock cmd failed:', err.message); }
+            });
+        });
+        document.querySelectorAll('#policy-manager [data-cmd]').forEach((btn) => {
+            btn.addEventListener('click', async () => {
+                try { await kc.sendCommand(btn.dataset.cmd); }
+                catch (err) { console.warn(`${btn.dataset.cmd} failed:`, err.message); }
+            });
+        });
+
+        const unsubTick = kc.subscribe((s) => {
+            if (!document.getElementById('pm-tax')) { unsubTick(); return; }
+            if (!s) return;
+            const taxPct = s.policy.tax_rate * 100;
+            if (!userIsDragging) {
+                slider.value = String(Math.round(taxPct));
+                taxLabel.textContent = taxPct.toFixed(2) + '%';
+            }
+            document.getElementById('pm-step').textContent = s.step;
+            document.getElementById('pm-uptime').textContent = s.uptime_s;
+            document.getElementById('pm-policies').textContent = s.policies_loaded ? 'PPO ✓' : 'RANDOM';
+        });
+
+        const unsubAdmin = kc.onAdminChange((isAdmin) => {
+            if (!document.getElementById('pm-auth')) { unsubAdmin(); return; }
+            authLabel.textContent = isAdmin ? '🔓 admin' : '🔒 visitor';
+            authLabel.className = isAdmin ? 'text-terminal-green' : 'text-terminal-red';
+            slider.disabled = !isAdmin;
+            slider.classList.toggle('opacity-40', !isAdmin);
+            document.querySelectorAll('#policy-manager .pm-admin').forEach((b) => {
+                b.disabled = !isAdmin;
+                b.classList.toggle('opacity-40', !isAdmin);
+                b.classList.toggle('cursor-not-allowed', !isAdmin);
+            });
+        });
+
+    } else if (type === 'econ-shell') {
+        wm.createWindow('econ-shell', 'EconOS Institutional Terminal', 720, 50, 520, 380,
+            `<div class="flex flex-col h-full font-mono text-[9px]">
+                <div id="shell-output" class="flex-1 text-white/60 overflow-auto mb-2 space-y-0.5"></div>
+                <div class="flex items-center gap-2 border-t border-white/5 pt-2">
+                    <span class="text-terminal-cyan font-bold">root@econos:~$</span>
+                    <input id="shell-input" class="flex-1 bg-transparent border-none outline-none text-white font-mono"
+                        placeholder="type 'help' — 'sudo &lt;token&gt;' for admin" autocomplete="off" autocapitalize="off" spellcheck="false">
+                </div>
+            </div>`);
+
+        const out = document.getElementById('shell-output');
+        const input = document.getElementById('shell-input');
+
+        const append = (text, cls = 'text-white/60') => {
+            const d = document.createElement('div');
+            d.className = cls + ' whitespace-pre';
+            d.textContent = text;
+            out.appendChild(d);
+            out.scrollTop = out.scrollHeight;
+        };
+        append('>>> [SYSTEM_AUTH] read-only session attached to shared kernel', 'text-terminal-cyan');
+        append("$ type 'help' to list commands. 'sudo <token>' to elevate.", 'text-white/40');
+
+        const history = [];
+        let histIdx = -1;
+
+        input.addEventListener('keydown', async (e) => {
+            if (e.key === 'ArrowUp') {
+                if (history.length === 0) return;
+                histIdx = Math.max(0, (histIdx === -1 ? history.length : histIdx) - 1);
+                input.value = history[histIdx] || '';
+                e.preventDefault();
+                return;
+            }
+            if (e.key === 'ArrowDown') {
+                if (histIdx === -1) return;
+                histIdx = histIdx + 1;
+                if (histIdx >= history.length) { histIdx = -1; input.value = ''; }
+                else input.value = history[histIdx];
+                e.preventDefault();
+                return;
+            }
+            if (e.key !== 'Enter') return;
+
+            const line = input.value;
+            if (!line.trim()) return;
+            input.value = '';
+            history.push(line); histIdx = -1;
+
+            const echoed = /^\s*sudo\s+/i.test(line) ? 'sudo ****' : line;
+            append('> ' + echoed, 'text-white/80');
+            try {
+                const ack = await kc.sendCommand(line);
+                if (ack.output) append(ack.output, 'text-terminal-green');
+            } catch (err) {
+                append('! ' + (err.message || 'command failed'), 'text-terminal-red');
+            }
+        });
+
+        const unsubEvt = kc.onEvent((evt) => {
+            if (!document.getElementById('shell-output')) { unsubEvt(); return; }
+            const detail = Object.keys(evt.detail || {}).length ? '  ' + JSON.stringify(evt.detail) : '';
+            append(`* [${(evt.by || '?').toUpperCase()}] ${evt.kind}${detail}`, 'text-terminal-magenta');
+        });
+
+    } else if (type === 'system-menu') {
+        wm.createWindow('sys-menu', 'EconOS System', 50, 300, 220, 180,
+            `<div class="space-y-2 text-[10px] text-white/60">
+                <div class="hover:text-white cursor-pointer" onclick="launchWindow('process-explorer')"><i class="ph ph-cpu"></i> Process Telemetry</div>
+                <div class="hover:text-white cursor-pointer" onclick="launchWindow('macro-monitor')"><i class="ph ph-chart-line"></i> Market Analytics</div>
+                <div class="hover:text-white cursor-pointer" onclick="launchWindow('policy-manager')"><i class="ph ph-shield-check"></i> Policy Manager</div>
+                <div class="hover:text-white cursor-pointer" onclick="launchWindow('econ-shell')"><i class="ph ph-terminal"></i> Institutional Terminal</div>
+            </div>`);
+    }
+};
+
+function initMacroChart(kc) {
+    const canvas = document.getElementById('mainChart');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
             datasets: [
-                { label: 'AVG WAGE', borderColor: '#FFD700', borderWidth: 1, pointRadius: 0, data: [] },
-                { label: 'AVG PRICE', borderColor: '#00FF41', borderWidth: 1, pointRadius: 0, data: [] }
+                { label: 'WAGE',  borderColor: '#FFD700', borderWidth: 1, pointRadius: 0, data: [], tension: 0.2 },
+                { label: 'PRICE', borderColor: '#00FF41', borderWidth: 1, pointRadius: 0, data: [], tension: 0.2 }
             ]
         },
-        options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
+        options: {
+            responsive: true, maintainAspectRatio: false, animation: false,
+            plugins: { legend: { labels: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } } } },
+            scales: {
+                x: { display: false },
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 9 } } }
+            }
+        }
     });
 
-    let cycle = 0;
-    setInterval(() => {
-        cycle++;
-        const wage = (10 + Math.sin(cycle * 0.1) * 2 + Math.random()).toFixed(2);
-        const price = (8 + Math.cos(cycle * 0.1) * 1.5 + Math.random()).toFixed(2);
-        
-        mainChart.data.labels.push(cycle);
-        mainChart.data.datasets[0].data.push(parseFloat(wage));
-        mainChart.data.datasets[1].data.push(parseFloat(price));
-        if (mainChart.data.labels.length > 50) {
-            mainChart.data.labels.shift();
-            mainChart.data.datasets[0].data.shift();
-            mainChart.data.datasets[1].data.shift();
+    const MAX_POINTS = 100;
+    const statusEl = () => document.getElementById('macro-status');
+    const giniEl   = () => document.getElementById('macro-gini');
+    const moneyEl  = () => document.getElementById('macro-money');
+    const treasEl  = () => document.getElementById('macro-treasury');
+    const taxEl    = () => document.getElementById('macro-tax');
+
+    let lastStep = -1;
+    const unsub = kc.subscribe((s, connected) => {
+        if (!document.getElementById('mainChart')) { unsub(); return; }
+        const st = statusEl();
+        if (st) {
+            st.textContent = connected ? 'LIVE' : 'RECONNECTING…';
+            st.className = connected ? 'text-terminal-green' : 'text-terminal-gold';
         }
-        mainChart.update('none');
-    }, 500);
+        if (!s || s.step === lastStep) return;
+        lastStep = s.step;
+
+        chart.data.labels.push(s.step);
+        chart.data.datasets[0].data.push(s.market.wage);
+        chart.data.datasets[1].data.push(s.market.price);
+        if (chart.data.labels.length > MAX_POINTS) {
+            chart.data.labels.shift();
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[1].data.shift();
+        }
+        chart.update('none');
+
+        if (giniEl())  giniEl().textContent  = s.metrics.gini.toFixed(3);
+        if (moneyEl()) moneyEl().textContent = '$' + fmtMoney(s.metrics.total_money);
+        if (treasEl()) treasEl().textContent = fmtMoney(s.metrics.treasury);
+        if (taxEl())   taxEl().textContent   = (s.policy.tax_rate * 100).toFixed(1) + '%';
+    });
 }
+
+// --- boot ---
+
+document.addEventListener('DOMContentLoaded', () => {
+    window.econWM = new WindowManager();
+    window.kernelClient = new KernelClient();
+    const wm = window.econWM;
+
+    const bootWin = wm.createWindow('boot-loader', 'EconOS Boot', 100, 50, 420, 280,
+        '<div id="boot-log" class="font-mono text-[9px] text-terminal-green space-y-1"></div>'
+    );
+    const bootLog = document.getElementById('boot-log');
+    const messages = [
+        '[    0.000] Initializing EconOS Kernel v5.4...',
+        '[    0.124] Attaching to shared market shard /ws...',
+        '[    0.450] Loading agent telemetry stream...',
+        '[    0.782] Mounting MARL parameter store...',
+        '[    1.120] PPO inference pipeline online...',
+        '[    1.540] Synchronizing tick clock...',
+        '[    2.100] SUCCESS: Connected to running kernel.',
+        '[    2.500] Starting Web_Desktop_System...'
+    ];
+    let i = 0;
+    const bootInterval = setInterval(() => {
+        if (i < messages.length) { bootLog.innerHTML += `<div>${messages[i]}</div>`; i++; }
+        else {
+            clearInterval(bootInterval);
+            setTimeout(() => {
+                bootWin.remove();
+                launchWindow('macro-monitor');
+                launchWindow('process-explorer');
+            }, 800);
+        }
+    }, 350);
+
+    // taskbar status: clock + kernel step + connection state
+    const sysTime = document.getElementById('sys-time');
+    setInterval(() => { sysTime.innerText = new Date().toLocaleTimeString(); }, 1000);
+
+    const taskMeta = document.getElementById('sys-time').parentElement;
+    const stepBadge = document.createElement('span');
+    stepBadge.id = 'sys-step';
+    stepBadge.className = 'text-terminal-cyan';
+    stepBadge.textContent = 'STEP —';
+    taskMeta.insertBefore(stepBadge, taskMeta.firstChild);
+
+    const linkBadge = document.createElement('span');
+    linkBadge.id = 'sys-link';
+    linkBadge.textContent = '● OFFLINE';
+    linkBadge.className = 'text-terminal-red';
+    taskMeta.insertBefore(linkBadge, taskMeta.firstChild);
+
+    window.kernelClient.subscribe((s, connected) => {
+        linkBadge.textContent = connected ? '● LIVE' : '● RECONNECTING';
+        linkBadge.className = connected ? 'text-terminal-green' : 'text-terminal-gold';
+        if (s) stepBadge.textContent = `STEP ${s.step}`;
+    });
+});
