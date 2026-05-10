@@ -75,13 +75,12 @@ if ! echo "$TS_STATUS" | grep -q '"BackendState":\s*"Running"'; then
     exit 0
 fi
 
-echo "[econos] Tailscale authenticated. Configuring serve + funnel..."
-# Reset any prior serve config so re-runs are clean.
+echo "[econos] Tailscale authenticated. Configuring Funnel..."
+# Reset any prior serve/funnel config so re-runs are clean.
 sudo tailscale serve reset 2>/dev/null || true
-# Proxy the tailnet device's https://...:443 → kernel on localhost:8000.
-sudo tailscale serve --bg --https=443 http://127.0.0.1:8000 >/dev/null
-# Expose to the public internet (Funnel).
-sudo tailscale funnel --bg 443 on >/dev/null
+# Modern unified syntax (Tailscale 1.50+): one command sets up serve AND funnel.
+# Proxies https://<host>.<tailnet>.ts.net/ → http://127.0.0.1:8000 publicly.
+sudo tailscale funnel --bg http://127.0.0.1:8000 >/dev/null
 
 PUBLIC_URL=$(sudo tailscale funnel status 2>/dev/null | grep -oE 'https://[^ ]+' | head -1 || true)
 if [ -z "$PUBLIC_URL" ]; then
