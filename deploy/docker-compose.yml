@@ -1,6 +1,10 @@
-# Oracle Always Free deploy (or any plain Linux VM): Caddy in front of the kernel.
-# Caddy auto-issues a Let's Encrypt cert for $ECONOS_DOMAIN and proxies WS traffic.
-# Single-process kernel — multi-tenant shared state lives in this one container.
+# Cloudflare Tunnel deploy: cloudflared opens an outbound-only connection to
+# Cloudflare's edge, which terminates TLS for your hostname. The kernel never
+# exposes a public port — the VM only needs outbound 443 to Cloudflare.
+#
+# The hostname → service mapping (e.g. econos-kernel.example.com → kernel:8000)
+# is configured in the Cloudflare Zero Trust dashboard at tunnel-create time;
+# the TUNNEL_TOKEN below tells cloudflared which tunnel to attach to.
 
 services:
   kernel:
@@ -20,22 +24,10 @@ services:
       timeout: 5s
       retries: 3
 
-  caddy:
-    image: caddy:2
+  cloudflared:
+    image: cloudflare/cloudflared:latest
     restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    environment:
-      - ECONOS_DOMAIN=${ECONOS_DOMAIN}
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
     depends_on:
-      - kernel
-
-volumes:
-  caddy_data:
-  caddy_config:
+      kernel:
+        condition: service_healthy
