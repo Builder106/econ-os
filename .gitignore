@@ -34,3 +34,4 @@ playwright/.cache/
 # Deploy secrets / state
 deploy/.env
 deploy/oci-state.json
+.vercel
