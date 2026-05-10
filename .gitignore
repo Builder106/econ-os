@@ -24,3 +24,9 @@ models/
 .vscode/
 .idea/
 .gemini/
+
+# Node / Playwright
+node_modules/
+test-results/
+playwright-report/
+playwright/.cache/

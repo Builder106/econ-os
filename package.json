@@ -1,0 +1,12 @@
+{
+  "name": "econos-dashboard-e2e",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Headless verification harness for the EconOS dashboard against a live kernel.",
+  "scripts": {
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}
