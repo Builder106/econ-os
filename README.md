@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/banner.png" alt="EconOS — Economic Operating System" width="100%">
+</p>
+
 # EconOS | Economic Operating System
 
 > **A high-fidelity Multi-Agent Reinforcement Learning (MARL) desktop environment for decentralized economic simulation.**
