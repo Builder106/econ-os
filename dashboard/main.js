@@ -235,20 +235,20 @@ window.launchWindow = function(type) {
     const kc = window.kernelClient;
 
     if (type === 'process-explorer') {
-        wm.createWindow('processes', 'Process Telemetry Hub', 150, 150, 540, 380,
-            `<div class="font-mono text-[9px]">
-                <div class="grid grid-cols-[60px_1fr_80px_60px_20px] gap-2 text-white/30 uppercase pb-1 border-b border-white/5 mb-2">
+        wm.createWindow('processes', 'Process Telemetry Hub', 80, 180, 700, 520,
+            `<div class="font-mono text-[12px]">
+                <div class="grid grid-cols-[60px_1fr_80px_60px_20px] gap-2 text-white/55 uppercase pb-1 border-b border-white/5 mb-2">
                     <span>PID</span><span>Process</span><span>Balance</span><span>Δ Reward</span><span></span>
                 </div>
-                <div id="proc-rows" class="space-y-1.5 text-[9px]">
-                    <div class="text-white/30 italic">connecting to kernel…</div>
+                <div id="proc-rows" class="space-y-1.5 text-[12px]">
+                    <div class="text-white/55 italic">connecting to kernel…</div>
                 </div>
             </div>`);
         const rowsEl = document.getElementById('proc-rows');
         const unsub = kc.subscribe((s, connected) => {
             if (!document.getElementById('proc-rows')) { unsub(); return; }
             if (!s) {
-                rowsEl.innerHTML = `<div class="text-white/30 italic">${
+                rowsEl.innerHTML = `<div class="text-white/55 italic">${
                     connected ? 'connected — awaiting first tick…' : 'connecting to kernel…'
                 }</div>`;
                 return;
@@ -269,24 +269,24 @@ window.launchWindow = function(type) {
         });
 
     } else if (type === 'macro-monitor') {
-        wm.createWindow('macro-monitor', 'Market Analytics Suite', 200, 100, 640, 470,
-            `<div class="grid grid-cols-2 gap-4 h-full font-mono text-[9px]">
+        wm.createWindow('macro-monitor', 'Market Analytics Suite', 800, 100, 820, 600,
+            `<div class="grid grid-cols-2 gap-4 h-full font-mono text-[12px]">
                 <div class="col-span-2 border-b border-white/10 pb-2">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-white/40 uppercase">Global Asset Equilibrium (Wage vs Price)</span>
                         <span id="macro-status" class="text-terminal-green">CONNECTING…</span>
                     </div>
-                    <div class="h-40 w-full"><canvas id="mainChart"></canvas></div>
+                    <div class="h-64 w-full"><canvas id="mainChart" class="chart-glow"></canvas></div>
                 </div>
                 <div class="space-y-2 border-r border-white/5 pr-2">
-                    <span class="text-white/30 uppercase">Structural Inequality (Gini)</span>
-                    <div class="text-3xl font-bold text-terminal-cyan tracking-tight" id="macro-gini">—</div>
-                    <div class="text-[8px] text-white/30">consumer wealth distribution</div>
+                    <span class="text-white/55 uppercase">Structural Inequality (Gini)</span>
+                    <div class="text-4xl font-bold text-terminal-cyan tracking-tight value-flash" id="macro-gini">—</div>
+                    <div class="text-[11px] text-white/55">consumer wealth distribution</div>
                 </div>
                 <div class="space-y-2 pl-2">
-                    <span class="text-white/30 uppercase">System Liquidity</span>
-                    <div class="text-2xl font-bold text-white tracking-tighter" id="macro-money">—</div>
-                    <div class="flex gap-3 text-[8px] text-white/40">
+                    <span class="text-white/55 uppercase">System Liquidity</span>
+                    <div class="text-3xl font-bold text-white tracking-tighter value-flash" id="macro-money">—</div>
+                    <div class="flex gap-3 text-[11px] text-white/40">
                         <span>TREASURY <span id="macro-treasury" class="text-terminal-gold">—</span></span>
                         <span>τ <span id="macro-tax" class="text-terminal-magenta">—</span></span>
                     </div>
@@ -295,10 +295,10 @@ window.launchWindow = function(type) {
         initMacroChart(kc);
 
     } else if (type === 'policy-manager') {
-        wm.createWindow('policy-manager', 'Monetary Command Center', 250, 200, 380, 420,
-            `<div class="space-y-3 font-mono text-[10px]">
-                <div class="flex justify-between items-center text-[8px] uppercase pb-2 border-b border-white/5">
-                    <span class="text-white/30">FED MODE</span>
+        wm.createWindow('policy-manager', 'Monetary Command Center', 240, 240, 480, 540,
+            `<div class="space-y-3 font-mono text-[13px]">
+                <div class="flex justify-between items-center text-[11px] uppercase pb-2 border-b border-white/5">
+                    <span class="text-white/55">FED MODE</span>
                     <span id="pm-auth" class="text-terminal-red">visitor</span>
                 </div>
                 <div class="space-y-2">
@@ -308,22 +308,22 @@ window.launchWindow = function(type) {
                     </div>
                     <input id="pm-tax-slider" type="range" min="0" max="100" step="1" value="0" disabled
                         class="w-full accent-terminal-cyan h-1 bg-white/10 rounded opacity-40">
-                    <div class="flex justify-between text-[8px] text-white/20"><span>0%</span><span>100%</span></div>
+                    <div class="flex justify-between text-[11px] text-white/40"><span>0%</span><span>100%</span></div>
                 </div>
                 <div class="space-y-1 border-t border-white/5 pt-2">
-                    <span class="text-white/40 uppercase text-[8px]">Wage Shock</span>
+                    <span class="text-white/40 uppercase text-[11px]">Wage Shock</span>
                     <div class="grid grid-cols-4 gap-1" id="pm-wage-shocks"></div>
                 </div>
                 <div class="space-y-1">
-                    <span class="text-white/40 uppercase text-[8px]">Price Shock</span>
+                    <span class="text-white/40 uppercase text-[11px]">Price Shock</span>
                     <div class="grid grid-cols-4 gap-1" id="pm-price-shocks"></div>
                 </div>
                 <div class="grid grid-cols-3 gap-1 border-t border-white/5 pt-2">
-                    <button data-cmd="pause"  class="pm-admin py-1 text-[9px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Pause</button>
-                    <button data-cmd="resume" class="pm-admin py-1 text-[9px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Resume</button>
-                    <button data-cmd="reset"  class="pm-admin py-1 text-[9px] uppercase border border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10">Reset</button>
+                    <button data-cmd="pause"  class="pm-admin py-1 text-[12px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Pause</button>
+                    <button data-cmd="resume" class="pm-admin py-1 text-[12px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Resume</button>
+                    <button data-cmd="reset"  class="pm-admin py-1 text-[12px] uppercase border border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10">Reset</button>
                 </div>
-                <div class="text-[8px] text-white/30 flex justify-between border-t border-white/5 pt-2">
+                <div class="text-[11px] text-white/55 flex justify-between border-t border-white/5 pt-2">
                     <span>STEP <span id="pm-step" class="text-terminal-gold">—</span></span>
                     <span>UPTIME <span id="pm-uptime">—</span>s</span>
                     <span id="pm-policies">—</span>
@@ -334,7 +334,7 @@ window.launchWindow = function(type) {
         const mkBtn = (target, pct) => {
             const sign = pct > 0 ? '+' : '';
             const cls = pct > 0 ? 'text-terminal-green' : 'text-terminal-red';
-            return `<button class="pm-admin py-1 text-[9px] border border-white/10 ${cls} hover:bg-white/5"
+            return `<button class="pm-admin py-1 text-[12px] border border-white/10 ${cls} hover:bg-white/5"
                 data-shock="${target}" data-pct="${pct}">${sign}${pct}%</button>`;
         };
         document.getElementById('pm-wage-shocks').innerHTML  = SHOCKS.map(p => mkBtn('wage', p)).join('');
@@ -393,8 +393,8 @@ window.launchWindow = function(type) {
         });
 
     } else if (type === 'econ-shell') {
-        wm.createWindow('econ-shell', 'EconOS Institutional Terminal', 720, 50, 520, 380,
-            `<div class="flex flex-col h-full font-mono text-[9px]">
+        wm.createWindow('econ-shell', 'EconOS Institutional Terminal', 1080, 80, 620, 480,
+            `<div class="flex flex-col h-full font-mono text-[12px]">
                 <div id="shell-output" class="flex-1 text-white/60 overflow-auto mb-2 space-y-0.5"></div>
                 <div class="flex items-center gap-2 border-t border-white/5 pt-2">
                     <span class="text-terminal-cyan font-bold">root@econos:~$</span>
@@ -460,7 +460,7 @@ window.launchWindow = function(type) {
 
     } else if (type === 'system-menu') {
         wm.createWindow('sys-menu', 'EconOS System', 50, 300, 220, 220,
-            `<div class="space-y-2 text-[10px] text-white/60">
+            `<div class="space-y-2 text-[13px] text-white/60">
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('process-explorer')"><i class="ph ph-cpu"></i> Process Telemetry</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('macro-monitor')"><i class="ph ph-chart-line"></i> Market Analytics</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('policy-manager')"><i class="ph ph-shield-check"></i> Policy Manager</div>
@@ -469,53 +469,92 @@ window.launchWindow = function(type) {
             </div>`);
 
     } else if (type === 'about') {
-        wm.createWindow('about', 'README.TXT', 320, 110, 560, 500,
-            `<div class="font-mono text-[10px] text-white/70 space-y-3 leading-relaxed">
-                <div class="text-terminal-cyan text-[12px] font-bold uppercase tracking-wider">
-                    EconOS — Economic Operating System
+        wm.createWindow('about', 'README.TXT', 380, 60, 720, 720,
+            `<div class="font-mono text-white/80 space-y-4 leading-relaxed">
+                <div>
+                    <div class="text-terminal-cyan text-2xl font-bold uppercase tracking-wider">EconOS</div>
+                    <div class="text-white/55 text-[13px] mt-1">Economic Operating System &mdash; a live, shared mainframe.</div>
                 </div>
-                <p class="text-[10px] text-white/60">
-                    A multi-agent reinforcement-learning economic simulation, running as a
-                    shared mainframe. Twelve agents (10 consumers, 2 producers) trade labor
-                    and goods continuously. You're connected to the same simulation every
-                    other visitor sees, in real time.
+
+                <div class="bg-terminal-cyan/5 border border-terminal-cyan/20 rounded p-3 space-y-1">
+                    <div class="flex justify-between items-baseline">
+                        <span class="text-white/55 uppercase text-[11px] tracking-wide">Live now</span>
+                        <span class="text-terminal-green text-[11px] uppercase animate-pulse">● broadcasting</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-3 mt-2">
+                        <div>
+                            <div class="text-white/40 text-[11px] uppercase">Step</div>
+                            <div id="about-step" class="text-terminal-cyan text-2xl font-bold value-flash">—</div>
+                        </div>
+                        <div>
+                            <div class="text-white/40 text-[11px] uppercase">Uptime</div>
+                            <div id="about-uptime" class="text-terminal-gold text-2xl font-bold">—</div>
+                        </div>
+                        <div>
+                            <div class="text-white/40 text-[11px] uppercase">Viewers</div>
+                            <div id="about-viewers" class="text-terminal-magenta text-2xl font-bold">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-[14px] text-white/75 leading-relaxed">
+                    Twelve RL agents (10 consumers, 2 producers) trade labor and goods continuously.
+                    You're seeing the same simulation every other visitor sees, in real time.
+                    Watch the macro chart, inspect agents in the shell, or
+                    <span class="text-terminal-gold">sudo</span> in to shock the economy as the Fed.
                 </p>
 
-                <div class="border-t border-white/10 pt-2">
-                    <div class="text-white/40 uppercase text-[8px] mb-1">Windows</div>
-                    <ul class="space-y-1 text-[9px]">
-                        <li><span class="text-terminal-cyan">Macro Viz</span> &mdash; live wage, price, Gini, treasury, total liquidity</li>
-                        <li><span class="text-terminal-cyan">Processes</span> &mdash; every agent's balance + last reward, updated each tick</li>
-                        <li><span class="text-terminal-cyan">Econ Shell</span> &mdash; read-only inspection commands; <span class="text-terminal-gold">sudo</span> for Fed mode</li>
-                        <li><span class="text-terminal-cyan">Policy Mgr</span> &mdash; tax slider + wage/price shock buttons (admin only)</li>
+                <div class="border-t border-white/10 pt-3">
+                    <div class="text-white/55 uppercase text-[12px] mb-2 tracking-wide">Windows</div>
+                    <ul class="space-y-1.5 text-[13px] text-white/75">
+                        <li><span class="text-terminal-cyan font-bold">Macro Viz</span> &mdash; live wage, price, Gini, treasury, total liquidity</li>
+                        <li><span class="text-terminal-cyan font-bold">Processes</span> &mdash; every agent's balance + last reward, per tick</li>
+                        <li><span class="text-terminal-cyan font-bold">Econ Shell</span> &mdash; read-only inspection; <span class="text-terminal-gold">sudo</span> for Fed mode</li>
+                        <li><span class="text-terminal-cyan font-bold">Policy Mgr</span> &mdash; tax slider + wage/price shock buttons (admin)</li>
                     </ul>
                 </div>
 
-                <div class="border-t border-white/10 pt-2">
-                    <div class="text-white/40 uppercase text-[8px] mb-1">Try in the shell</div>
-                    <pre class="text-[9px] text-terminal-green leading-snug whitespace-pre">help                  # list every command
+                <div class="border-t border-white/10 pt-3">
+                    <div class="text-white/55 uppercase text-[12px] mb-2 tracking-wide">Try in the shell</div>
+                    <pre class="text-[13px] text-terminal-green leading-relaxed whitespace-pre bg-black/30 rounded p-2">help                  # list every command
 inspect consumer_3    # one agent
 top 5                 # richest agents
 gini                  # current inequality
 sudo &lt;token&gt;          # Fed mode (admin)</pre>
                 </div>
 
-                <div class="border-t border-white/10 pt-2">
-                    <div class="text-white/40 uppercase text-[8px] mb-1">Stack</div>
-                    <p class="text-[9px] text-white/50">
+                <div class="border-t border-white/10 pt-3">
+                    <div class="text-white/55 uppercase text-[12px] mb-2 tracking-wide">Stack</div>
+                    <p class="text-[13px] text-white/65">
                         PettingZoo · Stable-Baselines3 (PPO) · FastAPI · WebSocket fan-out
                         · Tailscale Funnel · Vercel
                     </p>
                 </div>
 
-                <div class="border-t border-white/10 pt-2 flex justify-between items-center">
+                <div class="border-t border-white/10 pt-3 flex justify-between items-center">
                     <a href="https://github.com/Builder106/EconOS" target="_blank" rel="noopener"
-                       class="text-terminal-cyan hover:text-white text-[9px] underline">
+                       class="text-terminal-cyan hover:text-white text-[13px] underline">
                         github.com/Builder106/EconOS &rarr;
                     </a>
-                    <span class="text-white/30 text-[8px] italic">close to dismiss</span>
+                    <span class="text-white/45 text-[12px] italic">close to dismiss</span>
                 </div>
             </div>`);
+
+        const formatUptime = (s) => {
+            if (s == null) return '—';
+            if (s < 60) return `${Math.floor(s)}s`;
+            if (s < 3600) return `${Math.floor(s/60)}m ${Math.floor(s%60)}s`;
+            return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`;
+        };
+        const unsubAbout = kc.subscribe((s) => {
+            if (!document.getElementById('about-step')) { unsubAbout(); return; }
+            if (!s) return;
+            document.getElementById('about-step').textContent = s.step.toLocaleString();
+            document.getElementById('about-uptime').textContent = formatUptime(s.uptime_s);
+            // viewers count isn't in the snapshot; fall back to '1' (you).
+            document.getElementById('about-viewers').textContent = '1+';
+        });
+
         try { localStorage.setItem('econos.aboutSeen', '1'); } catch (_) {}
     }
 };
@@ -536,10 +575,10 @@ function initMacroChart(kc) {
         },
         options: {
             responsive: true, maintainAspectRatio: false, animation: false,
-            plugins: { legend: { labels: { color: 'rgba(255,255,255,0.5)', font: { size: 9 } } } },
+            plugins: { legend: { labels: { color: 'rgba(255,255,255,0.7)', font: { size: 12 } } } },
             scales: {
                 x: { display: false },
-                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 9 } } }
+                y: { grid: { color: 'rgba(255,255,255,0.07)' }, ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 12 } } }
             }
         }
     });
@@ -550,6 +589,19 @@ function initMacroChart(kc) {
     const moneyEl  = () => document.getElementById('macro-money');
     const treasEl  = () => document.getElementById('macro-treasury');
     const taxEl    = () => document.getElementById('macro-tax');
+
+    // Briefly flash an element when its content changes — proof-of-life cue.
+    const lastVal = new WeakMap();
+    const setFlashing = (el, text) => {
+        if (!el) return;
+        if (lastVal.get(el) === text) return;
+        lastVal.set(el, text);
+        el.textContent = text;
+        el.classList.remove('flashing');
+        // force reflow so the animation re-triggers
+        void el.offsetWidth;
+        el.classList.add('value-flash', 'flashing');
+    };
 
     let lastStep = -1;
     const unsub = kc.subscribe((s, connected) => {
@@ -572,10 +624,10 @@ function initMacroChart(kc) {
         }
         chart.update('none');
 
-        if (giniEl())  giniEl().textContent  = s.metrics.gini.toFixed(3);
-        if (moneyEl()) moneyEl().textContent = '$' + fmtMoney(s.metrics.total_money);
-        if (treasEl()) treasEl().textContent = fmtMoney(s.metrics.treasury);
-        if (taxEl())   taxEl().textContent   = (s.policy.tax_rate * 100).toFixed(1) + '%';
+        setFlashing(giniEl(),  s.metrics.gini.toFixed(3));
+        setFlashing(moneyEl(), '$' + fmtMoney(s.metrics.total_money));
+        setFlashing(treasEl(), fmtMoney(s.metrics.treasury));
+        setFlashing(taxEl(),   (s.policy.tax_rate * 100).toFixed(1) + '%');
     });
 }
 
@@ -587,7 +639,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const wm = window.econWM;
 
     const bootWin = wm.createWindow('boot-loader', 'EconOS Boot', 100, 50, 420, 280,
-        '<div id="boot-log" class="font-mono text-[9px] text-terminal-green space-y-1"></div>'
+        '<div id="boot-log" class="font-mono text-[12px] text-terminal-green space-y-1"></div>'
     );
     const bootLog = document.getElementById('boot-log');
     const messages = [
