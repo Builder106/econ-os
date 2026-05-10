@@ -28,6 +28,39 @@ After `sudo <token>` elevates the connection, `tax 25` in the shell mutates the 
 
 > **Regenerate demos:** `./scripts/record-demos.sh` (requires `ffmpeg`; uses Playwright's bundled Chromium with `RECORD_DEMOS=1` mode in [playwright.config.js](playwright.config.js)).
 
+## User Flow
+
+Every visitor lands in the same place — the shared kernel ticks regardless of who's watching. The interesting branch is `sudo`: once elevated, admin actions mutate the running kernel and **broadcast back to every connected viewer**, which is what the "shared mainframe" pitch actually means.
+
+```mermaid
+flowchart TD
+    Start([Visit econ-os.vercel.app]) --> Boot[Boot sequence ~3.5s]
+    Boot --> Auto[Macro Monitor + Process Explorer + README auto-open]
+    Auto --> Live[(Live kernel<br/>ticks every 500ms<br/>shared across all viewers)]
+
+    Live --> Choice{What now?}
+
+    Choice -->|observe| Watch[Watch live macro &amp; process telemetry]
+    Choice -->|learn| Tour[Take the 5-step guided tour]
+    Choice -->|inspect| ShellRO["Shell: help / inspect / top / gini / who"]
+    Choice -->|act| Auth{{sudo &lt;ADMIN_TOKEN&gt;}}
+
+    Auth -->|invalid| Choice
+    Auth -->|valid| Admin[Fed mode unlocked]
+
+    Admin --> Tax[Set tax rate τ]
+    Admin --> Shock["Shock wage / price ±5 / ±10 %"]
+    Admin --> Lifecycle[Pause / Resume / Reset]
+
+    Tax --> Event[ADMIN event<br/>broadcasts to every connected viewer]
+    Shock --> Event
+    Lifecycle --> Event
+
+    Event -.-> Live
+```
+
+The dotted feedback edge is the single piece of magic — without it EconOS would be N independent simulations. With it, one admin's `tax 25` shows up on every other visitor's Macro Monitor inside one tick.
+
 ## Key Features
 
 - **EconOS Desktop**: A custom, library-free window management system in vanilla JS.
