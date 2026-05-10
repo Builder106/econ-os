@@ -25,15 +25,15 @@
         
         <!-- Desktop Icons -->
         <div id="desktop-icons">
-            <div class="desktop-icon" onclick="launchWindow('process-explorer')">
+            <div class="desktop-icon" onclick="launchWindow('process-explorer')" data-tip="Open Process Explorer — every agent's balance + last reward, per tick">
                 <i class="ph-fill ph-cpu"></i>
                 <span>Processes</span>
             </div>
-            <div class="desktop-icon" onclick="launchWindow('macro-monitor')">
+            <div class="desktop-icon" onclick="launchWindow('macro-monitor')" data-tip="Open Macro Monitor — live wage, price, Gini, treasury, total liquidity">
                 <i class="ph-fill ph-chart-line-up"></i>
                 <span>Macro Viz</span>
             </div>
-            <div class="desktop-icon" onclick="launchWindow('econ-shell')">
+            <div class="desktop-icon" onclick="launchWindow('econ-shell')" data-tip="Open the Econ Shell — read-only inspection commands; sudo for Fed mode">
                 <i class="ph-fill ph-terminal-window"></i>
                 <span>Econ Shell</span>
             </div>
@@ -41,13 +41,13 @@
 
         <!-- Taskbar -->
         <div id="taskbar">
-            <div class="task-icon text-terminal-gold" onclick="launchWindow('system-menu')"><i class="ph-fill ph-microsoft-logo"></i></div>
+            <div class="task-icon text-terminal-gold" onclick="launchWindow('system-menu')" data-tip="System menu"><i class="ph-fill ph-microsoft-logo"></i></div>
             <div class="h-6 w-[1px] bg-white/10 mx-2"></div>
-            <div class="task-icon" onclick="launchWindow('macro-monitor')"><i class="ph ph-chart-line"></i></div>
-            <div class="task-icon" onclick="launchWindow('process-explorer')"><i class="ph ph-cpu"></i></div>
-            <div class="task-icon" onclick="launchWindow('econ-shell')"><i class="ph ph-terminal"></i></div>
-            <div class="task-icon" onclick="launchWindow('policy-manager')"><i class="ph ph-gear"></i></div>
-            <div class="task-icon" onclick="launchWindow('about')" title="What is EconOS?"><i class="ph ph-question"></i></div>
+            <div class="task-icon" onclick="launchWindow('macro-monitor')" data-tip="Macro Monitor"><i class="ph ph-chart-line"></i></div>
+            <div class="task-icon" onclick="launchWindow('process-explorer')" data-tip="Process Explorer"><i class="ph ph-cpu"></i></div>
+            <div class="task-icon" onclick="launchWindow('econ-shell')" data-tip="Econ Shell"><i class="ph ph-terminal"></i></div>
+            <div class="task-icon" onclick="launchWindow('policy-manager')" data-tip="Policy Manager (Fed mode)"><i class="ph ph-gear"></i></div>
+            <div class="task-icon" onclick="launchWindow('about')" data-tip="What is EconOS?"><i class="ph ph-question"></i></div>
 
             <div class="ml-auto flex items-center gap-4 px-4 font-mono text-[10px] text-white/40">
                 <span id="sys-time">23:25:51</span>

@@ -238,7 +238,11 @@ window.launchWindow = function(type) {
         wm.createWindow('processes', 'Process Telemetry Hub', 80, 180, 700, 520,
             `<div class="font-mono text-[12px]">
                 <div class="grid grid-cols-[60px_1fr_80px_60px_20px] gap-2 text-white/55 uppercase pb-1 border-b border-white/5 mb-2">
-                    <span>PID</span><span>Process</span><span>Balance</span><span>Δ Reward</span><span></span>
+                    <span data-tip="Process ID — C-* are consumers, P-* producers">PID</span>
+                    <span data-tip="Underlying RL policy network controlling this agent">Process</span>
+                    <span data-tip="Current cash on hand for this agent">Balance</span>
+                    <span data-tip="Reward signal from the most recent tick (utility for consumers, profit for producers)">Δ Reward</span>
+                    <span data-tip="Status indicator">​</span>
                 </div>
                 <div id="proc-rows" class="space-y-1.5 text-[12px]">
                     <div class="text-white/55 italic">connecting to kernel…</div>
@@ -271,24 +275,24 @@ window.launchWindow = function(type) {
     } else if (type === 'macro-monitor') {
         wm.createWindow('macro-monitor', 'Market Analytics Suite', 800, 100, 820, 600,
             `<div class="grid grid-cols-2 gap-4 h-full font-mono text-[12px]">
-                <div class="col-span-2 border-b border-white/10 pb-2">
+                <div class="col-span-2 border-b border-white/10 pb-2" data-tip="Live wage and price across the simulation. Both move as agents trade. Updates every 500ms.">
                     <div class="flex justify-between items-center mb-1">
                         <span class="text-white/40 uppercase">Global Asset Equilibrium (Wage vs Price)</span>
-                        <span id="macro-status" class="text-terminal-green">CONNECTING…</span>
+                        <span id="macro-status" class="text-terminal-green" data-tip="WebSocket connection status to the kernel">CONNECTING…</span>
                     </div>
                     <div class="h-64 w-full"><canvas id="mainChart" class="chart-glow"></canvas></div>
                 </div>
-                <div class="space-y-2 border-r border-white/5 pr-2">
+                <div class="space-y-2 border-r border-white/5 pr-2" data-tip="Gini coefficient — 0 means perfect equality, 1 means total wealth concentration">
                     <span class="text-white/55 uppercase">Structural Inequality (Gini)</span>
                     <div class="text-4xl font-bold text-terminal-cyan tracking-tight value-flash" id="macro-gini">—</div>
                     <div class="text-[11px] text-white/55">consumer wealth distribution</div>
                 </div>
-                <div class="space-y-2 pl-2">
+                <div class="space-y-2 pl-2" data-tip="Total money in circulation = sum of agent balances + treasury. Conserved unless taxed.">
                     <span class="text-white/55 uppercase">System Liquidity</span>
                     <div class="text-3xl font-bold text-white tracking-tighter value-flash" id="macro-money">—</div>
                     <div class="flex gap-3 text-[11px] text-white/40">
-                        <span>TREASURY <span id="macro-treasury" class="text-terminal-gold">—</span></span>
-                        <span>τ <span id="macro-tax" class="text-terminal-magenta">—</span></span>
+                        <span data-tip="Tax revenue accumulated in the public coffer">TREASURY <span id="macro-treasury" class="text-terminal-gold">—</span></span>
+                        <span data-tip="Income tax rate — admin sets via Policy Manager or shell">τ <span id="macro-tax" class="text-terminal-magenta">—</span></span>
                     </div>
                 </div>
             </div>`);
@@ -299,9 +303,9 @@ window.launchWindow = function(type) {
             `<div class="space-y-3 font-mono text-[13px]">
                 <div class="flex justify-between items-center text-[11px] uppercase pb-2 border-b border-white/5">
                     <span class="text-white/55">FED MODE</span>
-                    <span id="pm-auth" class="text-terminal-red">visitor</span>
+                    <span id="pm-auth" class="text-terminal-red" data-tip="Sudo via the Econ Shell to elevate this connection to admin">visitor</span>
                 </div>
-                <div class="space-y-2">
+                <div class="space-y-2" data-tip="Income tax rate. Skims gross wage income from consumers; revenue accrues to the treasury.">
                     <div class="flex justify-between items-center uppercase">
                         <span class="text-white/40">Income Tax τ</span>
                         <span id="pm-tax" class="text-terminal-cyan text-sm">—</span>
@@ -310,18 +314,18 @@ window.launchWindow = function(type) {
                         class="w-full accent-terminal-cyan h-1 bg-white/10 rounded opacity-40">
                     <div class="flex justify-between text-[11px] text-white/40"><span>0%</span><span>100%</span></div>
                 </div>
-                <div class="space-y-1 border-t border-white/5 pt-2">
+                <div class="space-y-1 border-t border-white/5 pt-2" data-tip="One-shot multiplicative shock to market wage; lands on the next tick">
                     <span class="text-white/40 uppercase text-[11px]">Wage Shock</span>
                     <div class="grid grid-cols-4 gap-1" id="pm-wage-shocks"></div>
                 </div>
-                <div class="space-y-1">
+                <div class="space-y-1" data-tip="One-shot multiplicative shock to market price; lands on the next tick">
                     <span class="text-white/40 uppercase text-[11px]">Price Shock</span>
                     <div class="grid grid-cols-4 gap-1" id="pm-price-shocks"></div>
                 </div>
                 <div class="grid grid-cols-3 gap-1 border-t border-white/5 pt-2">
-                    <button data-cmd="pause"  class="pm-admin py-1 text-[12px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Pause</button>
-                    <button data-cmd="resume" class="pm-admin py-1 text-[12px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Resume</button>
-                    <button data-cmd="reset"  class="pm-admin py-1 text-[12px] uppercase border border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10">Reset</button>
+                    <button data-cmd="pause"  data-tip="Halt the kernel tick loop" class="pm-admin py-1 text-[12px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Pause</button>
+                    <button data-cmd="resume" data-tip="Resume the kernel tick loop" class="pm-admin py-1 text-[12px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Resume</button>
+                    <button data-cmd="reset"  data-tip="Reset the simulation — all balances back to defaults, treasury cleared" class="pm-admin py-1 text-[12px] uppercase border border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10">Reset</button>
                 </div>
                 <div class="text-[11px] text-white/55 flex justify-between border-t border-white/5 pt-2">
                     <span>STEP <span id="pm-step" class="text-terminal-gold">—</span></span>
@@ -463,13 +467,14 @@ window.launchWindow = function(type) {
         });
 
     } else if (type === 'system-menu') {
-        wm.createWindow('sys-menu', 'EconOS System', 50, 300, 220, 220,
+        wm.createWindow('sys-menu', 'EconOS System', 50, 300, 240, 260,
             `<div class="space-y-2 text-[13px] text-white/60">
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('process-explorer')"><i class="ph ph-cpu"></i> Process Telemetry</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('macro-monitor')"><i class="ph ph-chart-line"></i> Market Analytics</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('policy-manager')"><i class="ph ph-shield-check"></i> Policy Manager</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('econ-shell')"><i class="ph ph-terminal"></i> Institutional Terminal</div>
                 <div class="border-t border-white/5 mt-2 pt-2 hover:text-white cursor-pointer" onclick="launchWindow('about')"><i class="ph ph-question"></i> What is EconOS?</div>
+                <div class="hover:text-white cursor-pointer" onclick="startTour()"><i class="ph ph-compass"></i> Take a tour</div>
             </div>`);
 
     } else if (type === 'about') {
@@ -537,12 +542,16 @@ sudo &lt;token&gt;          # Fed mode (admin)</pre>
                     </p>
                 </div>
 
-                <div class="border-t border-white/10 pt-3 flex justify-between items-center">
+                <div class="border-t border-white/10 pt-3 flex justify-between items-center gap-3">
                     <a href="https://github.com/Builder106/EconOS" target="_blank" rel="noopener"
                        class="text-terminal-cyan hover:text-white text-[13px] underline">
                         github.com/Builder106/EconOS &rarr;
                     </a>
-                    <span class="text-white/45 text-[12px] italic">close to dismiss</span>
+                    <button onclick="startTour()"
+                        class="px-3 py-1.5 text-[12px] uppercase border border-terminal-cyan/40 text-terminal-cyan bg-terminal-cyan/10 hover:bg-terminal-cyan/20 rounded transition-colors"
+                        data-tip="A 5-step guided walkthrough of the desktop">
+                        Take a tour &rarr;
+                    </button>
                 </div>
             </div>`);
 
@@ -637,12 +646,193 @@ function initMacroChart(kc) {
     });
 }
 
+// --- tooltips: data-tip attribute + global hover handler ---
+
+function setupTooltips() {
+    const tip = document.createElement('div');
+    tip.id = 'tooltip';
+    document.body.appendChild(tip);
+
+    let activeEl = null;
+    const show = (el) => {
+        const text = el.getAttribute('data-tip');
+        if (!text) return;
+        activeEl = el;
+        tip.textContent = text;
+        const r = el.getBoundingClientRect();
+        // Center horizontally, position above; flip below if no headroom.
+        let top = r.top - 10;
+        let placeBelow = r.top < 60;
+        if (placeBelow) top = r.bottom + 10;
+        let left = r.left + r.width / 2;
+        // Clamp to viewport
+        left = Math.max(80, Math.min(left, window.innerWidth - 80));
+        tip.style.left = `${left}px`;
+        tip.style.top = `${top}px`;
+        tip.style.transform = placeBelow ? 'translate(-50%, 0)' : 'translate(-50%, -100%)';
+        tip.classList.add('visible');
+    };
+    const hide = () => { tip.classList.remove('visible'); activeEl = null; };
+
+    document.addEventListener('mouseover', (e) => {
+        const el = e.target.closest('[data-tip]');
+        if (el && el !== activeEl) show(el);
+    });
+    document.addEventListener('mouseout', (e) => {
+        const el = e.target.closest('[data-tip]');
+        if (el && el === activeEl) hide();
+    });
+    document.addEventListener('mousedown', hide); // hide on any click
+}
+
+// --- guided tour: spotlight + callout + step counter ---
+
+const TOUR_STEPS = [
+    {
+        title: 'Welcome to EconOS',
+        body: 'This is a live multi-agent economic simulation. Twelve RL agents — 10 consumers, 2 producers — are trading right now. You\'re seeing the same simulation as every other visitor.',
+        target: '#sys-link',
+        focusWindow: null,
+    },
+    {
+        title: 'Macro Monitor',
+        body: 'Live wage and price chart. The Gini coefficient measures inequality (0 = equal, 1 = total concentration). System Liquidity is the total money in circulation — conserved unless taxed.',
+        target: '#mainChart',
+        focusWindow: 'macro-monitor',
+    },
+    {
+        title: 'Process Explorer',
+        body: 'Every agent in the simulation. C-* are consumers, P-* are producers. Each row updates per tick: balance drifts as they trade, reward shows the most recent step\'s utility or profit.',
+        target: '#proc-rows',
+        focusWindow: 'process-explorer',
+    },
+    {
+        title: 'Econ Shell',
+        body: 'Your terminal into the kernel. Type "help" to list commands. Try "inspect consumer_3", "top 5", "gini". To unlock Fed mode and shock the economy, type "sudo <token>".',
+        target: '#shell-input',
+        focusWindow: 'econ-shell',
+    },
+    {
+        title: 'Fed Mode (Admin)',
+        body: 'Once you sudo, the Policy Manager unlocks. Drag the τ slider to tax consumer income, click ±5/±10% to shock wages or prices, or pause/reset the kernel. Every action broadcasts to all viewers.',
+        target: '#pm-tax-slider',
+        focusWindow: 'policy-manager',
+    },
+];
+
+function startTour() {
+    if (document.getElementById('tour-overlay')) return; // already running
+    // Close README if open so it doesn't block the tour visually
+    const aboutWin = document.getElementById('about');
+    if (aboutWin) aboutWin.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'tour-overlay';
+
+    const spotlight = document.createElement('div');
+    spotlight.id = 'tour-spotlight';
+
+    const callout = document.createElement('div');
+    callout.id = 'tour-callout';
+    callout.innerHTML = `
+        <div class="tour-step-counter">Step <span id="tour-step-num">1</span> of ${TOUR_STEPS.length}</div>
+        <div id="tour-title"></div>
+        <div id="tour-body"></div>
+        <div class="tour-buttons">
+            <button id="tour-skip" type="button">Skip</button>
+            <button id="tour-prev" type="button">← Back</button>
+            <button id="tour-next" type="button">Next →</button>
+        </div>
+    `;
+
+    document.body.append(overlay, spotlight, callout);
+
+    const titleEl   = callout.querySelector('#tour-title');
+    const bodyEl    = callout.querySelector('#tour-body');
+    const stepNumEl = callout.querySelector('#tour-step-num');
+    const prevBtn   = callout.querySelector('#tour-prev');
+    const nextBtn   = callout.querySelector('#tour-next');
+    const skipBtn   = callout.querySelector('#tour-skip');
+
+    let stepIdx = 0;
+
+    const cleanup = (completed) => {
+        overlay.remove(); spotlight.remove(); callout.remove();
+        if (completed) { try { localStorage.setItem('econos.tourSeen', '1'); } catch (_) {} }
+    };
+
+    const positionAround = (target) => {
+        if (!target) {
+            spotlight.style.opacity = '0';
+            callout.style.top = '50%';
+            callout.style.left = '50%';
+            callout.style.transform = 'translate(-50%, -50%)';
+            return;
+        }
+        const r = target.getBoundingClientRect();
+        spotlight.style.opacity = '1';
+        spotlight.style.top    = `${r.top - 6}px`;
+        spotlight.style.left   = `${r.left - 6}px`;
+        spotlight.style.width  = `${r.width + 12}px`;
+        spotlight.style.height = `${r.height + 12}px`;
+
+        const cw = 360, ch = callout.offsetHeight || 220;
+        let top, left;
+        // Prefer below the target; fall back to above; fall back to right.
+        if (r.bottom + ch + 24 < window.innerHeight) {
+            top  = r.bottom + 16;
+            left = r.left + r.width / 2 - cw / 2;
+        } else if (r.top - ch - 24 > 0) {
+            top  = r.top - ch - 16;
+            left = r.left + r.width / 2 - cw / 2;
+        } else {
+            top  = r.top + r.height / 2 - ch / 2;
+            left = r.right + 16;
+        }
+        left = Math.max(20, Math.min(left, window.innerWidth - cw - 20));
+        top  = Math.max(20, Math.min(top,  window.innerHeight - ch - 20));
+        callout.style.top = `${top}px`;
+        callout.style.left = `${left}px`;
+        callout.style.transform = 'none';
+    };
+
+    const renderStep = () => {
+        const step = TOUR_STEPS[stepIdx];
+        if (step.focusWindow) {
+            const w = document.getElementById(step.focusWindow === 'process-explorer' ? 'processes' : step.focusWindow);
+            if (w) window.econWM.focusWindow(w);
+            else launchWindow(step.focusWindow);
+        }
+        titleEl.textContent = step.title;
+        bodyEl.textContent  = step.body;
+        stepNumEl.textContent = stepIdx + 1;
+        prevBtn.disabled = stepIdx === 0;
+        nextBtn.textContent = stepIdx === TOUR_STEPS.length - 1 ? 'Done' : 'Next →';
+        // Targets in just-launched windows need a paint cycle before getBoundingClientRect is meaningful.
+        requestAnimationFrame(() => positionAround(document.querySelector(step.target)));
+    };
+
+    nextBtn.addEventListener('click', () => {
+        if (stepIdx === TOUR_STEPS.length - 1) return cleanup(true);
+        stepIdx++; renderStep();
+    });
+    prevBtn.addEventListener('click', () => {
+        if (stepIdx > 0) { stepIdx--; renderStep(); }
+    });
+    skipBtn.addEventListener('click', () => cleanup(true));
+
+    renderStep();
+}
+window.startTour = startTour;
+
 // --- boot ---
 
 document.addEventListener('DOMContentLoaded', () => {
     window.econWM = new WindowManager();
     window.kernelClient = new KernelClient();
     const wm = window.econWM;
+
+    setupTooltips();
 
     const bootWin = wm.createWindow('boot-loader', 'EconOS Boot', 100, 50, 420, 280,
         '<div id="boot-log" class="font-mono text-[12px] text-terminal-green space-y-1"></div>'
@@ -686,12 +876,14 @@ document.addEventListener('DOMContentLoaded', () => {
     stepBadge.id = 'sys-step';
     stepBadge.className = 'text-terminal-cyan';
     stepBadge.textContent = 'STEP —';
+    stepBadge.setAttribute('data-tip', 'Current simulation tick (advances every ~500ms while live)');
     taskMeta.insertBefore(stepBadge, taskMeta.firstChild);
 
     const linkBadge = document.createElement('span');
     linkBadge.id = 'sys-link';
     linkBadge.className = 'text-terminal-red flex items-center gap-1.5';
     linkBadge.innerHTML = '<i class="ph-fill ph-circle text-[8px]"></i> OFFLINE';
+    linkBadge.setAttribute('data-tip', 'WebSocket connection state — LIVE means kernel ticks are streaming');
     taskMeta.insertBefore(linkBadge, taskMeta.firstChild);
 
     window.kernelClient.subscribe((s, connected) => {

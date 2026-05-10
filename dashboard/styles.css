@@ -137,6 +137,122 @@ a:focus-visible {
     outline-offset: 2px;
 }
 
+/* ----- Hover tooltips: data-tip attribute on any element ----- */
+#tooltip {
+    position: fixed;
+    background: rgba(10, 11, 14, 0.96);
+    border: 1px solid rgba(0, 245, 255, 0.35);
+    color: rgba(255, 255, 255, 0.92);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 4px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.15s ease;
+    z-index: 10000;
+    max-width: 280px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 245, 255, 0.08);
+}
+#tooltip.visible { opacity: 1; }
+
+/* ----- Guided tour overlay ----- */
+#tour-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.62);
+    z-index: 9000;
+    backdrop-filter: blur(2px);
+}
+
+#tour-spotlight {
+    position: fixed;
+    border: 2px solid var(--terminal-cyan);
+    border-radius: 8px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62), 0 0 28px rgba(0, 245, 255, 0.45);
+    pointer-events: none;
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 9001;
+}
+
+#tour-callout {
+    position: fixed;
+    width: 360px;
+    background: rgba(10, 11, 14, 0.97);
+    border: 1px solid rgba(0, 245, 255, 0.45);
+    border-radius: 6px;
+    box-shadow: 0 0 30px rgba(0, 245, 255, 0.18), 0 12px 36px rgba(0, 0, 0, 0.75);
+    padding: 18px;
+    color: rgba(255, 255, 255, 0.88);
+    font-family: var(--font-mono);
+    z-index: 9002;
+    transition: top 0.3s ease, left 0.3s ease;
+}
+
+.tour-step-counter {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 10px;
+}
+
+#tour-title {
+    color: var(--terminal-cyan);
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+}
+
+#tour-body {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.78);
+    margin-bottom: 18px;
+}
+
+.tour-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.tour-buttons button {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.75);
+    padding: 7px 14px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-radius: 3px;
+}
+.tour-buttons button:hover:not(:disabled) {
+    border-color: var(--terminal-cyan);
+    color: var(--terminal-cyan);
+}
+.tour-buttons button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+#tour-next {
+    background: rgba(0, 245, 255, 0.12);
+    border-color: rgba(0, 245, 255, 0.5);
+    color: var(--terminal-cyan);
+}
+#tour-next:hover:not(:disabled) {
+    background: rgba(0, 245, 255, 0.2);
+    box-shadow: 0 0 12px rgba(0, 245, 255, 0.3);
+}
+
 .sparkline-container {
     height: 20px;
     width: 60px;
