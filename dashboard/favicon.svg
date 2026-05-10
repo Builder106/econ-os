@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="EconOS">
+  <!-- Glass tile background — same hue as the desktop's window chrome -->
+  <rect width="32" height="32" rx="7" fill="#0a0b0e"/>
+  <rect width="32" height="32" rx="7" fill="none" stroke="#00F5FF" stroke-opacity="0.18" stroke-width="1"/>
+
+  <!-- "E" formed as three horizontal cyan bars: top + middle (short) + bottom.
+       Doubles as ascending chart-bar imagery at small sizes. -->
+  <g fill="#00F5FF">
+    <rect x="8"  y="8"    width="16" height="3" rx="1"/>
+    <rect x="8"  y="14.5" width="11" height="3" rx="1" fill-opacity="0.88"/>
+    <rect x="8"  y="21"   width="16" height="3" rx="1"/>
+  </g>
+
+  <!-- Subtle gold tick on the upper-right — a "live ticker" accent
+       echoing the dashboard's macro indicators. Drops to single pixel
+       at 16px favicon size; intentionally small. -->
+  <circle cx="26" cy="9.5" r="1.4" fill="#FFD700"/>
+</svg>
