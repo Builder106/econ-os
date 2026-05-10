@@ -18,6 +18,12 @@
     <link rel="stylesheet" href="styles.css">
     <!-- Kernel URL config (regenerated at deploy time from ECONOS_KERNEL_WS_URL env var). -->
     <script src="config.js"></script>
+    <!-- Vercel Analytics (vanilla-JS / static path). The /_vercel/insights/* route is
+         auto-served by Vercel's edge for any deployed project; no package install needed. -->
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body class="bg-black text-white/80 font-sans overflow-hidden">
 
