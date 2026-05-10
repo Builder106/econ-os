@@ -1,10 +1,10 @@
-# Cloudflare Tunnel deploy: cloudflared opens an outbound-only connection to
-# Cloudflare's edge, which terminates TLS for your hostname. The kernel never
-# exposes a public port — the VM only needs outbound 443 to Cloudflare.
+# Tailscale Funnel deploy: tailscale (host-installed, not dockerized) terminates
+# TLS at Tailscale's edge and proxies https://<host>.<tailnet>.ts.net → 127.0.0.1:8000
+# on this machine. The kernel container therefore publishes only on the host
+# loopback — never on the public IP.
 #
-# The hostname → service mapping (e.g. econos-kernel.example.com → kernel:8000)
-# is configured in the Cloudflare Zero Trust dashboard at tunnel-create time;
-# the TUNNEL_TOKEN below tells cloudflared which tunnel to attach to.
+# `setup.sh` installs Tailscale and runs `tailscale serve` + `tailscale funnel`
+# automatically after the user logs in via `sudo tailscale up`.
 
 services:
   kernel:
@@ -16,18 +16,10 @@ services:
       - PORT=8000
       - ADMIN_TOKEN=${ADMIN_TOKEN}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
-    expose:
-      - "8000"
+    ports:
+      - "127.0.0.1:8000:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz', timeout=3)"]
       interval: 30s
       timeout: 5s
       retries: 3
-
-  cloudflared:
-    image: cloudflare/cloudflared:latest
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN}
-    depends_on:
-      kernel:
-        condition: service_healthy
