@@ -241,13 +241,18 @@ window.launchWindow = function(type) {
                     <span>PID</span><span>Process</span><span>Balance</span><span>Δ Reward</span><span></span>
                 </div>
                 <div id="proc-rows" class="space-y-1.5 text-[9px]">
-                    <div class="text-white/30 italic">awaiting kernel feed...</div>
+                    <div class="text-white/30 italic">connecting to kernel…</div>
                 </div>
             </div>`);
         const rowsEl = document.getElementById('proc-rows');
-        const unsub = kc.subscribe((s) => {
+        const unsub = kc.subscribe((s, connected) => {
             if (!document.getElementById('proc-rows')) { unsub(); return; }
-            if (!s) return;
+            if (!s) {
+                rowsEl.innerHTML = `<div class="text-white/30 italic">${
+                    connected ? 'connected — awaiting first tick…' : 'connecting to kernel…'
+                }</div>`;
+                return;
+            }
             rowsEl.innerHTML = s.agents.map((a) => {
                 const isCons = a.role === 'consumer';
                 const dotColor = isCons ? 'var(--terminal-cyan)' : 'var(--terminal-gold)';
@@ -454,13 +459,64 @@ window.launchWindow = function(type) {
         });
 
     } else if (type === 'system-menu') {
-        wm.createWindow('sys-menu', 'EconOS System', 50, 300, 220, 180,
+        wm.createWindow('sys-menu', 'EconOS System', 50, 300, 220, 220,
             `<div class="space-y-2 text-[10px] text-white/60">
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('process-explorer')"><i class="ph ph-cpu"></i> Process Telemetry</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('macro-monitor')"><i class="ph ph-chart-line"></i> Market Analytics</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('policy-manager')"><i class="ph ph-shield-check"></i> Policy Manager</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('econ-shell')"><i class="ph ph-terminal"></i> Institutional Terminal</div>
+                <div class="border-t border-white/5 mt-2 pt-2 hover:text-white cursor-pointer" onclick="launchWindow('about')"><i class="ph ph-question"></i> What is EconOS?</div>
             </div>`);
+
+    } else if (type === 'about') {
+        wm.createWindow('about', 'README.TXT', 320, 110, 560, 500,
+            `<div class="font-mono text-[10px] text-white/70 space-y-3 leading-relaxed">
+                <div class="text-terminal-cyan text-[12px] font-bold uppercase tracking-wider">
+                    EconOS — Economic Operating System
+                </div>
+                <p class="text-[10px] text-white/60">
+                    A multi-agent reinforcement-learning economic simulation, running as a
+                    shared mainframe. Twelve agents (10 consumers, 2 producers) trade labor
+                    and goods continuously. You're connected to the same simulation every
+                    other visitor sees, in real time.
+                </p>
+
+                <div class="border-t border-white/10 pt-2">
+                    <div class="text-white/40 uppercase text-[8px] mb-1">Windows</div>
+                    <ul class="space-y-1 text-[9px]">
+                        <li><span class="text-terminal-cyan">Macro Viz</span> &mdash; live wage, price, Gini, treasury, total liquidity</li>
+                        <li><span class="text-terminal-cyan">Processes</span> &mdash; every agent's balance + last reward, updated each tick</li>
+                        <li><span class="text-terminal-cyan">Econ Shell</span> &mdash; read-only inspection commands; <span class="text-terminal-gold">sudo</span> for Fed mode</li>
+                        <li><span class="text-terminal-cyan">Policy Mgr</span> &mdash; tax slider + wage/price shock buttons (admin only)</li>
+                    </ul>
+                </div>
+
+                <div class="border-t border-white/10 pt-2">
+                    <div class="text-white/40 uppercase text-[8px] mb-1">Try in the shell</div>
+                    <pre class="text-[9px] text-terminal-green leading-snug whitespace-pre">help                  # list every command
+inspect consumer_3    # one agent
+top 5                 # richest agents
+gini                  # current inequality
+sudo &lt;token&gt;          # Fed mode (admin)</pre>
+                </div>
+
+                <div class="border-t border-white/10 pt-2">
+                    <div class="text-white/40 uppercase text-[8px] mb-1">Stack</div>
+                    <p class="text-[9px] text-white/50">
+                        PettingZoo · Stable-Baselines3 (PPO) · FastAPI · WebSocket fan-out
+                        · Tailscale Funnel · Vercel
+                    </p>
+                </div>
+
+                <div class="border-t border-white/10 pt-2 flex justify-between items-center">
+                    <a href="https://github.com/Builder106/EconOS" target="_blank" rel="noopener"
+                       class="text-terminal-cyan hover:text-white text-[9px] underline">
+                        github.com/Builder106/EconOS &rarr;
+                    </a>
+                    <span class="text-white/30 text-[8px] italic">close to dismiss</span>
+                </div>
+            </div>`);
+        try { localStorage.setItem('econos.aboutSeen', '1'); } catch (_) {}
     }
 };
 
@@ -500,7 +556,7 @@ function initMacroChart(kc) {
         if (!document.getElementById('mainChart')) { unsub(); return; }
         const st = statusEl();
         if (st) {
-            st.textContent = connected ? 'LIVE' : 'RECONNECTING…';
+            st.textContent = connected ? 'LIVE' : (s ? 'RECONNECTING…' : 'CONNECTING…');
             st.className = connected ? 'text-terminal-green' : 'text-terminal-gold';
         }
         if (!s || s.step === lastStep) return;
@@ -553,6 +609,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 bootWin.remove();
                 launchWindow('macro-monitor');
                 launchWindow('process-explorer');
+                // First-visit only: show the README/about window so newcomers
+                // know what they're looking at. Repeat visitors get the
+                // dashboard clean; the ? icon in the taskbar reopens it.
+                let seen = false;
+                try { seen = !!localStorage.getItem('econos.aboutSeen'); } catch (_) {}
+                if (!seen) launchWindow('about');
             }, 800);
         }
     }, 350);
@@ -575,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
     taskMeta.insertBefore(linkBadge, taskMeta.firstChild);
 
     window.kernelClient.subscribe((s, connected) => {
-        linkBadge.textContent = connected ? '● LIVE' : '● RECONNECTING';
+        linkBadge.textContent = connected ? '● LIVE' : (s ? '● RECONNECTING' : '● CONNECTING');
         linkBadge.className = connected ? 'text-terminal-green' : 'text-terminal-gold';
         if (s) stepBadge.textContent = `STEP ${s.step}`;
     });
