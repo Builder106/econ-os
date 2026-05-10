@@ -18,7 +18,7 @@ Thumbs.db
 data/
 logs/
 results/
-models/*.zip
+models/
 
 # IDEs
 .vscode/

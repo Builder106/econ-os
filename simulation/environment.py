@@ -8,23 +8,34 @@ from pettingzoo.utils import parallel_to_aec, wrappers
 class MarketEnv(ParallelEnv):
     metadata = {"render_modes": ["human"], "name": "market_v0"}
 
-    def __init__(self, num_consumers=10, num_producers=2, max_cycles=100, agent_filter=None, render_mode=None):
+    def __init__(self, num_consumers=10, num_producers=2, max_cycles=100, agent_filter=None, render_mode=None, tax_rate=0.0):
         self.num_consumers = num_consumers
         self.num_producers = num_producers
         self.max_cycles = max_cycles
         self.render_mode = render_mode
-        
+        self.tax_rate = float(tax_rate)
+        self.treasury = 0.0
+        self._pending_shocks = []
+
         all_agents = [f"consumer_{i}" for i in range(num_consumers)] + \
                     [f"producer_{i}" for i in range(num_producers)]
-        
+
         if agent_filter == "consumers":
             self.possible_agents = [f"consumer_{i}" for i in range(num_consumers)]
         elif agent_filter == "producers":
             self.possible_agents = [f"producer_{i}" for i in range(num_producers)]
         else:
             self.possible_agents = all_agents
-            
+
         self.agent_name_mapping = dict(zip(self.possible_agents, range(len(self.possible_agents))))
+
+    def set_tax_rate(self, rate):
+        self.tax_rate = float(np.clip(rate, 0.0, 1.0))
+
+    def apply_shock(self, kind, magnitude):
+        if kind not in ("wage", "price"):
+            raise ValueError(f"unknown shock kind: {kind}")
+        self._pending_shocks.append((kind, float(magnitude)))
 
     def _calculate_utility(self, consumption, labor):
         """Cobb-Douglas utility: C^0.7 * (1-L)^0.3"""
@@ -51,16 +62,18 @@ class MarketEnv(ParallelEnv):
         self.truncations = {agent: False for agent in self.agents}
         self.infos = {agent: {} for agent in self.agents}
         self.num_cycles = 0
-        
+
         # State: [Wage, Price, Balance]
         # We start with some sensible defaults
         self.market_wage = 10.0
         self.market_price = 10.0
-        
+
         self.agent_balances = {
             agent: 50.0 if "consumer" in agent else 200.0 for agent in self.agents
         }
-        
+        self.treasury = 0.0
+        self._pending_shocks = []
+
         observations = {agent: self._get_obs(agent) for agent in self.agents}
         return observations, self.infos
 
@@ -76,6 +89,14 @@ class MarketEnv(ParallelEnv):
         if not actions:
             self.agents = []
             return {}, {}, {}, {}, {}
+
+        # 0. Apply admin-issued shocks before normal market dynamics
+        for kind, magnitude in self._pending_shocks:
+            if kind == "wage":
+                self.market_wage = float(np.clip(self.market_wage * (1.0 + magnitude), 1.0, 100.0))
+            elif kind == "price":
+                self.market_price = float(np.clip(self.market_price * (1.0 + magnitude), 1.0, 100.0))
+        self._pending_shocks = []
 
         # 1. Update Market Parameters based on Producer actions
         producer_actions = [actions[a] for a in self.agents if "producer" in a]
@@ -104,11 +125,15 @@ class MarketEnv(ParallelEnv):
             if "consumer" in agent:
                 labor = actions[agent][0]
                 consumption_intent = actions[agent][1] * self.agent_balances[agent]
-                
-                # Income comes from labor; Cost goes to consumption
-                self.agent_balances[agent] += (labor * self.market_wage) - consumption_intent
+
+                # Income comes from labor; tax skim goes to treasury
+                gross_income = labor * self.market_wage
+                tax_paid = gross_income * self.tax_rate
+                self.treasury += tax_paid
+
+                self.agent_balances[agent] += (gross_income - tax_paid) - consumption_intent
                 self.agent_balances[agent] = max(0, self.agent_balances[agent])
-                
+
                 actual_consumption = consumption_intent / (self.market_price + 1e-6)
                 rewards[agent] = self._calculate_utility(actual_consumption, labor)
         
