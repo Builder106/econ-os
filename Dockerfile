@@ -20,6 +20,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY simulation/ simulation/
 COPY server/ server/
 COPY dashboard/ dashboard/
+# Trained PPO checkpoints (consumer_policy.zip / producer_policy.zip). The
+# kernel's _try_load_ppo() falls back to random actions if these are absent,
+# so the build is safe even on a fresh clone before training has run — but if
+# the checkpoints exist in the build context, they need to be in the image
+# for policies_loaded to flip true.
+COPY models/ models/
 
 ENV PORT=8000
 EXPOSE 8000
