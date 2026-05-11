@@ -29,7 +29,10 @@ module.exports = defineConfig({
     headless: true,
     trace: RECORDING ? 'off' : 'retain-on-failure',
     video: RECORDING ? 'on' : 'retain-on-failure',
-    viewport: RECORDING ? { width: 1920, height: 1080 } : undefined,
+    // 1280x800 in RECORDING mode: tight enough that the dashboard's window
+    // layout fills most of the frame instead of leaving big dark margins,
+    // which makes the resulting GIF look denser + sharper after downscale.
+    viewport: RECORDING ? { width: 1280, height: 800 } : undefined,
     launchOptions: RECORDING ? { slowMo: 600 } : undefined,
     colorScheme: RECORDING ? RECORD_THEME : undefined,
   },
@@ -41,8 +44,8 @@ module.exports = defineConfig({
         // Re-pin viewport at project level when recording — the device preset
         // overrides the top-level `use` block silently otherwise.
         ...(RECORDING ? {
-          viewport: { width: 1920, height: 1080 },
-          video: { mode: 'on', size: { width: 1920, height: 1080 } },
+          viewport: { width: 1280, height: 800 },
+          video: { mode: 'on', size: { width: 1280, height: 800 } },
         } : {}),
       },
     },

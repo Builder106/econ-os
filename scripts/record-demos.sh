@@ -68,9 +68,9 @@ for theme in "${THEMES[@]}"; do
         # -ss 1.5 trims the first 1.5s of unavoidable browser pre-paint frames.
         palette="$(mktemp -t demo-palette).png"
         ffmpeg -y -hide_banner -loglevel error -ss 1.5 -i "${webm}" \
-            -vf "fps=12,scale=960:-1:flags=lanczos,palettegen=stats_mode=diff" "${palette}"
+            -vf "fps=12,scale=1200:-1:flags=lanczos,palettegen=stats_mode=diff" "${palette}"
         ffmpeg -y -hide_banner -loglevel error -ss 1.5 -i "${webm}" -i "${palette}" \
-            -filter_complex "fps=12,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5" \
+            -filter_complex "fps=12,scale=1200:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5" \
             "${gif}"
         rm -f "${palette}"
 
