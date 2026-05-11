@@ -530,6 +530,12 @@ window.launchWindow = function(type) {
                     </div>
                 </div>
 
+                <button onclick="startTour()"
+                    class="w-full px-4 py-3 text-[14px] uppercase font-semibold tracking-wide border-2 border-terminal-cyan/50 text-terminal-cyan bg-terminal-cyan/10 hover:bg-terminal-cyan/20 hover:border-terminal-cyan rounded transition-colors flex items-center justify-center gap-2"
+                    data-tip="5-step guided walkthrough of the desktop">
+                    <i class="ph-bold ph-compass"></i> Take a 5-step tour &rarr;
+                </button>
+
                 <p class="text-[14px] text-white/75 leading-relaxed">
                     Twelve RL agents (10 consumers, 2 producers) trade labor and goods continuously.
                     You're seeing the same simulation every other visitor sees, in real time.
@@ -564,16 +570,12 @@ sudo &lt;token&gt;          # Fed mode (admin)</pre>
                     </p>
                 </div>
 
-                <div class="border-t border-white/10 pt-3 flex justify-between items-center gap-3">
+                <div class="border-t border-white/10 pt-3 flex justify-between items-center">
                     <a href="https://github.com/Builder106/EconOS" target="_blank" rel="noopener"
                        class="text-terminal-cyan hover:text-white text-[13px] underline">
                         github.com/Builder106/EconOS &rarr;
                     </a>
-                    <button onclick="startTour()"
-                        class="px-3 py-1.5 text-[12px] uppercase border border-terminal-cyan/40 text-terminal-cyan bg-terminal-cyan/10 hover:bg-terminal-cyan/20 rounded transition-colors"
-                        data-tip="A 5-step guided walkthrough of the desktop">
-                        Take a tour &rarr;
-                    </button>
+                    <span class="text-white/45 text-[12px] italic">close to dismiss</span>
                 </div>
             </div>`);
 
