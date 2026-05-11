@@ -260,12 +260,15 @@ a:focus-visible {
    Guided tour
    ============================================================ */
 
+/* Invisible click-shield. The visible dimming comes from #tour-spotlight's
+   box-shadow ring (0 0 0 9999px var(--tour-backdrop)) so the spotlight area
+   itself is genuinely undimmed — was previously double-dimmed by this layer
+   sitting on top, defeating the spotlight effect. */
 #tour-overlay {
     position: fixed;
     inset: 0;
-    background: var(--tour-backdrop);
+    background: transparent;
     z-index: 9000;
-    backdrop-filter: blur(2px);
 }
 
 #tour-spotlight {
