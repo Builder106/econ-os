@@ -4,6 +4,10 @@
 
 # EconOS | Economic Operating System
 
+[![CI](https://github.com/Builder106/EconOS/actions/workflows/ci.yml/badge.svg)](https://github.com/Builder106/EconOS/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg)](LICENSE)
+[![Live demo](https://img.shields.io/badge/demo-econ--os.vercel.app-00FF41)](https://econ-os.vercel.app)
+
 > **A high-fidelity Multi-Agent Reinforcement Learning (MARL) desktop environment for decentralized economic simulation.**
 
 EconOS is a sophisticated "Operating System" for market simulations. It treats economic agents as system processes, providing a unique, glassmorphic desktop interface to monitor and interact with emergent market behaviors. Using state-of-the-art RL (PPO), agents discover optimal pricing, wage-setting, and consumption strategies within a closed-loop economy.
