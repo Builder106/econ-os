@@ -1,5 +1,9 @@
 <p align="center">
-  <img src="docs/banner.png" alt="EconOS — Economic Operating System" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/banner.png">
+    <source media="(prefers-color-scheme: light)" srcset="docs/banner-light.png">
+    <img src="docs/banner.png" alt="EconOS — Economic Operating System" width="100%">
+  </picture>
 </p>
 
 # EconOS | Economic Operating System
@@ -12,29 +16,24 @@
 
 EconOS is a sophisticated "Operating System" for market simulations. It treats economic agents as system processes, providing a unique, glassmorphic desktop interface to monitor and interact with emergent market behaviors. Using state-of-the-art RL (PPO), agents discover optimal pricing, wage-setting, and consumption strategies within a closed-loop economy.
 
-**Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app) — multi-tenant, shared mainframe. Every visitor sees the same simulation in real time. Dashboard ships with **dark + light themes** (cycles via the taskbar moon icon, defaults to your OS preference).
+**Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app) — multi-tenant, shared mainframe. Every visitor sees the same simulation in real time. Dashboard ships with **dark + light themes** (cycles via the taskbar moon icon, defaults to your OS preference) — and the demo GIFs below auto-match your browser theme via `<picture>` + `prefers-color-scheme`.
 
-![EconOS boot + live kernel feed](docs/media/01-boot-and-live-dark.gif)
-
-<details>
-<summary><b>Same scenario, light theme</b></summary>
-
-![boot + live, light theme](docs/media/01-boot-and-live-light.gif)
-
-</details>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/01-boot-and-live-dark.gif">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/01-boot-and-live-light.gif">
+  <img alt="EconOS boot + live kernel feed" src="docs/media/01-boot-and-live-dark.gif">
+</picture>
 
 <details>
 <summary><b>Fed mode — admin tax propagates from shell to Policy Manager</b></summary>
 
 After `sudo <token>` elevates the connection, `tax 25` in the shell mutates the running kernel and the Policy Manager UI snaps to 25.00% on the next tick.
 
-**Dark theme:**
-
-![admin tax propagation, dark](docs/media/02-admin-tax-propagation-dark.gif)
-
-**Light theme:**
-
-![admin tax propagation, light](docs/media/02-admin-tax-propagation-light.gif)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/02-admin-tax-propagation-dark.gif">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/02-admin-tax-propagation-light.gif">
+  <img alt="admin tax propagation" src="docs/media/02-admin-tax-propagation-dark.gif">
+</picture>
 
 </details>
 
@@ -43,13 +42,11 @@ After `sudo <token>` elevates the connection, `tax 25` in the shell mutates the 
 
 `shock wage 10` issued by one admin's shell broadcasts as a `* [ADMIN] shock_applied` event to every connected viewer's shell. The kernel applies the multiplicative shock on the next tick.
 
-**Dark theme:**
-
-![admin shock broadcast, dark](docs/media/03-admin-shock-broadcast-dark.gif)
-
-**Light theme:**
-
-![admin shock broadcast, light](docs/media/03-admin-shock-broadcast-light.gif)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/03-admin-shock-broadcast-dark.gif">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/03-admin-shock-broadcast-light.gif">
+  <img alt="admin shock broadcast" src="docs/media/03-admin-shock-broadcast-dark.gif">
+</picture>
 
 </details>
 
