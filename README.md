@@ -12,16 +12,29 @@
 
 EconOS is a sophisticated "Operating System" for market simulations. It treats economic agents as system processes, providing a unique, glassmorphic desktop interface to monitor and interact with emergent market behaviors. Using state-of-the-art RL (PPO), agents discover optimal pricing, wage-setting, and consumption strategies within a closed-loop economy.
 
-**Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app) — multi-tenant, shared mainframe. Every visitor sees the same simulation in real time.
+**Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app) — multi-tenant, shared mainframe. Every visitor sees the same simulation in real time. Dashboard ships with **dark + light themes** (cycles via the taskbar moon icon, defaults to your OS preference).
 
-![EconOS boot + live kernel feed](docs/media/01-boot-and-live.gif)
+![EconOS boot + live kernel feed](docs/media/01-boot-and-live-dark.gif)
+
+<details>
+<summary><b>Same scenario, light theme</b></summary>
+
+![boot + live, light theme](docs/media/01-boot-and-live-light.gif)
+
+</details>
 
 <details>
 <summary><b>Fed mode — admin tax propagates from shell to Policy Manager</b></summary>
 
 After `sudo <token>` elevates the connection, `tax 25` in the shell mutates the running kernel and the Policy Manager UI snaps to 25.00% on the next tick.
 
-![admin tax propagation](docs/media/02-admin-tax-propagation.gif)
+**Dark theme:**
+
+![admin tax propagation, dark](docs/media/02-admin-tax-propagation-dark.gif)
+
+**Light theme:**
+
+![admin tax propagation, light](docs/media/02-admin-tax-propagation-light.gif)
 
 </details>
 
@@ -30,11 +43,17 @@ After `sudo <token>` elevates the connection, `tax 25` in the shell mutates the 
 
 `shock wage 10` issued by one admin's shell broadcasts as a `* [ADMIN] shock_applied` event to every connected viewer's shell. The kernel applies the multiplicative shock on the next tick.
 
-![admin shock broadcast](docs/media/03-admin-shock-broadcast.gif)
+**Dark theme:**
+
+![admin shock broadcast, dark](docs/media/03-admin-shock-broadcast-dark.gif)
+
+**Light theme:**
+
+![admin shock broadcast, light](docs/media/03-admin-shock-broadcast-light.gif)
 
 </details>
 
-> **Regenerate demos:** `./scripts/record-demos.sh` (requires `ffmpeg`; uses Playwright's bundled Chromium with `RECORD_DEMOS=1` mode in [playwright.config.js](playwright.config.js)).
+> **Regenerate demos:** `./scripts/record-demos.sh` (both themes), `./scripts/record-demos.sh dark` or `./scripts/record-demos.sh light` (one). Requires `ffmpeg`; uses Playwright's bundled Chromium with `RECORD_DEMOS=1` mode in [playwright.config.js](playwright.config.js). `RECORD_THEME` pins `prefers-color-scheme` so the dashboard's system-theme detection resolves the captured theme correctly.
 
 ## User Flow
 

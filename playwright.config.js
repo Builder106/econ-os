@@ -4,7 +4,14 @@ const { defineConfig, devices } = require('@playwright/test');
 // Recording mode: RECORD_DEMOS=1 enables full video, larger viewport, slowMo
 // pacing so each action reads at human speed in the captured GIF. Tests still
 // pass at the relaxed timeouts; QA-mode (default) keeps full speed + headless.
+//
+// RECORD_THEME=dark|light pins the browser's prefers-color-scheme media query
+// (defaults to 'dark' to match the project's brand aesthetic). The dashboard's
+// inline theme-init script reads matchMedia('(prefers-color-scheme: light)')
+// when its localStorage pref is 'system' (the default for new visitors), so
+// this single config knob controls which theme the recording captures.
 const RECORDING = !!process.env.RECORD_DEMOS;
+const RECORD_THEME = process.env.RECORD_THEME === 'light' ? 'light' : 'dark';
 
 module.exports = defineConfig({
   testDir: './e2e',
@@ -24,6 +31,7 @@ module.exports = defineConfig({
     video: RECORDING ? 'on' : 'retain-on-failure',
     viewport: RECORDING ? { width: 1920, height: 1080 } : undefined,
     launchOptions: RECORDING ? { slowMo: 600 } : undefined,
+    colorScheme: RECORDING ? RECORD_THEME : undefined,
   },
   projects: [
     {

@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-# Record three representative E2E specs as GIFs for the README.
+# Record the three E2E scenarios as GIFs, in BOTH dark and light themes,
+# for the README.
 #
 # Runs in RECORD_DEMOS=1 mode (see playwright.config.js): full video, 1920x1080
-# viewport, 600 ms slowMo so each action reads at human speed. Then ffmpegs the
-# captured webms down to 960px-wide, 12 fps GIFs and parks them in docs/media/.
+# viewport, 600 ms slowMo. RECORD_THEME=dark|light pins the headless browser's
+# prefers-color-scheme so the dashboard's system-theme detection resolves the
+# right way. ffmpegs the captured webms down to 960px-wide, 12 fps GIFs and
+# parks them in docs/media/ as `{label}-{theme}.gif`.
 #
 # Usage:
-#   ./scripts/record-demos.sh
+#   ./scripts/record-demos.sh                # both themes (6 GIFs total)
+#   ./scripts/record-demos.sh dark           # dark theme only (3 GIFs)
+#   ./scripts/record-demos.sh light          # light theme only (3 GIFs)
 #
-# Idempotent: re-running overwrites the existing GIFs with fresh footage.
+# Idempotent: re-running overwrites the GIFs with fresh footage.
 
 set -euo pipefail
 
@@ -17,12 +22,15 @@ OUT_DIR="${REPO_DIR}/docs/media"
 RESULTS_DIR="${REPO_DIR}/test-results"
 
 mkdir -p "${OUT_DIR}"
-rm -rf "${RESULTS_DIR}"
 
-# The three specs that tell visual stories worth embedding:
-#   1) boot → kernel goes LIVE         — proof-of-life for first-time visitors
-#   2) admin tax propagation           — shell command → Policy Manager UI update
-#   3) admin shock + broadcast event   — cross-window event surfacing
+# Theme selection from optional first arg.
+case "${1:-both}" in
+    dark)  THEMES=(dark)  ;;
+    light) THEMES=(light) ;;
+    both|"") THEMES=(dark light) ;;
+    *) echo "usage: $0 [dark|light|both]" >&2; exit 1 ;;
+esac
+
 SPECS=(
     "renders live kernel feed"
     "tax command propagates"
@@ -35,41 +43,42 @@ LABELS=(
 )
 
 cd "${REPO_DIR}"
-for i in "${!SPECS[@]}"; do
-    spec="${SPECS[$i]}"
-    label="${LABELS[$i]}"
-    echo "[demo] recording: ${spec}"
-    RECORD_DEMOS=1 npx playwright test --grep "${spec}" >/dev/null 2>&1 || true
+for theme in "${THEMES[@]}"; do
+    echo "===================="
+    echo "[demo] theme=${theme}"
+    echo "===================="
 
-    # Pick up the freshest webm Playwright wrote.
-    webm=$(find "${RESULTS_DIR}" -name "video.webm" -type f -print0 2>/dev/null \
-        | xargs -0 ls -t 2>/dev/null | head -n1)
-    if [ -z "${webm}" ] || [ ! -s "${webm}" ]; then
-        echo "[demo] no webm captured for: ${spec} — skipping"; continue
-    fi
+    for i in "${!SPECS[@]}"; do
+        spec="${SPECS[$i]}"
+        label="${LABELS[$i]}-${theme}"
+        echo "[demo] recording: ${spec}"
+        rm -rf "${RESULTS_DIR}"
+        RECORD_DEMOS=1 RECORD_THEME="${theme}" \
+            npx playwright test --grep "${spec}" >/dev/null 2>&1 || true
 
-    gif="${OUT_DIR}/${label}.gif"
-    echo "[demo]   converting → ${gif}"
-    # Lanczos downscale + low fps to stay under GitHub's 10MB attachment limit
-    # while keeping motion legible. Two-pass palette-gen produces noticeably
-    # cleaner colors than single-pass.
-    #
-    # -ss 1.5 skips the first ~1.5s of footage where the browser is still
-    # showing its default white pre-paint state (before HTML/CSS parses).
-    # Inline `<style>html,body{background:#0a0b0e}</style>` in index.html
-    # narrows that window but doesn't eliminate frame-0 entirely.
-    palette="$(mktemp -t demo-palette).png"
-    ffmpeg -y -hide_banner -loglevel error -ss 1.5 -i "${webm}" \
-        -vf "fps=12,scale=960:-1:flags=lanczos,palettegen=stats_mode=diff" "${palette}"
-    ffmpeg -y -hide_banner -loglevel error -ss 1.5 -i "${webm}" -i "${palette}" \
-        -filter_complex "fps=12,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5" \
-        "${gif}"
-    rm -f "${palette}"
+        webm=$(find "${RESULTS_DIR}" -name "video.webm" -type f -print0 2>/dev/null \
+            | xargs -0 ls -t 2>/dev/null | head -n1)
+        if [ -z "${webm}" ] || [ ! -s "${webm}" ]; then
+            echo "[demo] no webm captured for: ${spec} [${theme}] — skipping"; continue
+        fi
 
-    rm -rf "${RESULTS_DIR}"
-    echo "[demo]   $(du -h "${gif}" | cut -f1)"
+        gif="${OUT_DIR}/${label}.gif"
+        echo "[demo]   converting → ${gif}"
+        # Two-pass palettegen + paletteuse for cleaner colors than single-pass.
+        # -ss 1.5 trims the first 1.5s of unavoidable browser pre-paint frames.
+        palette="$(mktemp -t demo-palette).png"
+        ffmpeg -y -hide_banner -loglevel error -ss 1.5 -i "${webm}" \
+            -vf "fps=12,scale=960:-1:flags=lanczos,palettegen=stats_mode=diff" "${palette}"
+        ffmpeg -y -hide_banner -loglevel error -ss 1.5 -i "${webm}" -i "${palette}" \
+            -filter_complex "fps=12,scale=960:-1:flags=lanczos[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=5" \
+            "${gif}"
+        rm -f "${palette}"
+
+        echo "[demo]   $(du -h "${gif}" | cut -f1)"
+    done
 done
 
+rm -rf "${RESULTS_DIR}"
 echo
 echo "[demo] done. GIFs in ${OUT_DIR}/"
 ls -lh "${OUT_DIR}"
