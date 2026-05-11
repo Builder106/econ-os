@@ -25,6 +25,18 @@ class WindowManager {
         const existing = document.getElementById(id);
         if (existing) { this.focusWindow(existing); return existing; }
 
+        // Clamp to viewport so windows never spawn (partially) offscreen on
+        // narrower displays — coords were originally tuned for 1920+ widths.
+        // 20px margin on sides; 60px reserved at the bottom for the taskbar.
+        const MARGIN = 20;
+        const TASKBAR_RESERVE = 60;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        w = Math.min(w, vw - MARGIN * 2);
+        h = Math.min(h, vh - MARGIN - TASKBAR_RESERVE);
+        x = Math.max(MARGIN, Math.min(x, vw - w - MARGIN));
+        y = Math.max(MARGIN, Math.min(y, vh - h - TASKBAR_RESERVE));
+
         const win = document.createElement('div');
         win.id = id;
         win.className = 'window active';
