@@ -18,7 +18,11 @@ Thumbs.db
 data/
 logs/
 results/
-models/
+
+# Models — commit only the trained checkpoint zips, skip everything else
+# (tensorboard logs, in-progress weights, etc.) that train.py may produce.
+models/*
+!models/*.zip
 
 # IDEs
 .vscode/
