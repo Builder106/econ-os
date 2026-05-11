@@ -101,6 +101,40 @@ The dotted feedback edge is the single piece of magic — without it EconOS woul
 3. **View Dashboard**:
    Open `dashboard/index.html` in your browser.
 
+## CI/CD Pipeline
+
+```mermaid
+flowchart LR
+    Push([git push origin main]) --> GHA{GitHub Actions}
+    GHA --> Pytest[pytest<br/>14 tests]
+    GHA --> PW[Playwright<br/>9 tests]
+
+    Push --> Vercel{Vercel hook}
+    Vercel --> Build[node scripts/build-config.js<br/>injects ECONOS_KERNEL_WS_URL]
+    Build --> CDN[(econ-os.vercel.app<br/>static dashboard)]
+
+    Push -.-> Manual{{Manual on VM:<br/>git pull &amp; docker compose up -d}}
+    Manual -.-> Kernel[(wss://econos-kernel…ts.net<br/>live shared kernel)]
+
+    Pytest -.-> Badge([CI badge])
+    PW -.-> Badge
+```
+
+| Stage | Trigger | What runs | Wall-clock (warm cache) | Where it shows up |
+|---|---|---|---|---|
+| **CI · pytest** | push to `main`, every PR | env + command-dispatch tests | ~30 s | [Actions tab](https://github.com/Builder106/EconOS/actions) + green badge |
+| **CI · Playwright** | push to `main`, every PR | 3 smoke + 6 admin-flow e2e | ~2 min | same |
+| **CD · Vercel (frontend)** | push to `main` | [`scripts/build-config.js`](scripts/build-config.js) writes `dashboard/config.js` from `ECONOS_KERNEL_WS_URL`; static `dashboard/` deploys | ~30 s | [econ-os.vercel.app](https://econ-os.vercel.app) |
+| **CD · kernel VM (backend)** | **manual** | SSH in, `git pull && sudo docker compose -f deploy/docker-compose.yml up -d` | ~30 s if image is cached | `wss://econos-kernel.<tailnet>.ts.net` |
+
+Config lives in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (CI), [`vercel.json`](vercel.json) (frontend CD), and [`deploy/docker-compose.yml`](deploy/docker-compose.yml) (backend, run manually).
+
+**What's automatic.** Every push to `main` runs both test suites in parallel jobs (`concurrency: cancel-in-progress` cancels stale runs when commits land back-to-back). Vercel listens on the same push hook and rebuilds the dashboard with the latest committed code + the prod `ECONOS_KERNEL_WS_URL` env var — typically live ~60 seconds after `git push` returns. The CI job caches pip, npm, and the Playwright Chromium binary so cold-start vs. warm-cache is a 5×–10× swing.
+
+**What's manual, and why.** The backend kernel on Oracle Always Free is updated by hand: `git pull && docker compose up -d` over SSH. Automating this would require committing an SSH private key as a GitHub Secret and adding a deploy job — small footprint, real attack surface for a portfolio repo. The kernel changes once every few PRs at most; manual SSH is fine until that frequency justifies the secret. See [CONTRIBUTING.md → What's open for contribution](CONTRIBUTING.md) — automating it is on the punch list when it pays for itself.
+
+**On failure.** The Playwright job uploads `playwright-report/` + `test-results/` as a 7-day artifact. Download it, unzip, and `npx playwright show-report ./playwright-report` to replay traces and videos locally — usually points at the exact selector or WS frame that broke.
+
 ## Theory vs. Agentic Emergence
 
 The simulation is built on formal economic objective functions, but the market dynamics are purely emergent from agent learning.
