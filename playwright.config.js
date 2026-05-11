@@ -8,6 +8,9 @@ const RECORDING = !!process.env.RECORD_DEMOS;
 
 module.exports = defineConfig({
   testDir: './e2e',
+  // Live-deploy spec runs under playwright.live.config.js (different baseURL,
+  // no webServer); skip it here so `npx playwright test` stays local-only.
+  testIgnore: /live\.spec\.js$/,
   timeout: RECORDING ? 120_000 : 45_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,
