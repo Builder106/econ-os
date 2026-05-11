@@ -50,8 +50,6 @@ After `sudo <token>` elevates the connection, `tax 25` in the shell mutates the 
 
 </details>
 
-> **Regenerate demos:** `./scripts/record-demos.sh` (both themes), `./scripts/record-demos.sh dark` or `./scripts/record-demos.sh light` (one). Requires `ffmpeg`; uses Playwright's bundled Chromium with `RECORD_DEMOS=1` mode in [playwright.config.js](playwright.config.js). `RECORD_THEME` pins `prefers-color-scheme` so the dashboard's system-theme detection resolves the captured theme correctly.
-
 ## User Flow
 
 Every visitor lands in the same place — the shared kernel ticks regardless of who's watching. The interesting branch is `sudo`: once elevated, admin actions mutate the running kernel and **broadcast back to every connected viewer**, which is what the "shared mainframe" pitch actually means.
