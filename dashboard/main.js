@@ -676,21 +676,34 @@ function setupTooltips() {
     document.body.appendChild(tip);
 
     let activeEl = null;
+    const MARGIN = 8;
     const show = (el) => {
         const text = el.getAttribute('data-tip');
         if (!text) return;
         activeEl = el;
         tip.textContent = text;
+        // Reset transform/visibility before measuring so width reflects the new text,
+        // not stale layout from the previous target.
+        tip.style.transform = 'none';
+        tip.style.left = '0';
+        tip.style.top = '0';
+        const tipW = tip.offsetWidth;   // forces reflow with new text
+        const tipH = tip.offsetHeight;
+        const half = tipW / 2;
+
         const r = el.getBoundingClientRect();
-        // Center horizontally, position above; flip below if no headroom.
-        let top = r.top - 10;
-        let placeBelow = r.top < 60;
-        if (placeBelow) top = r.bottom + 10;
+        // Prefer above; flip below if no headroom.
+        const placeBelow = r.top - tipH - 10 < MARGIN;
+        const top = placeBelow ? r.bottom + 10 : r.top - 10;
+
+        // Center horizontally on the target, then clamp so neither edge
+        // leaves the viewport. Previous version used a fixed 80px buffer,
+        // which clipped wide tooltips at the screen edge (desktop icons).
         let left = r.left + r.width / 2;
-        // Clamp to viewport
-        left = Math.max(80, Math.min(left, window.innerWidth - 80));
+        left = Math.max(half + MARGIN, Math.min(left, window.innerWidth - half - MARGIN));
+
         tip.style.left = `${left}px`;
-        tip.style.top = `${top}px`;
+        tip.style.top  = `${top}px`;
         tip.style.transform = placeBelow ? 'translate(-50%, 0)' : 'translate(-50%, -100%)';
         tip.classList.add('visible');
     };
