@@ -26,10 +26,18 @@ from server.kernel import KernelService
 
 DASHBOARD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard")
 
-# Comma-separated list, or "*" to allow any origin (split-host deploy: dashboard
-# on Vercel issues cross-origin requests to this kernel host).
+# CORS: dashboard on Vercel makes cross-origin requests to this kernel host.
+#
+# ALLOWED_ORIGINS: comma-separated exact-match list, or "*" for anything.
+#   Example: ALLOWED_ORIGINS=https://econ-os.vercel.app
+#
+# ALLOWED_ORIGIN_REGEX: optional Python regex. Used alongside the exact-match
+#   list to permit Vercel preview URLs (which have unpredictable subdomains
+#   per branch). Example:
+#     ALLOWED_ORIGIN_REGEX=^https://econ-os-git-[a-z0-9-]+-[a-z0-9-]+\.vercel\.app$
 _origins_env = os.environ.get("ALLOWED_ORIGINS", "*").strip()
 ALLOWED_ORIGINS = ["*"] if _origins_env == "*" else [o.strip() for o in _origins_env.split(",") if o.strip()]
+ALLOWED_ORIGIN_REGEX = os.environ.get("ALLOWED_ORIGIN_REGEX", "").strip() or None
 
 kernel = KernelService()
 
@@ -48,6 +56,7 @@ app = FastAPI(title="EconOS Kernel", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
