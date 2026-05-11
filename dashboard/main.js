@@ -857,6 +857,51 @@ function startTour() {
 }
 window.startTour = startTour;
 
+// --- theme cycling: dark / light / system ---
+// The inline <head> script resolves and applies the initial theme before
+// first paint. This wires the taskbar toggle + a matchMedia listener so the
+// 'system' mode actually follows the OS theme changes in real time.
+
+const THEME_KEY = 'econos.themePref';
+const THEME_ICONS = { dark: 'ph-moon', light: 'ph-sun', system: 'ph-desktop' };
+const THEME_TIPS  = {
+    dark:   'Theme: dark (click for light)',
+    light:  'Theme: light (click for system)',
+    system: 'Theme: system (click for dark)',
+};
+const THEME_CYCLE = { dark: 'light', light: 'system', system: 'dark' };
+
+function getThemePref() {
+    try { return localStorage.getItem(THEME_KEY) || 'system'; } catch (_) { return 'system'; }
+}
+function resolveTheme(pref) {
+    if (pref === 'system') {
+        return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+    return pref;
+}
+function applyTheme(pref) {
+    const resolved = resolveTheme(pref);
+    document.documentElement.dataset.theme = resolved;
+    const btn = document.getElementById('theme-toggle');
+    if (btn) {
+        btn.innerHTML = `<i class="ph ${THEME_ICONS[pref]}"></i>`;
+        btn.setAttribute('data-tip', THEME_TIPS[pref]);
+    }
+    // Track preference change as an analytics event (only when explicitly cycled,
+    // not on first-paint apply — see setThemePref).
+}
+function setThemePref(pref) {
+    try { localStorage.setItem(THEME_KEY, pref); } catch (_) {}
+    applyTheme(pref);
+    if (typeof window.va === 'function') {
+        window.va('event', { name: 'theme_changed', data: { pref } });
+    }
+}
+window.cycleTheme = function () {
+    setThemePref(THEME_CYCLE[getThemePref()]);
+};
+
 // --- boot ---
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -865,6 +910,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const wm = window.econWM;
 
     setupTooltips();
+
+    // Make the toggle icon + tip reflect the resolved theme from the head script.
+    applyTheme(getThemePref());
+
+    // When the user is on 'system', track OS theme changes live.
+    try {
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+            if (getThemePref() === 'system') applyTheme('system');
+        });
+    } catch (_) { /* Safari < 14 lacks addEventListener on MediaQueryList; ignore */ }
 
     const bootWin = wm.createWindow('boot-loader', 'EconOS Boot', 100, 50, 420, 280,
         '<div id="boot-log" class="font-mono text-[12px] text-terminal-green space-y-1"></div>'

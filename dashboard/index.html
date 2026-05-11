@@ -3,10 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Resolve theme BEFORE first paint so there's no flash of the wrong colors.
+         Persistence: localStorage 'econos.themePref' ∈ {dark, light, system}.
+         Default: 'system' on first load — honor the OS preference. -->
+    <script>
+      (function () {
+        try {
+          var pref = localStorage.getItem('econos.themePref') || 'system';
+          var resolved = pref === 'system'
+            ? (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+            : pref;
+          document.documentElement.dataset.theme = resolved;
+        } catch (_) { document.documentElement.dataset.theme = 'dark'; }
+      })();
+    </script>
     <!-- Pin background BEFORE Tailwind CDN loads to avoid the white flash
          visible in screen recordings and on very slow connections. -->
-    <style>html,body{background:#0a0b0e;color:#fff;margin:0}</style>
-    <meta name="theme-color" content="#0a0b0e">
+    <style>
+      html[data-theme="dark"]  body { background: #0a0b0e; color: #fff; margin: 0; }
+      html[data-theme="light"] body { background: #ece6d6; color: #14181f; margin: 0; }
+    </style>
+    <meta name="theme-color" content="#0a0b0e" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#ece6d6" media="(prefers-color-scheme: light)">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <title>EconOS | Economic Operating System</title>
     <meta name="description" content="A live multi-agent reinforcement-learning economic simulation, running as a shared mainframe. Twelve RL agents trading continuously — same simulation every visitor sees.">
@@ -76,6 +94,7 @@
             <div class="task-icon" onclick="launchWindow('econ-shell')" data-tip="Econ Shell"><i class="ph ph-terminal"></i></div>
             <div class="task-icon" onclick="launchWindow('policy-manager')" data-tip="Policy Manager (Fed mode)"><i class="ph ph-gear"></i></div>
             <div class="task-icon" onclick="launchWindow('about')" data-tip="What is EconOS?"><i class="ph ph-question"></i></div>
+            <div class="task-icon" id="theme-toggle" onclick="cycleTheme()" data-tip="Theme: cycles dark / light / system"><i class="ph ph-moon"></i></div>
 
             <div class="ml-auto flex items-center gap-4 px-4 font-mono text-[10px] text-white/40">
                 <span id="sys-time">23:25:51</span>

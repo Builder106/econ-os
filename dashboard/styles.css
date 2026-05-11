@@ -1,29 +1,109 @@
-/* EconOS Desktop Aesthetic DNA */
+/* EconOS Desktop Aesthetic DNA — themeable */
+
+/* ============================================================
+   Theme tokens. data-theme="dark" is the canonical neon terminal;
+   data-theme="light" is the same product in "data-terminal /
+   paper" mode for daytime use. Both share the same hue families;
+   only saturation + value flip. The wordmark accent stays cyan in
+   both themes — darker on light bg for contrast.
+   ============================================================ */
 
 :root {
-    --glass-bg: rgba(10, 11, 14, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --terminal-green: #00FF41;
-    --terminal-gold: #FFD700;
-    --terminal-red: #FF4136;
-    --terminal-cyan: #00F5FF;
+    --font-mono: 'JetBrains Mono', ui-monospace, Menlo, Monaco, monospace;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+:root,
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    /* Surfaces */
+    --bg-grad-from: #1a1b24;
+    --bg-grad-to:   #0a0b0e;
+    --glass-bg:     rgba(10, 11, 14, 0.75);
+    --glass-bg-strong: rgba(10, 11, 14, 0.96);
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-border-active: rgba(255, 255, 255, 0.25);
+    --window-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --window-shadow-active: 0 12px 48px 0 rgba(0, 0, 0, 0.9), inset 0 0 10px rgba(0, 245, 255, 0.05);
+    --taskbar-bg: rgba(255, 255, 255, 0.05);
+    --header-bg: rgba(255, 255, 255, 0.03);
+
+    /* Text scale */
+    --fg-strong: rgba(255, 255, 255, 0.92);
+    --fg:        rgba(255, 255, 255, 0.85);
+    --fg-muted:  rgba(255, 255, 255, 0.65);
+    --fg-faint:  rgba(255, 255, 255, 0.40);
+
+    /* Accent palette (kept saturated for neon feel) */
+    --terminal-green:   #00FF41;
+    --terminal-gold:    #FFD700;
+    --terminal-red:     #FF4136;
+    --terminal-cyan:    #00F5FF;
     --terminal-magenta: #FF00FF;
-    --font-mono: 'JetBrains Mono', monospace;
+
+    /* Overlays */
+    --tour-backdrop: rgba(0, 0, 0, 0.62);
+    --dim-shadow:    rgba(0, 0, 0, 0.5);
+    --scanline-overlay: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    /* Surfaces — warm paper gradient instead of stark white */
+    --bg-grad-from: #f7f3e9;
+    --bg-grad-to:   #ece6d6;
+    --glass-bg:     rgba(252, 249, 241, 0.82);
+    --glass-bg-strong: rgba(252, 249, 241, 0.97);
+    --glass-border: rgba(20, 24, 32, 0.12);
+    --glass-border-active: rgba(20, 24, 32, 0.28);
+    --window-shadow: 0 8px 32px 0 rgba(20, 24, 32, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+    --window-shadow-active: 0 12px 48px 0 rgba(20, 24, 32, 0.22), inset 0 0 10px rgba(0, 107, 122, 0.06);
+    --taskbar-bg: rgba(252, 249, 241, 0.75);
+    --header-bg: rgba(20, 24, 32, 0.04);
+
+    /* Text scale (inverted) */
+    --fg-strong: rgba(20, 24, 32, 0.92);
+    --fg:        rgba(20, 24, 32, 0.82);
+    --fg-muted:  rgba(20, 24, 32, 0.62);
+    --fg-faint:  rgba(20, 24, 32, 0.42);
+
+    /* Accent palette — darker, more saturated for paper backgrounds */
+    --terminal-green:   #0E7A2A;
+    --terminal-gold:    #8A5D00;
+    --terminal-red:     #B82A20;
+    --terminal-cyan:    #006B7A;
+    --terminal-magenta: #8A0099;
+
+    --tour-backdrop: rgba(20, 24, 32, 0.45);
+    --dim-shadow:    rgba(20, 24, 32, 0.15);
+    --scanline-overlay: linear-gradient(rgba(20, 24, 32, 0) 50%, rgba(20, 24, 32, 0.025) 50%);
+}
+
+/* No-FOUC: if the inline init script in index.html hasn't set data-theme yet,
+   honor the system preference until it does. */
+@media (prefers-color-scheme: light) {
+    :root:not([data-theme]) { color-scheme: light; }
 }
 
 body {
-    background: radial-gradient(circle at center, #1a1b24 0%, #0a0b0e 100%);
-    color: rgba(255, 255, 255, 0.85);
-    font-family: 'Inter', sans-serif;
+    background: radial-gradient(circle at center, var(--bg-grad-from) 0%, var(--bg-grad-to) 100%);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    transition: background 0.25s ease, color 0.25s ease;
 }
 
-/* scanline effect for windows */
+/* ============================================================
+   Window chrome
+   ============================================================ */
+
 .window::after {
     content: " ";
     display: block;
     position: absolute;
     top: 0; left: 0; bottom: 0; right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), 
+    background: var(--scanline-overlay),
                 linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.01));
     z-index: 10;
     background-size: 100% 2px, 3px 100%;
@@ -37,20 +117,20 @@ body {
     backdrop-filter: blur(25px) saturate(180%);
     border: 1px solid var(--glass-border);
     border-radius: 8px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    box-shadow: var(--window-shadow);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: box-shadow 0.2s ease, transform 0.1s ease;
+    transition: box-shadow 0.2s ease, transform 0.1s ease, background 0.25s ease, border-color 0.25s ease;
 }
 
 .window.active {
-    border-color: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 12px 48px 0 rgba(0, 0, 0, 0.9), inset 0 0 10px rgba(0, 245, 255, 0.05);
+    border-color: var(--glass-border-active);
+    box-shadow: var(--window-shadow-active);
 }
 
 .window-header {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--header-bg);
     padding: 8px 12px;
     display: flex;
     justify-content: space-between;
@@ -65,32 +145,24 @@ body {
     font-weight: 700;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--fg-muted);
 }
 
 .window.active .window-title {
     color: var(--terminal-cyan);
-    text-shadow: 0 0 8px rgba(0, 245, 255, 0.3);
+    text-shadow: 0 0 8px color-mix(in srgb, var(--terminal-cyan) 30%, transparent);
 }
 
-.window-controls {
-    display: flex;
-    gap: 6px;
-}
-
+.window-controls { display: flex; gap: 6px; }
 .control-btn {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    opacity: 0.6;
+    width: 10px; height: 10px; border-radius: 50%;
+    cursor: pointer; opacity: 0.6;
     transition: opacity 0.2s;
 }
-
 .control-btn:hover { opacity: 1; }
 .btn-close { background: var(--terminal-red); }
-.btn-min { background: var(--terminal-gold); }
-.btn-max { background: var(--terminal-green); }
+.btn-min   { background: var(--terminal-gold); }
+.btn-max   { background: var(--terminal-green); }
 
 .window-content {
     flex: 1;
@@ -99,11 +171,27 @@ body {
     position: relative;
 }
 
-/* High-Density Components */
+/* ============================================================
+   Utility component classes used by inline window content
+   ============================================================ */
+
+/* Tailwind CDN won't generate utilities for our custom color names
+   (terminal-cyan etc.) without a config, so these are explicit. */
+.text-terminal-cyan    { color: var(--terminal-cyan)    !important; }
+.text-terminal-gold    { color: var(--terminal-gold)    !important; }
+.text-terminal-green   { color: var(--terminal-green)   !important; }
+.text-terminal-red     { color: var(--terminal-red)     !important; }
+.text-terminal-magenta { color: var(--terminal-magenta) !important; }
+.bg-terminal-cyan      { background-color: var(--terminal-cyan) !important; }
+.border-terminal-cyan  { border-color: var(--terminal-cyan)     !important; }
+.border-terminal-red   { border-color: var(--terminal-red)      !important; }
+.accent-terminal-cyan  { accent-color:  var(--terminal-cyan)    !important; }
+.accent-terminal-gold  { accent-color:  var(--terminal-gold)    !important; }
+
 .data-label {
     font-family: var(--font-mono);
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--fg-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -114,22 +202,17 @@ body {
     color: var(--terminal-green);
 }
 
-/* Chart canvas glow — subtle drop-shadow on the line strokes themselves */
 .chart-glow {
-    filter: drop-shadow(0 0 6px rgba(0, 245, 255, 0.15));
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--terminal-cyan) 15%, transparent));
 }
 
-/* Brief flash when a numeric value updates — apply class via JS on change */
 @keyframes value-flash {
-    0%   { text-shadow: 0 0 0   rgba(0, 245, 255, 0.0); }
-    25%  { text-shadow: 0 0 14px rgba(0, 245, 255, 0.7); }
-    100% { text-shadow: 0 0 0   rgba(0, 245, 255, 0.0); }
+    0%   { text-shadow: 0 0 0   color-mix(in srgb, var(--terminal-cyan) 0%, transparent); }
+    25%  { text-shadow: 0 0 14px color-mix(in srgb, var(--terminal-cyan) 70%, transparent); }
+    100% { text-shadow: 0 0 0   color-mix(in srgb, var(--terminal-cyan) 0%, transparent); }
 }
-.value-flash.flashing {
-    animation: value-flash 0.5s ease-out;
-}
+.value-flash.flashing { animation: value-flash 0.5s ease-out; }
 
-/* Better focus visibility for keyboard users */
 button:focus-visible,
 input:focus-visible,
 a:focus-visible {
@@ -137,12 +220,15 @@ a:focus-visible {
     outline-offset: 2px;
 }
 
-/* ----- Hover tooltips: data-tip attribute on any element ----- */
+/* ============================================================
+   Tooltips
+   ============================================================ */
+
 #tooltip {
     position: fixed;
-    background: rgba(10, 11, 14, 0.96);
-    border: 1px solid rgba(0, 245, 255, 0.35);
-    color: rgba(255, 255, 255, 0.92);
+    background: var(--glass-bg-strong);
+    border: 1px solid color-mix(in srgb, var(--terminal-cyan) 35%, transparent);
+    color: var(--fg-strong);
     font-family: var(--font-mono);
     font-size: 11px;
     line-height: 1.4;
@@ -155,15 +241,19 @@ a:focus-visible {
     z-index: 10000;
     max-width: 280px;
     text-align: center;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), 0 0 16px rgba(0, 245, 255, 0.08);
+    box-shadow: 0 4px 14px var(--dim-shadow),
+                0 0 16px color-mix(in srgb, var(--terminal-cyan) 8%, transparent);
 }
 #tooltip.visible { opacity: 1; }
 
-/* ----- Guided tour overlay ----- */
+/* ============================================================
+   Guided tour
+   ============================================================ */
+
 #tour-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.62);
+    background: var(--tour-backdrop);
     z-index: 9000;
     backdrop-filter: blur(2px);
 }
@@ -172,7 +262,8 @@ a:focus-visible {
     position: fixed;
     border: 2px solid var(--terminal-cyan);
     border-radius: 8px;
-    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.62), 0 0 28px rgba(0, 245, 255, 0.45);
+    box-shadow: 0 0 0 9999px var(--tour-backdrop),
+                0 0 28px color-mix(in srgb, var(--terminal-cyan) 45%, transparent);
     pointer-events: none;
     transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 9001;
@@ -181,12 +272,13 @@ a:focus-visible {
 #tour-callout {
     position: fixed;
     width: 360px;
-    background: rgba(10, 11, 14, 0.97);
-    border: 1px solid rgba(0, 245, 255, 0.45);
+    background: var(--glass-bg-strong);
+    border: 1px solid color-mix(in srgb, var(--terminal-cyan) 45%, transparent);
     border-radius: 6px;
-    box-shadow: 0 0 30px rgba(0, 245, 255, 0.18), 0 12px 36px rgba(0, 0, 0, 0.75);
+    box-shadow: 0 0 30px color-mix(in srgb, var(--terminal-cyan) 18%, transparent),
+                0 12px 36px var(--dim-shadow);
     padding: 18px;
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--fg);
     font-family: var(--font-mono);
     z-index: 9002;
     transition: top 0.3s ease, left 0.3s ease;
@@ -194,7 +286,7 @@ a:focus-visible {
 
 .tour-step-counter {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fg-muted);
     text-transform: uppercase;
     letter-spacing: 0.12em;
     margin-bottom: 10px;
@@ -212,20 +304,16 @@ a:focus-visible {
 #tour-body {
     font-size: 13px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.78);
+    color: var(--fg);
     margin-bottom: 18px;
 }
 
-.tour-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-}
+.tour-buttons { display: flex; justify-content: space-between; gap: 8px; }
 
 .tour-buttons button {
     background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.75);
+    border: 1px solid var(--glass-border);
+    color: var(--fg-muted);
     padding: 7px 14px;
     font-family: var(--font-mono);
     font-size: 11px;
@@ -239,41 +327,37 @@ a:focus-visible {
     border-color: var(--terminal-cyan);
     color: var(--terminal-cyan);
 }
-.tour-buttons button:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
+.tour-buttons button:disabled { opacity: 0.3; cursor: not-allowed; }
+
 #tour-next {
-    background: rgba(0, 245, 255, 0.12);
-    border-color: rgba(0, 245, 255, 0.5);
+    background: color-mix(in srgb, var(--terminal-cyan) 12%, transparent);
+    border-color: color-mix(in srgb, var(--terminal-cyan) 50%, transparent);
     color: var(--terminal-cyan);
 }
 #tour-next:hover:not(:disabled) {
-    background: rgba(0, 245, 255, 0.2);
-    box-shadow: 0 0 12px rgba(0, 245, 255, 0.3);
+    background: color-mix(in srgb, var(--terminal-cyan) 20%, transparent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--terminal-cyan) 30%, transparent);
 }
 
-.sparkline-container {
-    height: 20px;
-    width: 60px;
-}
+.sparkline-container { height: 20px; width: 60px; }
 
 @keyframes neon-pulse {
-    0% { opacity: 0.4; transform: scale(0.98); }
-    50% { opacity: 1; transform: scale(1); }
+    0%   { opacity: 0.4; transform: scale(0.98); }
+    50%  { opacity: 1;   transform: scale(1); }
     100% { opacity: 0.4; transform: scale(0.98); }
 }
 
 .status-pulse {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
+    width: 6px; height: 6px; border-radius: 50%;
     background: var(--terminal-green);
     animation: neon-pulse 2s infinite ease-in-out;
     box-shadow: 0 0 8px var(--terminal-green);
 }
 
-/* Desktop Icons */
+/* ============================================================
+   Desktop chrome
+   ============================================================ */
+
 #desktop-icons {
     padding: 24px;
     display: flex;
@@ -290,38 +374,35 @@ a:focus-visible {
     cursor: pointer;
     transition: filter 0.2s;
 }
-
 .desktop-icon:hover {
-    filter: drop-shadow(0 0 10px rgba(0, 245, 255, 0.4));
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--terminal-cyan) 40%, transparent));
 }
-
 .desktop-icon i {
     font-size: 32px;
     color: var(--terminal-cyan);
 }
-
 .desktop-icon span {
     font-size: 9px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.6);
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    color: var(--fg-muted);
+    text-shadow: 0 2px 4px var(--dim-shadow);
 }
 
-/* Taskbar */
 #taskbar {
     position: absolute;
     bottom: 12px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--taskbar-bg);
     backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
     padding: 6px 12px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     gap: 12px;
     z-index: 1000;
+    transition: background 0.25s ease, border-color 0.25s ease;
 }
 
 .task-icon {
@@ -329,15 +410,58 @@ a:focus-visible {
     opacity: 0.6;
     cursor: pointer;
     transition: all 0.2s;
+    color: var(--fg);
 }
-
 .task-icon:hover {
     opacity: 1;
     transform: translateY(-2px);
     color: var(--terminal-cyan);
 }
 
-/* Scrollbars */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--terminal-cyan); }
+
+/* ============================================================
+   Tailwind utility overrides — light mode only.
+   The inline window content uses Tailwind's text-white/X and
+   bg-white/X opacity utilities for muted text/surfaces. Those
+   white channels are illegible against a paper background; remap
+   them to dark-on-light at the same opacity stops. Dark mode uses
+   Tailwind's defaults unchanged.
+   ============================================================ */
+
+:root[data-theme="light"] body { color: var(--fg-strong); }
+
+/* text-white/X → dark-on-light at the same opacity */
+:root[data-theme="light"] .text-white       { color: rgba(20, 24, 32, 1.00) !important; }
+:root[data-theme="light"] .text-white\/90   { color: rgba(20, 24, 32, 0.90) !important; }
+:root[data-theme="light"] .text-white\/85   { color: rgba(20, 24, 32, 0.85) !important; }
+:root[data-theme="light"] .text-white\/80   { color: rgba(20, 24, 32, 0.80) !important; }
+:root[data-theme="light"] .text-white\/75   { color: rgba(20, 24, 32, 0.78) !important; }
+:root[data-theme="light"] .text-white\/70   { color: rgba(20, 24, 32, 0.72) !important; }
+:root[data-theme="light"] .text-white\/65   { color: rgba(20, 24, 32, 0.68) !important; }
+:root[data-theme="light"] .text-white\/60   { color: rgba(20, 24, 32, 0.65) !important; }
+:root[data-theme="light"] .text-white\/55   { color: rgba(20, 24, 32, 0.60) !important; }
+:root[data-theme="light"] .text-white\/50   { color: rgba(20, 24, 32, 0.55) !important; }
+:root[data-theme="light"] .text-white\/45   { color: rgba(20, 24, 32, 0.50) !important; }
+:root[data-theme="light"] .text-white\/40   { color: rgba(20, 24, 32, 0.48) !important; }
+:root[data-theme="light"] .text-white\/30   { color: rgba(20, 24, 32, 0.40) !important; }
+
+/* bg-white/X and bg-black overlays */
+:root[data-theme="light"] .bg-white\/5      { background-color: rgba(20, 24, 32, 0.04) !important; }
+:root[data-theme="light"] .bg-white\/10     { background-color: rgba(20, 24, 32, 0.08) !important; }
+:root[data-theme="light"] .bg-white\/20     { background-color: rgba(20, 24, 32, 0.14) !important; }
+:root[data-theme="light"] .bg-black         { background-color: var(--bg-grad-to) !important; }
+:root[data-theme="light"] .bg-black\/30     { background-color: rgba(20, 24, 32, 0.06) !important; }
+
+/* border-white/X */
+:root[data-theme="light"] .border-white\/5  { border-color: rgba(20, 24, 32, 0.08) !important; }
+:root[data-theme="light"] .border-white\/10 { border-color: rgba(20, 24, 32, 0.12) !important; }
+:root[data-theme="light"] .border-white\/20 { border-color: rgba(20, 24, 32, 0.18) !important; }
+
+/* Body background utility used by <body class="bg-black ..."> in index.html */
+body.bg-black { background: radial-gradient(circle at center, var(--bg-grad-from) 0%, var(--bg-grad-to) 100%) !important; }
+
+/* Theme toggle button — a touch larger than other task icons */
+#theme-toggle { font-size: 18px; }
