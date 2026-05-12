@@ -119,18 +119,18 @@ The dotted feedback edge is the single piece of magic — without it EconOS woul
 
 ```mermaid
 flowchart LR
-    Push([git push origin main]) --> GHA{GitHub Actions}
-    GHA --> Pytest[pytest<br/>14 tests]
-    GHA --> PW[Playwright<br/>9 tests]
+    Push(["git push origin main"]) --> GHA{GitHub Actions}
+    GHA --> Pytest["pytest<br/>14 tests"]
+    GHA --> PW["Playwright<br/>9 tests"]
 
     Push --> Vercel{Vercel hook}
-    Vercel --> Build[node scripts/build-config.js<br/>injects ECONOS_KERNEL_WS_URL]
-    Build --> CDN[(econ-os.vercel.app<br/>static dashboard)]
+    Vercel --> Build["node scripts/build-config.js<br/>injects ECONOS_KERNEL_WS_URL"]
+    Build --> CDN[("econ-os.vercel.app<br/>static dashboard")]
 
-    Push -.-> Manual{{Manual on VM:<br/>git pull &amp; docker compose up -d}}
-    Manual -.-> Kernel[(wss://econos-kernel…ts.net<br/>live shared kernel)]
+    Push -.-> Manual{{"Manual on VM:<br/>git pull &amp; docker compose up -d"}}
+    Manual -.-> Kernel[("wss://econos-kernel…ts.net<br/>live shared kernel")]
 
-    Pytest -.-> Badge([CI badge])
+    Pytest -.-> Badge(["CI badge"])
     PW -.-> Badge
 ```
 
