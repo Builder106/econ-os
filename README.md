@@ -8,8 +8,12 @@
 
 # EconOS | Economic Operating System
 
-[![CI](https://github.com/Builder106/EconOS/actions/workflows/ci.yml/badge.svg)](https://github.com/Builder106/EconOS/actions/workflows/ci.yml)
+[![CI — pytest + Playwright](https://github.com/Builder106/EconOS/actions/workflows/ci.yml/badge.svg)](https://github.com/Builder106/EconOS/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-cyan.svg)](LICENSE)
+[![tests](https://img.shields.io/badge/tests-23%20passing-success)](https://github.com/Builder106/EconOS/actions/workflows/ci.yml)
+[![MARL](https://img.shields.io/badge/MARL-PettingZoo%20%2B%20PPO-FF6F00)](https://pettingzoo.farama.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-WebSocket-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Live demo](https://img.shields.io/badge/demo-econ--os.vercel.app-00FF41)](https://econ-os.vercel.app)
 
 > **A high-fidelity Multi-Agent Reinforcement Learning (MARL) desktop environment for decentralized economic simulation.**
