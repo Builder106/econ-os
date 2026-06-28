@@ -11,6 +11,7 @@ Feature: Admin shell and Policy Manager
 
   Scenario: Admin tax command propagates to Policy Manager UI
     Given I have elevated with the admin token
+    And the Policy Manager is open
     When I run the command "tax 25"
     Then the shell output contains "tax_rate"
     And the Policy Manager shows "25.00%"
