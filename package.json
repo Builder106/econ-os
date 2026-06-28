@@ -4,10 +4,12 @@
   "version": "0.0.1",
   "description": "Headless verification harness for the EconOS dashboard against a live kernel.",
   "scripts": {
-    "test:e2e": "playwright test",
+    "bddgen": "bddgen",
+    "test:e2e": "bddgen && playwright test",
     "test:live": "playwright test --config playwright.live.config.js"
   },
   "devDependencies": {
-    "@playwright/test": "^1.48.0"
+    "@playwright/test": "^1.61.1",
+    "playwright-bdd": "^9.2.0"
   }
 }

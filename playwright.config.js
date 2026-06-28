@@ -1,5 +1,6 @@
 // @ts-check
 const { defineConfig, devices } = require('@playwright/test');
+const { defineBddConfig } = require('playwright-bdd');
 
 // Recording mode: RECORD_DEMOS=1 enables full video, larger viewport, slowMo
 // pacing so each action reads at human speed in the captured GIF. Tests still
@@ -13,11 +14,13 @@ const { defineConfig, devices } = require('@playwright/test');
 const RECORDING = !!process.env.RECORD_DEMOS;
 const RECORD_THEME = process.env.RECORD_THEME === 'light' ? 'light' : 'dark';
 
+const testDir = defineBddConfig({
+  features: 'e2e/features',
+  steps: 'e2e/steps',
+});
+
 module.exports = defineConfig({
-  testDir: './e2e',
-  // Live-deploy spec runs under playwright.live.config.js (different baseURL,
-  // no webServer); skip it here so `npx playwright test` stays local-only.
-  testIgnore: /live\.spec\.js$/,
+  testDir,
   timeout: RECORDING ? 120_000 : 45_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,
