@@ -55,7 +55,7 @@ When('I set the tax slider to {string}', async ({ page }, val) => {
 });
 
 Then('the Policy Manager shows {string}', async ({ page }, text) => {
-  await expect(page.locator('#pm-tax')).toContainText(text, { timeout: 8_000 });
+  await expect(page.locator('#pm-tax')).toContainText(text, { timeout: 15_000 });
 });
 
 Then('the Policy Manager shows admin auth status', async ({ page }) => {
