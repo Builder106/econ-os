@@ -1,3 +1,6 @@
+// @ts-check
+/// <reference path="./global.d.ts" />
+const _w = /** @type {any} */ (window);
 /**
  * EconOS Window Manager + Kernel Client
  * AESTHETIC_DNA: Glassmorphic Bloomberg-grade desktop OS, fed by live WebSocket telemetry.
@@ -5,22 +8,34 @@
 
 class WindowManager {
     constructor() {
-        this.windows = [];
-        this.activeWindow = null;
+        /** @type {HTMLElement[]} */ this.windows = [];
+        /** @type {HTMLElement | null} */ this.activeWindow = null;
         this.highestZ = 100;
-        this.desktop = document.getElementById('desktop');
+        /** @type {HTMLElement | null} */ this.desktop = document.getElementById('desktop');
+        this.offsetX = 0;
+        this.offsetY = 0;
         this.initEvents();
     }
 
     initEvents() {
-        document.addEventListener('mousedown', (e) => {
-            const win = e.target.closest('.window');
+        document.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => {
+            const target = /** @type {HTMLElement} */ (e.target);
+            const win = target ? /** @type {HTMLElement} */ (target.closest('.window')) : null;
             if (win) this.focusWindow(win);
         });
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.stopDragging());
     }
 
+    /**
+     * @param {string} id
+     * @param {string} title
+     * @param {number} x
+     * @param {number} y
+     * @param {number} w
+     * @param {number} h
+     * @param {string} contentHTML
+     */
     createWindow(id, title, x, y, w, h, contentHTML) {
         const existing = document.getElementById(id);
         if (existing) { this.focusWindow(existing); return existing; }
@@ -44,7 +59,7 @@ class WindowManager {
         win.style.top = `${y}px`;
         win.style.width = `${w}px`;
         win.style.height = `${h}px`;
-        win.style.zIndex = ++this.highestZ;
+        win.style.zIndex = String(++this.highestZ);
 
         win.innerHTML = `
             <div class="window-header">
@@ -59,40 +74,44 @@ class WindowManager {
         `;
 
         const header = win.querySelector('.window-header');
-        header.addEventListener('mousedown', (e) => this.startDragging(e, win));
+        if(header) header.addEventListener('mousedown', (/** @type {any} */ e) => this.startDragging(e, win));
 
-        this.desktop.appendChild(win);
+        if(this.desktop) this.desktop.appendChild(win);
         this.windows.push(win);
         this.focusWindow(win);
         return win;
     }
 
+    /** @param {HTMLElement} win */
     focusWindow(win) {
         if (this.activeWindow) this.activeWindow.classList.remove('active');
         this.activeWindow = win;
         win.classList.add('active');
-        win.style.zIndex = ++this.highestZ;
+        win.style.zIndex = String(++this.highestZ);
     }
 
+    /** @param {MouseEvent} e
+     * @param {HTMLElement} win */
     startDragging(e, win) {
         this.isDragging = true;
         this.dragWin = win;
         this.offsetX = e.clientX - win.offsetLeft;
         this.offsetY = e.clientY - win.offsetTop;
-        document.body.style.cursor = 'move';
+        if(document.body) document.body.style.cursor = 'move';
     }
 
+    /** @param {MouseEvent} e */
     handleMouseMove(e) {
-        if (this.isDragging && this.dragWin) {
-            this.dragWin.style.left = `${e.clientX - this.offsetX}px`;
-            this.dragWin.style.top = `${e.clientY - this.offsetY}px`;
+        const dragWin = this.dragWin; if (this.isDragging && dragWin) {
+            dragWin.style.left = `${e.clientX - this.offsetX}px`;
+            dragWin.style.top = `${e.clientY - this.offsetY}px`;
         }
     }
 
     stopDragging() {
         this.isDragging = false;
         this.dragWin = null;
-        document.body.style.cursor = 'default';
+        if(document.body) document.body.style.cursor = 'default';
     }
 }
 
@@ -112,16 +131,16 @@ class KernelClient {
         // injected via dashboard/config.js. Same-origin fallback keeps local dev
         // (FastAPI serving the dashboard at /) working unchanged.
         const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-        this.url = window.ECONOS_KERNEL_WS_URL || `${proto}//${location.host}/ws`;
-        this.tickListeners = new Set();
-        this.eventListeners = new Set();
-        this.adminListeners = new Set();
-        this.state = null;
+        this.url = _w.ECONOS_KERNEL_WS_URL || `${proto}//${location.host}/ws`;
+        /** @type {Set<Function>} */ this.tickListeners = new Set();
+        /** @type {Set<Function>} */ this.eventListeners = new Set();
+        /** @type {Set<Function>} */ this.adminListeners = new Set();
+        /** @type {any} */ this.state = null;
         this.connected = false;
         this.isAdmin = false;
         this._reconnectMs = 800;
         this._cmdSeq = 0;
-        this._pendingAcks = new Map();
+        /** @type {Map<string, {resolve: function, reject: function, timer: any}>} */ this._pendingAcks = new Map();
         this._connect();
     }
 
@@ -137,7 +156,7 @@ class KernelClient {
             this._notifyTick();
             this._scheduleReconnect();
         };
-        this.ws.onerror = () => { try { this.ws.close(); } catch (_) {} };
+        if(this.ws) this.ws.onerror = () => { try { if(this.ws) this.ws.close(); } catch (_) {} };
     }
 
     _scheduleReconnect() {
@@ -146,6 +165,7 @@ class KernelClient {
         setTimeout(() => this._connect(), delay);
     }
 
+    /** @param {MessageEvent} e */
     _onMessage(e) {
         let msg;
         try { msg = JSON.parse(e.data); } catch { return; }
@@ -156,16 +176,17 @@ class KernelClient {
         }
         if (msg.type === 'ack') {
             const p = this._pendingAcks.get(msg.id);
-            if (p) {
+            if (!p) return;
+            if (true) {
                 clearTimeout(p.timer);
                 this._pendingAcks.delete(msg.id);
                 if (msg.ok) p.resolve(msg);
-                else p.reject(Object.assign(new Error(msg.error || 'command failed'), { ack: msg }));
+                else p.reject(Object.assign(new Error(/** @type {any} */ (msg).error || 'command failed'), { ack: msg }));
             }
-            if (msg.auth && msg.auth.is_admin && !this.isAdmin) {
+            if (/** @type {any} */ (msg).auth && /** @type {any} */ (msg).auth.is_admin && !this.isAdmin) {
                 this.isAdmin = true;
                 this._notifyAdmin();
-                if (typeof window.va === 'function') window.va('event', { name: 'sudo_succeeded' });
+                if (typeof _w.va === 'function') _w.va('event', { name: 'sudo_succeeded' });
             }
             return;
         }
@@ -175,6 +196,8 @@ class KernelClient {
         }
     }
 
+    /** @param {string} line
+     * @returns {Promise<any>} */
     sendCommand(line) {
         return new Promise((resolve, reject) => {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -191,22 +214,26 @@ class KernelClient {
         });
     }
 
+    /** @param {Error} err */
     _failPendingAcks(err) {
         for (const [, p] of this._pendingAcks) { clearTimeout(p.timer); p.reject(err); }
         this._pendingAcks.clear();
     }
 
+    /** @param {Function} cb */
     subscribe(cb) {
         this.tickListeners.add(cb);
         if (this.state) { try { cb(this.state, this.connected); } catch (e) { console.error(e); } }
         return () => this.tickListeners.delete(cb);
     }
 
+    /** @param {Function} cb */
     onEvent(cb) {
         this.eventListeners.add(cb);
         return () => this.eventListeners.delete(cb);
     }
 
+    /** @param {Function} cb */
     onAdminChange(cb) {
         this.adminListeners.add(cb);
         try { cb(this.isAdmin); } catch (e) { console.error(e); }
@@ -224,6 +251,7 @@ class KernelClient {
 
 // --- helpers ---
 
+/** @param {number} n */
 const fmtMoney = (n) => {
     if (n == null || isNaN(n)) return '—';
     const v = Math.abs(n);
@@ -232,20 +260,23 @@ const fmtMoney = (n) => {
     return n.toFixed(2);
 };
 
+/** @param {string} agentId */
 const procIdFor = (agentId) => {
     const m = agentId.match(/(consumer|producer)_(\d+)/);
     if (!m) return agentId;
     return (m[1] === 'consumer' ? 'C-' : 'P-') + String(m[2]).padStart(2, '0');
 };
 
+/** @param {string} agentId */
 const procNameFor = (agentId) =>
     agentId.startsWith('consumer') ? 'CONSUMER_POLICY_NET' : 'PRODUCER_RL_OPTIMIZER';
 
 // --- window launchers ---
 
-window.launchWindow = function(type) {
-    const wm = window.econWM;
-    const kc = window.kernelClient;
+_w.launchWindow = function(/** @type {string} */ type) {
+    const wm = _w.econWM;
+    const kc = _w.kernelClient;
+    if (!wm || !kc) return;
 
     if (type === 'process-explorer') {
         wm.createWindow('processes', 'Process Telemetry Hub', 80, 180, 700, 520,
@@ -262,7 +293,8 @@ window.launchWindow = function(type) {
                 </div>
             </div>`);
         const rowsEl = document.getElementById('proc-rows');
-        const unsub = kc.subscribe((s, connected) => {
+        if (!rowsEl) return;
+        const unsub = kc.subscribe((/** @type {any} */ s, /** @type {boolean} */ connected) => {
             if (!document.getElementById('proc-rows')) { unsub(); return; }
             if (!s) {
                 rowsEl.innerHTML = `<div class="text-white/55 italic">${
@@ -270,7 +302,7 @@ window.launchWindow = function(type) {
                 }</div>`;
                 return;
             }
-            rowsEl.innerHTML = s.agents.map((a) => {
+            rowsEl.innerHTML = s.agents.map((/** @type {any} */ a) => {
                 const isCons = a.role === 'consumer';
                 const dotColor = isCons ? 'var(--terminal-cyan)' : 'var(--terminal-gold)';
                 const reward = (a.reward >= 0 ? '+' : '') + a.reward.toFixed(3);
@@ -348,18 +380,21 @@ window.launchWindow = function(type) {
             </div>`);
 
         const SHOCKS = [-10, -5, 5, 10];
+        /** @param {string} target
+         * @param {number} pct */
         const mkBtn = (target, pct) => {
             const sign = pct > 0 ? '+' : '';
             const cls = pct > 0 ? 'text-terminal-green' : 'text-terminal-red';
             return `<button class="pm-admin py-1 text-[12px] border border-white/10 ${cls} hover:bg-white/5"
                 data-shock="${target}" data-pct="${pct}">${sign}${pct}%</button>`;
         };
-        document.getElementById('pm-wage-shocks').innerHTML  = SHOCKS.map(p => mkBtn('wage', p)).join('');
-        document.getElementById('pm-price-shocks').innerHTML = SHOCKS.map(p => mkBtn('price', p)).join('');
+        const wSh = document.getElementById('pm-wage-shocks'); if(wSh) wSh.innerHTML  = SHOCKS.map(p => mkBtn('wage', p)).join('');
+        const pSh = document.getElementById('pm-price-shocks'); if(pSh) pSh.innerHTML = SHOCKS.map(p => mkBtn('price', p)).join('');
 
-        const slider = document.getElementById('pm-tax-slider');
+        const slider = /** @type {HTMLInputElement | null} */ (document.getElementById('pm-tax-slider'));
         const taxLabel = document.getElementById('pm-tax');
         const authLabel = document.getElementById('pm-auth');
+        if (!slider || !taxLabel || !authLabel) return;
 
         let userIsDragging = false;
         slider.addEventListener('pointerdown', () => { userIsDragging = true; });
@@ -368,36 +403,36 @@ window.launchWindow = function(type) {
         slider.addEventListener('change', async () => {
             try {
                 await kc.sendCommand(`tax ${slider.value}`);
-                if (typeof window.va === 'function') {
-                    window.va('event', {
+                if (typeof _w.va === 'function') {
+                    _w.va('event', {
                         name: 'policy_tax_changed',
                         data: { pct: slider.value },
                     });
                 }
-            } catch (err) { console.warn('tax cmd failed:', err.message); }
+            } catch (err) { console.warn('tax cmd failed:', (/** @type {any} */ (err)).message); }
         });
 
-        document.querySelectorAll('#policy-manager [data-shock]').forEach((btn) => {
+        document.querySelectorAll('#policy-manager [data-shock]').forEach((/** @type {any} */ btn) => {
             btn.addEventListener('click', async () => {
                 try {
                     await kc.sendCommand(`shock ${btn.dataset.shock} ${btn.dataset.pct}`);
-                    if (typeof window.va === 'function') {
-                        window.va('event', {
+                    if (typeof _w.va === 'function') {
+                        _w.va('event', {
                             name: 'admin_shock_fired',
                             data: { kind: btn.dataset.shock, pct: btn.dataset.pct },
                         });
                     }
-                } catch (err) { console.warn('shock cmd failed:', err.message); }
+                } catch (err) { console.warn('shock cmd failed:', (/** @type {any} */ (err)).message); }
             });
         });
-        document.querySelectorAll('#policy-manager [data-cmd]').forEach((btn) => {
+        document.querySelectorAll('#policy-manager [data-cmd]').forEach((/** @type {any} */ btn) => {
             btn.addEventListener('click', async () => {
                 try { await kc.sendCommand(btn.dataset.cmd); }
-                catch (err) { console.warn(`${btn.dataset.cmd} failed:`, err.message); }
+                catch (err) { console.warn(`${btn.dataset.cmd} failed:`, (/** @type {any} */ (err)).message); }
             });
         });
 
-        const unsubTick = kc.subscribe((s) => {
+        const unsubTick = kc.subscribe((/** @type {any} */ s) => {
             if (!document.getElementById('pm-tax')) { unsubTick(); return; }
             if (!s) return;
             const taxPct = s.policy.tax_rate * 100;
@@ -405,14 +440,14 @@ window.launchWindow = function(type) {
                 slider.value = String(Math.round(taxPct));
                 taxLabel.textContent = taxPct.toFixed(2) + '%';
             }
-            document.getElementById('pm-step').textContent = s.step;
-            document.getElementById('pm-uptime').textContent = s.uptime_s;
-            document.getElementById('pm-policies').innerHTML = s.policies_loaded
+            const pmStep = document.getElementById('pm-step'); if(pmStep) pmStep.textContent = s.step;
+            const pmUptime = document.getElementById('pm-uptime'); if(pmUptime) pmUptime.textContent = s.uptime_s;
+            const pmPol = document.getElementById('pm-policies'); if(pmPol) pmPol.innerHTML = s.policies_loaded
                 ? '<i class="ph-bold ph-check-circle text-terminal-green"></i>&nbsp; PPO loaded'
                 : '<i class="ph-bold ph-dice-five text-white/50"></i>&nbsp; random fallback';
         });
 
-        const unsubAdmin = kc.onAdminChange((isAdmin) => {
+        const unsubAdmin = kc.onAdminChange((/** @type {boolean} */ isAdmin) => {
             if (!document.getElementById('pm-auth')) { unsubAdmin(); return; }
             authLabel.innerHTML = isAdmin
                 ? '<i class="ph-fill ph-lock-open"></i>&nbsp; admin'
@@ -420,7 +455,7 @@ window.launchWindow = function(type) {
             authLabel.className = isAdmin ? 'text-terminal-green' : 'text-terminal-red';
             slider.disabled = !isAdmin;
             slider.classList.toggle('opacity-40', !isAdmin);
-            document.querySelectorAll('#policy-manager .pm-admin').forEach((b) => {
+            document.querySelectorAll('#policy-manager .pm-admin').forEach((/** @type {any} */ b) => {
                 b.disabled = !isAdmin;
                 b.classList.toggle('opacity-40', !isAdmin);
                 b.classList.toggle('cursor-not-allowed', !isAdmin);
@@ -439,8 +474,11 @@ window.launchWindow = function(type) {
             </div>`);
 
         const out = document.getElementById('shell-output');
-        const input = document.getElementById('shell-input');
+        const input = /** @type {HTMLInputElement | null} */ (document.getElementById('shell-input'));
+        if (!out || !input) return;
 
+        /** @param {string} text
+         * @param {string} [cls] */
         const append = (text, cls = 'text-white/60') => {
             const d = document.createElement('div');
             d.className = cls + ' whitespace-pre';
@@ -451,6 +489,7 @@ window.launchWindow = function(type) {
         append('>>> [SYSTEM_AUTH] read-only session attached to shared kernel', 'text-terminal-cyan');
         append("$ type 'help' to list commands. 'sudo <token>' to elevate.", 'text-white/40');
 
+        /** @type {string[]} */
         const history = [];
         let histIdx = -1;
 
@@ -482,19 +521,19 @@ window.launchWindow = function(type) {
 
             // Only the verb — never args. 'sudo abc123' becomes 'sudo'; tokens stay private.
             const verb = (line.trim().split(/\s+/)[0] || '').slice(0, 24);
-            if (typeof window.va === 'function') {
-                window.va('event', { name: 'shell_command_run', data: { cmd: verb } });
+            if (typeof _w.va === 'function') {
+                _w.va('event', { name: 'shell_command_run', data: { cmd: verb } });
             }
 
             try {
                 const ack = await kc.sendCommand(line);
                 if (ack.output) append(ack.output, 'text-terminal-green');
             } catch (err) {
-                append('! ' + (err.message || 'command failed'), 'text-terminal-red');
+                append('! ' + ((/** @type {any} */ (err)).message || 'command failed'), 'text-terminal-red');
             }
         });
 
-        const unsubEvt = kc.onEvent((evt) => {
+        const unsubEvt = kc.onEvent((/** @type {any} */ evt) => {
             if (!document.getElementById('shell-output')) { unsubEvt(); return; }
             const detail = Object.keys(evt.detail || {}).length ? '  ' + JSON.stringify(evt.detail) : '';
             append(`* [${(evt.by || '?').toUpperCase()}] ${evt.kind}${detail}`, 'text-terminal-magenta');
@@ -503,11 +542,11 @@ window.launchWindow = function(type) {
     } else if (type === 'system-menu') {
         wm.createWindow('sys-menu', 'EconOS System', 50, 300, 240, 260,
             `<div class="space-y-2 text-[13px] text-white/60">
-                <div class="hover:text-white cursor-pointer" onclick="launchWindow('process-explorer')"><i class="ph ph-cpu"></i> Process Telemetry</div>
-                <div class="hover:text-white cursor-pointer" onclick="launchWindow('macro-monitor')"><i class="ph ph-chart-line"></i> Market Analytics</div>
+                <div class="hover:text-white cursor-pointer" onclick="if(_w.launchWindow) _w.launchWindow('process-explorer')"><i class="ph ph-cpu"></i> Process Telemetry</div>
+                <div class="hover:text-white cursor-pointer" onclick="if(_w.launchWindow) _w.launchWindow('macro-monitor')"><i class="ph ph-chart-line"></i> Market Analytics</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('policy-manager')"><i class="ph ph-shield-check"></i> Policy Manager</div>
                 <div class="hover:text-white cursor-pointer" onclick="launchWindow('econ-shell')"><i class="ph ph-terminal"></i> Institutional Terminal</div>
-                <div class="border-t border-white/5 mt-2 pt-2 hover:text-white cursor-pointer" onclick="launchWindow('about')"><i class="ph ph-question"></i> What is EconOS?</div>
+                <div class="border-t border-white/5 mt-2 pt-2 hover:text-white cursor-pointer" onclick="if(_w.launchWindow) _w.launchWindow('about')"><i class="ph ph-question"></i> What is EconOS?</div>
                 <div class="hover:text-white cursor-pointer" onclick="startTour()"><i class="ph ph-compass"></i> Take a tour</div>
             </div>`);
 
@@ -591,31 +630,33 @@ sudo &lt;token&gt;          # Fed mode (admin)</pre>
                 </div>
             </div>`);
 
+        /** @param {number} s */
         const formatUptime = (s) => {
             if (s == null) return '—';
             if (s < 60) return `${Math.floor(s)}s`;
             if (s < 3600) return `${Math.floor(s/60)}m ${Math.floor(s%60)}s`;
             return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`;
         };
-        const unsubAbout = kc.subscribe((s) => {
+        const unsubAbout = kc.subscribe((/** @type {any} */ s) => {
             if (!document.getElementById('about-step')) { unsubAbout(); return; }
             if (!s) return;
-            document.getElementById('about-step').textContent = s.step.toLocaleString();
-            document.getElementById('about-uptime').textContent = formatUptime(s.uptime_s);
+            const as = document.getElementById('about-step'); if(as) as.textContent = s.step.toLocaleString();
+            const au = document.getElementById('about-uptime'); if(au) au.textContent = formatUptime(s.uptime_s);
             // viewers count isn't in the snapshot; fall back to '1' (you).
-            document.getElementById('about-viewers').textContent = '1+';
+            const av = document.getElementById('about-viewers'); if(av) av.textContent = '1+';
         });
 
         try { localStorage.setItem('econos.aboutSeen', '1'); } catch (_) {}
     }
 };
 
+/** @param {KernelClient} kc */
 function initMacroChart(kc) {
     const canvas = document.getElementById('mainChart');
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const ctx = /** @type {HTMLCanvasElement} */ (canvas).getContext('2d');
 
-    const chart = new Chart(ctx, {
+    const chart = new _w.Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
@@ -643,6 +684,8 @@ function initMacroChart(kc) {
 
     // Briefly flash an element when its content changes — proof-of-life cue.
     const lastVal = new WeakMap();
+    /** @param {HTMLElement|null} el
+     * @param {string} text */
     const setFlashing = (el, text) => {
         if (!el) return;
         if (lastVal.get(el) === text) return;
@@ -655,7 +698,7 @@ function initMacroChart(kc) {
     };
 
     let lastStep = -1;
-    const unsub = kc.subscribe((s, connected) => {
+    const unsub = kc.subscribe((/** @type {any} */ s, /** @type {boolean} */ connected) => {
         if (!document.getElementById('mainChart')) { unsub(); return; }
         const st = statusEl();
         if (st) {
@@ -687,10 +730,12 @@ function initMacroChart(kc) {
 function setupTooltips() {
     const tip = document.createElement('div');
     tip.id = 'tooltip';
-    document.body.appendChild(tip);
+    if(document.body) document.body.appendChild(tip);
 
+    /** @type {HTMLElement | null} */
     let activeEl = null;
     const MARGIN = 8;
+    /** @param {HTMLElement} el */
     const show = (el) => {
         const text = el.getAttribute('data-tip');
         if (!text) return;
@@ -723,12 +768,14 @@ function setupTooltips() {
     };
     const hide = () => { tip.classList.remove('visible'); activeEl = null; };
 
-    document.addEventListener('mouseover', (e) => {
-        const el = e.target.closest('[data-tip]');
+    document.addEventListener('mouseover', (/** @type {MouseEvent} */ e) => {
+        const target = /** @type {HTMLElement} */ (e.target);
+        const el = target ? /** @type {HTMLElement} */ (target.closest('[data-tip]')) : null;
         if (el && el !== activeEl) show(el);
     });
-    document.addEventListener('mouseout', (e) => {
-        const el = e.target.closest('[data-tip]');
+    document.addEventListener('mouseout', (/** @type {MouseEvent} */ e) => {
+        const target = /** @type {HTMLElement} */ (e.target);
+        const el = target ? /** @type {HTMLElement} */ (target.closest('[data-tip]')) : null;
         if (el && el === activeEl) hide();
     });
     document.addEventListener('mousedown', hide); // hide on any click
@@ -774,7 +821,7 @@ function startTour() {
     // Close README if open so it doesn't block the tour visually
     const aboutWin = document.getElementById('about');
     if (aboutWin) aboutWin.remove();
-    if (typeof window.va === 'function') window.va('event', { name: 'tour_started' });
+    if (typeof _w.va === 'function') _w.va('event', { name: 'tour_started' });
 
     const overlay = document.createElement('div');
     overlay.id = 'tour-overlay';
@@ -795,22 +842,25 @@ function startTour() {
         </div>
     `;
 
-    document.body.append(overlay, spotlight, callout);
+    if(document.body) document.body.append(overlay, spotlight, callout);
 
     const titleEl   = callout.querySelector('#tour-title');
     const bodyEl    = callout.querySelector('#tour-body');
     const stepNumEl = callout.querySelector('#tour-step-num');
-    const prevBtn   = callout.querySelector('#tour-prev');
-    const nextBtn   = callout.querySelector('#tour-next');
-    const skipBtn   = callout.querySelector('#tour-skip');
+    const prevBtn   = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-prev'));
+    const nextBtn   = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-next'));
+    const skipBtn   = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-skip'));
+    if (!titleEl || !bodyEl || !stepNumEl || !prevBtn || !nextBtn || !skipBtn) return;
 
     let stepIdx = 0;
 
+    /** @param {boolean} completed */
     const cleanup = (completed) => {
         overlay.remove(); spotlight.remove(); callout.remove();
         if (completed) { try { localStorage.setItem('econos.tourSeen', '1'); } catch (_) {} }
     };
 
+    /** @param {HTMLElement|null} target */
     const positionAround = (target) => {
         if (!target) {
             spotlight.style.opacity = '0';
@@ -850,12 +900,12 @@ function startTour() {
         const step = TOUR_STEPS[stepIdx];
         if (step.focusWindow) {
             const w = document.getElementById(step.focusWindow === 'process-explorer' ? 'processes' : step.focusWindow);
-            if (w) window.econWM.focusWindow(w);
-            else launchWindow(step.focusWindow);
+            if (w) _w.econWM.focusWindow(w);
+            else if(_w.launchWindow) _w.launchWindow(step.focusWindow);
         }
         titleEl.textContent = step.title;
         bodyEl.textContent  = step.body;
-        stepNumEl.textContent = stepIdx + 1;
+        stepNumEl.textContent = String(stepIdx + 1);
         prevBtn.disabled = stepIdx === 0;
         nextBtn.textContent = stepIdx === TOUR_STEPS.length - 1 ? 'Done' : 'Next →';
         // Targets in just-launched windows need a paint cycle before getBoundingClientRect is meaningful.
@@ -864,7 +914,7 @@ function startTour() {
 
     nextBtn.addEventListener('click', () => {
         if (stepIdx === TOUR_STEPS.length - 1) {
-            if (typeof window.va === 'function') window.va('event', { name: 'tour_completed' });
+            if (typeof _w.va === 'function') _w.va('event', { name: 'tour_completed' });
             return cleanup(true);
         }
         stepIdx++; renderStep();
@@ -873,16 +923,16 @@ function startTour() {
         if (stepIdx > 0) { stepIdx--; renderStep(); }
     });
     skipBtn.addEventListener('click', () => {
-        if (typeof window.va === 'function') {
+        if (typeof _w.va === 'function') {
             // step is 1-indexed in event data so we can see *where* people drop off
-            window.va('event', { name: 'tour_skipped', data: { step: stepIdx + 1 } });
+            _w.va('event', { name: 'tour_skipped', data: { step: stepIdx + 1 } });
         }
         cleanup(true);
     });
 
     renderStep();
 }
-window.startTour = startTour;
+_w.startTour = startTour;
 
 // --- theme cycling: dark / light / system ---
 // The inline <head> script resolves and applies the initial theme before
@@ -890,23 +940,28 @@ window.startTour = startTour;
 // 'system' mode actually follows the OS theme changes in real time.
 
 const THEME_KEY = 'econos.themePref';
+/** @type {Object<string, string>} */
 const THEME_ICONS = { dark: 'ph-moon', light: 'ph-sun', system: 'ph-desktop' };
+/** @type {Object<string, string>} */
 const THEME_TIPS  = {
     dark:   'Theme: dark (click for light)',
     light:  'Theme: light (click for system)',
     system: 'Theme: system (click for dark)',
 };
+/** @type {Object<string, string>} */
 const THEME_CYCLE = { dark: 'light', light: 'system', system: 'dark' };
 
 function getThemePref() {
     try { return localStorage.getItem(THEME_KEY) || 'system'; } catch (_) { return 'system'; }
 }
+/** @param {string} pref */
 function resolveTheme(pref) {
     if (pref === 'system') {
         return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     }
     return pref;
 }
+/** @param {string} pref */
 function applyTheme(pref) {
     const resolved = resolveTheme(pref);
     document.documentElement.dataset.theme = resolved;
@@ -918,23 +973,25 @@ function applyTheme(pref) {
     // Track preference change as an analytics event (only when explicitly cycled,
     // not on first-paint apply — see setThemePref).
 }
+/** @param {string} pref */
 function setThemePref(pref) {
     try { localStorage.setItem(THEME_KEY, pref); } catch (_) {}
     applyTheme(pref);
-    if (typeof window.va === 'function') {
-        window.va('event', { name: 'theme_changed', data: { pref } });
+    if (typeof _w.va === 'function') {
+        _w.va('event', { name: 'theme_changed', data: { pref } });
     }
 }
-window.cycleTheme = function () {
+_w.cycleTheme = function () {
     setThemePref(THEME_CYCLE[getThemePref()]);
 };
 
 // --- boot ---
 
 document.addEventListener('DOMContentLoaded', () => {
-    window.econWM = new WindowManager();
-    window.kernelClient = new KernelClient();
-    const wm = window.econWM;
+    _w.econWM = new WindowManager();
+    _w.kernelClient = new KernelClient();
+    const wm = _w.econWM;
+    if (!wm) return;
 
     setupTooltips();
 
@@ -951,7 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bootWin = wm.createWindow('boot-loader', 'EconOS Boot', 100, 50, 420, 280,
         '<div id="boot-log" class="font-mono text-[12px] text-terminal-green space-y-1"></div>'
     );
-    const bootLog = document.getElementById('boot-log');
+    const bootLog = document.getElementById('boot-log'); if(!bootLog) return;
     const messages = [
         '[    0.000] Initializing EconOS Kernel v5.4...',
         '[    0.124] Attaching to shared market shard /ws...',
@@ -969,23 +1026,24 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(bootInterval);
             setTimeout(() => {
                 bootWin.remove();
-                launchWindow('macro-monitor');
-                launchWindow('process-explorer');
+                if(_w.launchWindow) _w.launchWindow('macro-monitor');
+                if(_w.launchWindow) _w.launchWindow('process-explorer');
                 // First-visit only: show the README/about window so newcomers
                 // know what they're looking at. Repeat visitors get the
                 // dashboard clean; the ? icon in the taskbar reopens it.
                 let seen = false;
                 try { seen = !!localStorage.getItem('econos.aboutSeen'); } catch (_) {}
-                if (!seen) launchWindow('about');
+                if (!seen) if(_w.launchWindow) _w.launchWindow('about');
             }, 800);
         }
     }, 350);
 
     // taskbar status: clock + kernel step + connection state
     const sysTime = document.getElementById('sys-time');
-    setInterval(() => { sysTime.innerText = new Date().toLocaleTimeString(); }, 1000);
+    if (sysTime) setInterval(() => { sysTime.innerText = new Date().toLocaleTimeString(); }, 1000);
 
-    const taskMeta = document.getElementById('sys-time').parentElement;
+    const taskMeta = sysTime ? sysTime.parentElement : null;
+    if (!taskMeta) return;
     const stepBadge = document.createElement('span');
     stepBadge.id = 'sys-step';
     stepBadge.className = 'text-terminal-cyan';
@@ -1000,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', () => {
     linkBadge.setAttribute('data-tip', 'WebSocket connection state — LIVE means kernel ticks are streaming');
     taskMeta.insertBefore(linkBadge, taskMeta.firstChild);
 
-    window.kernelClient.subscribe((s, connected) => {
+    _w.kernelClient.subscribe((/** @type {any} */ s, /** @type {boolean=} */ connected) => {
         const label = connected ? 'LIVE' : (s ? 'RECONNECTING' : 'CONNECTING');
         linkBadge.innerHTML = `<i class="ph-fill ph-circle text-[8px]"></i> ${label}`;
         linkBadge.className = (connected ? 'text-terminal-green' : 'text-terminal-gold') + ' flex items-center gap-1.5';
