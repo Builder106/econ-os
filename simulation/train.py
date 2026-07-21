@@ -68,5 +68,5 @@ def train_and_sim():
     print(f"[train] Wrote {len(data_log)} cycles -> {TRACE_PATH}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     train_and_sim()
