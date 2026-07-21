@@ -1,9 +1,7 @@
 import functools
-import gymnasium
 import numpy as np
-from gymnasium.spaces import Box, Dict
+from gymnasium.spaces import Box
 from pettingzoo import ParallelEnv
-from pettingzoo.utils import parallel_to_aec, wrappers
 
 class MarketEnv(ParallelEnv):
     metadata = {"render_modes": ["human"], "name": "market_v0"}

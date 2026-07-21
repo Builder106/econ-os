@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 from simulation.environment import MarketEnv
+from simulation.logic import utility_function, production_function, calculate_gini
 
 def test_cobb_douglas_utility():
     """Verify that utility is 0 if either consumption or leisure is 0."""
@@ -36,8 +37,9 @@ def test_money_conservation():
             actions[agent] = env.action_space(agent).sample()
         
         obs, rewards, terminations, truncations, infos = env.step(actions)
-        if any(terminations.values()): break
-    
+        if any(terminations.values()):
+            break
+
     final_money = get_total_money()
     
     # In a market with no credit creation/destruction, money should be perfectly conserved.
@@ -85,8 +87,6 @@ def test_environment_branches():
     # test coverage for render and close
     env.render()
     env.close()
-
-from simulation.logic import utility_function, production_function, calculate_gini
 
 def test_logic_functions():
     # test utility_function

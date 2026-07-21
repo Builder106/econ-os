@@ -1,6 +1,4 @@
-import os
 import json
-import pytest
 from unittest.mock import patch, MagicMock
 from simulation.train import train_and_sim, MODELS_DIR, DATA_DIR, CONSUMER_PATH, PRODUCER_PATH, TRACE_PATH
 

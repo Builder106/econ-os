@@ -12,8 +12,6 @@ import os
 import time
 from typing import Optional, Set
 
-import numpy as np
-
 from simulation.environment import MarketEnv
 from simulation.logic import calculate_gini
 
