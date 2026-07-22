@@ -4,8 +4,8 @@ import json
 import pytest
 from fastapi.testclient import TestClient
 
-from server.main import app, kernel, _ack
-from server.kernel import _try_load_ppo, KernelService, CONSUMER_MODEL_PATH
+from server.main import app, _ack
+from server.kernel import _try_load_ppo, KernelService
 
 
 def test_healthz_endpoint():
