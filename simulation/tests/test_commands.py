@@ -128,3 +128,48 @@ def test_pause_resume_toggles_kernel(kernel, commands_module):
     assert kernel.paused is True
     commands_module.dispatch(kernel, conn, "resume")
     assert kernel.paused is False
+
+
+def test_command_error_branches(kernel, commands_module):
+    conn = commands_module.Connection(is_admin=True)
+
+    # sudo missing token
+    assert not commands_module.dispatch(kernel, conn, "sudo")["ok"]
+
+    # tax errors
+    assert not commands_module.dispatch(kernel, conn, "tax")["ok"]
+    assert not commands_module.dispatch(kernel, conn, "tax abc")["ok"]
+    assert not commands_module.dispatch(kernel, conn, "tax -10")["ok"]
+
+    # shock errors
+    assert not commands_module.dispatch(kernel, conn, "shock")["ok"]
+    assert not commands_module.dispatch(kernel, conn, "shock wage")["ok"]
+    assert not commands_module.dispatch(kernel, conn, "shock wage abc")["ok"]
+    assert not commands_module.dispatch(kernel, conn, "shock wage 99")["ok"]
+
+    # inspect error
+    assert not commands_module.dispatch(kernel, conn, "inspect")["ok"]
+
+    # who and gini commands
+    who_res = commands_module.dispatch(kernel, conn, "who")
+    assert who_res["ok"]
+    assert "role=admin" in who_res["output"]
+
+    gini_res = commands_module.dispatch(kernel, conn, "gini")
+    assert gini_res["ok"]
+    assert "gini =" in gini_res["output"]
+
+    # top count out of range
+    assert not commands_module.dispatch(kernel, conn, "top 101")["ok"]
+
+    # reset command
+    reset_res = commands_module.dispatch(kernel, conn, "reset")
+    assert reset_res["ok"]
+    assert "kernel reset" in reset_res["output"]
+
+    # unhandled syntax error (unclosed quote)
+    err = commands_module.dispatch(kernel, conn, 'tax "unclosed quote')
+    assert not err["ok"]
+    assert "parse error" in err["error"]
+
+

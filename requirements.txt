@@ -6,5 +6,9 @@ numpy
 pandas
 matplotlib
 pytest
+pytest-cov
+pytest-asyncio
+httpx
 fastapi
 uvicorn[standard]
+
