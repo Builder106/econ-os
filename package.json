@@ -8,6 +8,7 @@
     "test:e2e": "bddgen && playwright test",
     "test:live": "playwright test --config playwright.live.config.js"
   },
+  "packageManager": "npm@10.9.9",
   "devDependencies": {
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.4.0",

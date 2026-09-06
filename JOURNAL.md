@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-06 — Standardized Playwright tooling on Node 24 #decision
+
+Pinned the dashboard Playwright tooling to Node 24 in CI and npm 10.9.9 in the existing package manifest. The Python 3.14 application runtime and Docker configuration remain unchanged.
+
 ## 2026-08-14: Accessible plain-English documentation update #decision
 
 Refactored the README introductory pitch and tagline to introduce the multi-agent economic simulator as a flight-simulator sandbox for testing economic policies. Framed the AI agents and market behavior in clear, non-specialist terms while maintaining the rigorous PPO/MARL and PettingZoo documentation.
