@@ -143,14 +143,31 @@ def test_websocket_command_dispatch():
 def test_websocket_admin_flow_and_broadcast():
     """Verify sudo, admin commands, and broadcast events over WebSocket."""
     with TestClient(app) as client:
-        with client.websocket_connect("/ws") as ws:
-            _ = ws.receive_json()
+        with (
+            client.websocket_connect("/ws") as admin_ws,
+            client.websocket_connect("/ws") as viewer_ws,
+        ):
+            _ = admin_ws.receive_json()
+            _ = viewer_ws.receive_json()
 
             # Command requiring admin before sudo
-            ws.send_json({"type": "cmd", "id": 10, "line": "pause"})
-            ack_unauth = ws.receive_json()
+            admin_ws.send_json({"type": "cmd", "id": 10, "line": "pause"})
+            ack_unauth = admin_ws.receive_json()
             assert ack_unauth["ok"] is False
             assert "requires admin" in ack_unauth["error"]
+
+            admin_ws.send_json({"type": "cmd", "id": 11, "line": "sudo test-token-xyz"})
+            assert admin_ws.receive_json()["ok"] is True
+            admin_ws.send_json({"type": "cmd", "id": 12, "line": "pause"})
+            admin_event = admin_ws.receive_json()
+            assert admin_event == {"type": "event", "kind": "paused", "by": "admin", "detail": {}}
+            pause_ack = admin_ws.receive_json()
+            assert pause_ack["type"] == "ack"
+            assert pause_ack["id"] == 12
+            assert pause_ack["output"] == "paused."
+
+            viewer_event = viewer_ws.receive_json()
+            assert viewer_event == admin_event
 
 
 def test_unhandled_route_errors():

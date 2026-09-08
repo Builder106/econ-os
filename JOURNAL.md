@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-07 — Kept the admin broadcast invariant in deterministic QA #decision
+
+The dashboard smoke test now uses two local WebSocket clients and accounts for the server broadcasting an admin event before returning that command's acknowledgement. This keeps the shared-kernel contract explicit without relying on a live deployment, and the test retains the warnings-as-errors and 100% coverage gates.
+
 ## 2026-09-06 — Standardized Playwright tooling on Node 24 #decision
 
 Pinned the dashboard Playwright tooling to Node 24 in CI and npm 10.9.9 in the existing package manifest. The Python 3.14 application runtime and Docker configuration remain unchanged.

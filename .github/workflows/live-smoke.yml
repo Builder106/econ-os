@@ -1,0 +1,38 @@
+name: Live deployment smoke
+
+on:
+  schedule:
+    - cron: '17 13 * * 1'
+  workflow_dispatch:
+    inputs:
+      live_base_url:
+        description: Deployed dashboard URL
+        required: false
+        default: https://econ-os.vercel.app
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Deployed dashboard and remote kernel smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install Playwright dependencies from lockfile
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Check deployed dashboard
+        env:
+          LIVE_BASE_URL: ${{ inputs.live_base_url || 'https://econ-os.vercel.app' }}
+        run: npx playwright test --config playwright.live.config.js
