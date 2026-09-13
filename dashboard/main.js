@@ -1,6 +1,76 @@
 // @ts-check
 /// <reference path="./global.d.ts" />
-const _w = /** @type {any} */ (window);
+
+/**
+ * @typedef {Object} AgentRecord
+ * @property {string} id
+ * @property {string} role
+ * @property {number} balance
+ * @property {number} reward
+ */
+
+/**
+ * @typedef {Object} MarketState
+ * @property {number} wage
+ * @property {number} price
+ */
+
+/**
+ * @typedef {Object} MetricsState
+ * @property {number} gini
+ * @property {number} total_money
+ * @property {number} treasury
+ */
+
+/**
+ * @typedef {Object} PolicyState
+ * @property {number} tax_rate
+ */
+
+/**
+ * @typedef {Object} KernelState
+ * @property {number} step
+ * @property {number} uptime_s
+ * @property {boolean} [policies_loaded]
+ * @property {AgentRecord[]} agents
+ * @property {MarketState} market
+ * @property {MetricsState} metrics
+ * @property {PolicyState} policy
+ * @property {Record<string, unknown>} [extra]
+ */
+
+/**
+ * @typedef {Object} KernelEvent
+ * @property {string} [kind]
+ * @property {string} [by]
+ * @property {Record<string, unknown>} [detail]
+ */
+
+/**
+ * @typedef {Object} AckMessage
+ * @property {string} [type]
+ * @property {string} [id]
+ * @property {boolean} [ok]
+ * @property {string} [error]
+ * @property {string} [output]
+ * @property {{ is_admin?: boolean }} [auth]
+ */
+
+/**
+ * @typedef {Window & typeof globalThis & {
+ *   econWM?: WindowManager;
+ *   kernelClient?: KernelClient;
+ *   launchWindow?: (type: string) => HTMLElement | undefined;
+ *   startTour?: () => void;
+ *   cycleTheme?: () => void;
+ *   va?: (event: string, properties?: Record<string, unknown>) => void;
+ *   ECONOS_KERNEL_WS_URL?: string;
+ *   Chart?: new (ctx: CanvasRenderingContext2D | null, config: Record<string, unknown>) => { data: { labels: (number | string)[], datasets: Array<{ data: number[] }> }, update: (mode?: string) => void };
+ *   [key: string]: unknown;
+ * }} CustomWindow
+ */
+
+const _w = /** @type {CustomWindow} */ (window);
 /**
  * EconOS Window Manager + Kernel Client
  * AESTHETIC_DNA: Glassmorphic Bloomberg-grade desktop OS, fed by live WebSocket telemetry.
@@ -74,7 +144,7 @@ class WindowManager {
         `;
 
         const header = win.querySelector('.window-header');
-        if(header) header.addEventListener('mousedown', (/** @type {any} */ e) => this.startDragging(e, win));
+        if(header) header.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => this.startDragging(e, win));
 
         if(this.desktop) this.desktop.appendChild(win);
         this.windows.push(win);
@@ -177,13 +247,14 @@ class KernelClient {
         if (msg.type === 'ack') {
             const p = this._pendingAcks.get(msg.id);
             if (!p) return;
+            const ackMsg = /** @type {AckMessage} */ (msg);
             if (true) {
                 clearTimeout(p.timer);
                 this._pendingAcks.delete(msg.id);
                 if (msg.ok) p.resolve(msg);
-                else p.reject(Object.assign(new Error(/** @type {any} */ (msg).error || 'command failed'), { ack: msg }));
+                else p.reject(Object.assign(new Error(ackMsg.error || 'command failed'), { ack: msg }));
             }
-            if (/** @type {any} */ (msg).auth && /** @type {any} */ (msg).auth.is_admin && !this.isAdmin) {
+            if (ackMsg.auth && ackMsg.auth.is_admin && !this.isAdmin) {
                 this.isAdmin = true;
                 this._notifyAdmin();
                 if (typeof _w.va === 'function') _w.va('event', { name: 'sudo_succeeded' });
@@ -197,7 +268,7 @@ class KernelClient {
     }
 
     /** @param {string} line
-     * @returns {Promise<any>} */
+     * @returns {Promise<object>} */
     sendCommand(line) {
         return new Promise((resolve, reject) => {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -290,7 +361,7 @@ _w.launchWindow = function(/** @type {string} */ type) {
             </div>`);
         const rowsEl = document.getElementById('proc-rows');
         if (!rowsEl) return;
-        const unsub = kc.subscribe((/** @type {any} */ s, /** @type {boolean} */ connected) => {
+        const unsub = kc.subscribe((/** @type {KernelState} */ s, /** @type {boolean} */ connected) => {
             if (!document.getElementById('proc-rows')) { unsub(); return; }
             if (!s) {
                 rowsEl.innerHTML = `<div class="text-white/55 italic">${
@@ -298,7 +369,7 @@ _w.launchWindow = function(/** @type {string} */ type) {
                 }</div>`;
                 return;
             }
-            rowsEl.innerHTML = s.agents.map((/** @type {any} */ a) => {
+            rowsEl.innerHTML = s.agents.map((/** @type {AgentRecord} */ a) => {
                 const isCons = a.role === 'consumer';
                 const dotColor = isCons ? 'var(--terminal-cyan)' : 'var(--terminal-gold)';
                 const reward = (a.reward >= 0 ? '+' : '') + a.reward.toFixed(3);
@@ -405,10 +476,10 @@ _w.launchWindow = function(/** @type {string} */ type) {
                         data: { pct: slider.value },
                     });
                 }
-            } catch (err) { console.warn('tax cmd failed:', (/** @type {any} */ (err)).message); }
+            } catch (err) { console.warn('tax cmd failed:', (/** @type {Error} */ (err)).message); }
         });
 
-        document.querySelectorAll('#policy-manager [data-shock]').forEach((/** @type {any} */ btn) => {
+        document.querySelectorAll('#policy-manager [data-shock]').forEach((/** @type {HTMLButtonElement} */ btn) => {
             btn.addEventListener('click', async () => {
                 try {
                     await kc.sendCommand(`shock ${btn.dataset.shock} ${btn.dataset.pct}`);
@@ -418,17 +489,17 @@ _w.launchWindow = function(/** @type {string} */ type) {
                             data: { kind: btn.dataset.shock, pct: btn.dataset.pct },
                         });
                     }
-                } catch (err) { console.warn('shock cmd failed:', (/** @type {any} */ (err)).message); }
+                } catch (err) { console.warn('shock cmd failed:', (/** @type {Error} */ (err)).message); }
             });
         });
-        document.querySelectorAll('#policy-manager [data-cmd]').forEach((/** @type {any} */ btn) => {
+        document.querySelectorAll('#policy-manager [data-cmd]').forEach((/** @type {HTMLButtonElement} */ btn) => {
             btn.addEventListener('click', async () => {
                 try { await kc.sendCommand(btn.dataset.cmd); }
-                catch (err) { console.warn(`${btn.dataset.cmd} failed:`, (/** @type {any} */ (err)).message); }
+                catch (err) { console.warn(`${btn.dataset.cmd} failed:`, (/** @type {Error} */ (err)).message); }
             });
         });
 
-        const unsubTick = kc.subscribe((/** @type {any} */ s) => {
+        const unsubTick = kc.subscribe((/** @type {KernelState} */ s) => {
             if (!document.getElementById('pm-tax')) { unsubTick(); return; }
             if (!s) return;
             const taxPct = s.policy.tax_rate * 100;
@@ -451,7 +522,7 @@ _w.launchWindow = function(/** @type {string} */ type) {
             authLabel.className = isAdmin ? 'text-terminal-green' : 'text-terminal-red';
             slider.disabled = !isAdmin;
             slider.classList.toggle('opacity-40', !isAdmin);
-            document.querySelectorAll('#policy-manager .pm-admin').forEach((/** @type {any} */ b) => {
+            document.querySelectorAll('#policy-manager .pm-admin').forEach((/** @type {HTMLButtonElement} */ b) => {
                 b.disabled = !isAdmin;
                 b.classList.toggle('opacity-40', !isAdmin);
                 b.classList.toggle('cursor-not-allowed', !isAdmin);
@@ -526,11 +597,11 @@ _w.launchWindow = function(/** @type {string} */ type) {
                 const ack = await kc.sendCommand(line);
                 if (ack.output) append(ack.output, 'text-terminal-green');
             } catch (err) {
-                append('! ' + ((/** @type {any} */ (err)).message || 'command failed'), 'text-terminal-red');
+                append('! ' + ((/** @type {Error} */ (err)).message || 'command failed'), 'text-terminal-red');
             }
         });
 
-        const unsubEvt = kc.onEvent((/** @type {any} */ evt) => {
+        const unsubEvt = kc.onEvent((/** @type {KernelEvent} */ evt) => {
             if (!document.getElementById('shell-output')) { unsubEvt(); return; }
             const detail = Object.keys(evt.detail || {}).length ? '  ' + JSON.stringify(evt.detail) : '';
             append(`* [${(evt.by || '?').toUpperCase()}] ${evt.kind}${detail}`, 'text-terminal-magenta');
@@ -634,7 +705,7 @@ sudo &lt;token&gt;          # Fed mode (admin)</pre>
             if (s < 3600) return `${Math.floor(s/60)}m ${Math.floor(s%60)}s`;
             return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`;
         };
-        const unsubAbout = kc.subscribe((/** @type {any} */ s) => {
+        const unsubAbout = kc.subscribe((/** @type {KernelState} */ s) => {
             if (!document.getElementById('about-step')) { unsubAbout(); return; }
             if (!s) return;
             const as = document.getElementById('about-step'); if(as) as.textContent = s.step.toLocaleString();
@@ -695,7 +766,7 @@ function initMacroChart(kc) {
     };
 
     let lastStep = -1;
-    const unsub = kc.subscribe((/** @type {any} */ s, /** @type {boolean} */ connected) => {
+    const unsub = kc.subscribe((/** @type {KernelState} */ s, /** @type {boolean} */ connected) => {
         if (!document.getElementById('mainChart')) { unsub(); return; }
         const st = statusEl();
         if (st) {
@@ -1038,7 +1109,7 @@ document.addEventListener('DOMContentLoaded', () => {
     linkBadge.setAttribute('data-tip', 'WebSocket connection state: LIVE means kernel ticks are streaming');
     taskMeta.insertBefore(linkBadge, taskMeta.firstChild);
 
-    _w.kernelClient.subscribe((/** @type {any} */ s, /** @type {boolean=} */ connected) => {
+    if (_w.kernelClient) _w.kernelClient.subscribe((/** @type {KernelState} */ s, /** @type {boolean=} */ connected) => {
         const label = connected ? 'LIVE' : (s ? 'RECONNECTING' : 'CONNECTING');
         linkBadge.innerHTML = `<i class="ph-fill ph-circle text-[8px]"></i> ${label}`;
         linkBadge.className = (connected ? 'text-terminal-green' : 'text-terminal-gold') + ' flex items-center gap-1.5';
