@@ -136,11 +136,13 @@ class KernelClient {
         /** @type {Set<Function>} */ this.eventListeners = new Set();
         /** @type {Set<Function>} */ this.adminListeners = new Set();
         /** @type {any} */ this.state = null;
+        /** @type {Record<string, unknown> | null} */ this.state = null;
         this.connected = false;
         this.isAdmin = false;
         this._reconnectMs = 800;
         this._cmdSeq = 0;
         /** @type {Map<string, {resolve: function, reject: function, timer: any}>} */ this._pendingAcks = new Map();
+        /** @type {Map<string, {resolve: function, reject: function, timer: ReturnType<typeof setTimeout> | number}>} */ this._pendingAcks = new Map();
         this._connect();
     }
 
@@ -182,8 +184,10 @@ class KernelClient {
                 this._pendingAcks.delete(msg.id);
                 if (msg.ok) p.resolve(msg);
                 else p.reject(Object.assign(new Error(/** @type {any} */ (msg).error || 'command failed'), { ack: msg }));
+                else p.reject(Object.assign(new Error(/** @type {Record<string, unknown>} */ (msg).error || 'command failed'), { ack: msg }));
             }
             if (/** @type {any} */ (msg).auth && /** @type {any} */ (msg).auth.is_admin && !this.isAdmin) {
+            if (/** @type {Record<string, unknown>} */ (msg).auth && /** @type {Record<string, unknown>} */ (msg).auth.is_admin && !this.isAdmin) {
                 this.isAdmin = true;
                 this._notifyAdmin();
                 if (typeof _w.va === 'function') _w.va('event', { name: 'sudo_succeeded' });
@@ -198,6 +202,7 @@ class KernelClient {
 
     /** @param {string} line
      * @returns {Promise<any>} */
+     * @returns {Promise<Record<string, unknown>>} */
     sendCommand(line) {
         return new Promise((resolve, reject) => {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
