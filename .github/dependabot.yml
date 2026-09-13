@@ -16,6 +16,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "typescript"
+        versions: [">= 7.0.0"]
     groups:
       minor-and-patch:
         patterns:
@@ -32,9 +35,6 @@ updates:
       actions:
         patterns:
           - "*"
-    ignore:
-      - dependency-name: "typescript"
-        versions: [">= 7.0.0"]
 
   - package-ecosystem: "docker"
     directory: "/"
