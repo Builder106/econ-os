@@ -60,7 +60,7 @@
  * @typedef {Window & typeof globalThis & {
  *   econWM?: WindowManager;
  *   kernelClient?: KernelClient;
- *   launchWindow?: (type: string) => HTMLElement | undefined;
+ *   launchWindow?: (type: string) => void;
  *   startTour?: () => void;
  *   cycleTheme?: () => void;
  *   va?: (event: string, properties?: Record<string, unknown>) => void;
@@ -144,9 +144,9 @@ class WindowManager {
         `;
 
         const header = win.querySelector('.window-header');
-        if(header) header.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => this.startDragging(e, win));
+        if (header) header.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => this.startDragging(e, win));
 
-        if(this.desktop) this.desktop.appendChild(win);
+        if (this.desktop) this.desktop.appendChild(win);
         this.windows.push(win);
         this.focusWindow(win);
         return win;
@@ -167,7 +167,7 @@ class WindowManager {
         this.dragWin = win;
         this.offsetX = e.clientX - win.offsetLeft;
         this.offsetY = e.clientY - win.offsetTop;
-        if(document.body) document.body.style.cursor = 'move';
+        if (document.body) document.body.style.cursor = 'move';
     }
 
     /** @param {MouseEvent} e */
@@ -181,7 +181,7 @@ class WindowManager {
     stopDragging() {
         this.isDragging = false;
         this.dragWin = null;
-        if(document.body) document.body.style.cursor = 'default';
+        if (document.body) document.body.style.cursor = 'default';
     }
 }
 
@@ -226,7 +226,7 @@ class KernelClient {
             this._notifyTick();
             this._scheduleReconnect();
         };
-        if(this.ws) this.ws.onerror = () => { try { if(this.ws) this.ws.close(); } catch (_) {} };
+        if (this.ws) this.ws.onerror = () => { try { if (this.ws) this.ws.close(); } catch (_) { } };
     }
 
     _scheduleReconnect() {
@@ -268,7 +268,7 @@ class KernelClient {
     }
 
     /** @param {string} line
-     * @returns {Promise<object>} */
+     * @returns {Promise<AckMessage>} */
     sendCommand(line) {
         return new Promise((resolve, reject) => {
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -340,7 +340,7 @@ const procIdFor = (agentId) => {
 const procNameFor = (agentId) =>
     agentId.startsWith('consumer') ? 'CONSUMER_POLICY_NET' : 'PRODUCER_RL_OPTIMIZER';
 
-_w.launchWindow = function(/** @type {string} */ type) {
+_w.launchWindow = function (/** @type {string} */ type) {
     const wm = _w.econWM;
     const kc = _w.kernelClient;
     if (!wm || !kc) return;
@@ -364,9 +364,8 @@ _w.launchWindow = function(/** @type {string} */ type) {
         const unsub = kc.subscribe((/** @type {KernelState} */ s, /** @type {boolean} */ connected) => {
             if (!document.getElementById('proc-rows')) { unsub(); return; }
             if (!s) {
-                rowsEl.innerHTML = `<div class="text-white/55 italic">${
-                    connected ? 'connected: awaiting first tick…' : 'connecting to kernel…'
-                }</div>`;
+                rowsEl.innerHTML = `<div class="text-white/55 italic">${connected ? 'connected: awaiting first tick…' : 'connecting to kernel…'
+                    }</div>`;
                 return;
             }
             rowsEl.innerHTML = s.agents.map((/** @type {AgentRecord} */ a) => {
@@ -455,8 +454,8 @@ _w.launchWindow = function(/** @type {string} */ type) {
             return `<button class="pm-admin py-1 text-[12px] border border-white/10 ${cls} hover:bg-white/5"
                 data-shock="${target}" data-pct="${pct}">${sign}${pct}%</button>`;
         };
-        const wSh = document.getElementById('pm-wage-shocks'); if(wSh) wSh.innerHTML  = SHOCKS.map(p => mkBtn('wage', p)).join('');
-        const pSh = document.getElementById('pm-price-shocks'); if(pSh) pSh.innerHTML = SHOCKS.map(p => mkBtn('price', p)).join('');
+        const wSh = document.getElementById('pm-wage-shocks'); if (wSh) wSh.innerHTML = SHOCKS.map(p => mkBtn('wage', p)).join('');
+        const pSh = document.getElementById('pm-price-shocks'); if (pSh) pSh.innerHTML = SHOCKS.map(p => mkBtn('price', p)).join('');
 
         const slider = /** @type {HTMLInputElement | null} */ (document.getElementById('pm-tax-slider'));
         const taxLabel = document.getElementById('pm-tax');
@@ -465,8 +464,8 @@ _w.launchWindow = function(/** @type {string} */ type) {
 
         let userIsDragging = false;
         slider.addEventListener('pointerdown', () => { userIsDragging = true; });
-        slider.addEventListener('pointerup',   () => { userIsDragging = false; });
-        slider.addEventListener('input',  () => { taxLabel.textContent = parseInt(slider.value, 10).toFixed(2) + '%'; });
+        slider.addEventListener('pointerup', () => { userIsDragging = false; });
+        slider.addEventListener('input', () => { taxLabel.textContent = parseInt(slider.value, 10).toFixed(2) + '%'; });
         slider.addEventListener('change', async () => {
             try {
                 await kc.sendCommand(`tax ${slider.value}`);
@@ -507,9 +506,9 @@ _w.launchWindow = function(/** @type {string} */ type) {
                 slider.value = String(Math.round(taxPct));
                 taxLabel.textContent = taxPct.toFixed(2) + '%';
             }
-            const pmStep = document.getElementById('pm-step'); if(pmStep) pmStep.textContent = s.step;
-            const pmUptime = document.getElementById('pm-uptime'); if(pmUptime) pmUptime.textContent = s.uptime_s;
-            const pmPol = document.getElementById('pm-policies'); if(pmPol) pmPol.innerHTML = s.policies_loaded
+            const pmStep = document.getElementById('pm-step'); if (pmStep) pmStep.textContent = String(s.step);
+            const pmUptime = document.getElementById('pm-uptime'); if (pmUptime) pmUptime.textContent = String(s.uptime_s);
+            const pmPol = document.getElementById('pm-policies'); if (pmPol) pmPol.innerHTML = s.policies_loaded
                 ? '<i class="ph-bold ph-check-circle text-terminal-green"></i>&nbsp; PPO loaded'
                 : '<i class="ph-bold ph-dice-five text-white/50"></i>&nbsp; random fallback';
         });
@@ -702,19 +701,19 @@ sudo &lt;token&gt;          # Fed mode (admin)</pre>
         const formatUptime = (s) => {
             if (s == null) return '—';
             if (s < 60) return `${Math.floor(s)}s`;
-            if (s < 3600) return `${Math.floor(s/60)}m ${Math.floor(s%60)}s`;
-            return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`;
+            if (s < 3600) return `${Math.floor(s / 60)}m ${Math.floor(s % 60)}s`;
+            return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
         };
         const unsubAbout = kc.subscribe((/** @type {KernelState} */ s) => {
             if (!document.getElementById('about-step')) { unsubAbout(); return; }
             if (!s) return;
-            const as = document.getElementById('about-step'); if(as) as.textContent = s.step.toLocaleString();
-            const au = document.getElementById('about-uptime'); if(au) au.textContent = formatUptime(s.uptime_s);
+            const as = document.getElementById('about-step'); if (as) as.textContent = s.step.toLocaleString();
+            const au = document.getElementById('about-uptime'); if (au) au.textContent = formatUptime(s.uptime_s);
             // viewers count isn't in the snapshot; fall back to '1' (you).
-            const av = document.getElementById('about-viewers'); if(av) av.textContent = '1+';
+            const av = document.getElementById('about-viewers'); if (av) av.textContent = '1+';
         });
 
-        try { localStorage.setItem('econos.aboutSeen', '1'); } catch (_) {}
+        try { localStorage.setItem('econos.aboutSeen', '1'); } catch (_) { }
     }
 };
 
@@ -729,7 +728,7 @@ function initMacroChart(kc) {
         data: {
             labels: [],
             datasets: [
-                { label: 'WAGE',  borderColor: '#FFD700', borderWidth: 1, pointRadius: 0, data: [], tension: 0.2 },
+                { label: 'WAGE', borderColor: '#FFD700', borderWidth: 1, pointRadius: 0, data: [], tension: 0.2 },
                 { label: 'PRICE', borderColor: '#00FF41', borderWidth: 1, pointRadius: 0, data: [], tension: 0.2 }
             ]
         },
@@ -745,10 +744,10 @@ function initMacroChart(kc) {
 
     const MAX_POINTS = 100;
     const statusEl = () => document.getElementById('macro-status');
-    const giniEl   = () => document.getElementById('macro-gini');
-    const moneyEl  = () => document.getElementById('macro-money');
-    const treasEl  = () => document.getElementById('macro-treasury');
-    const taxEl    = () => document.getElementById('macro-tax');
+    const giniEl = () => document.getElementById('macro-gini');
+    const moneyEl = () => document.getElementById('macro-money');
+    const treasEl = () => document.getElementById('macro-treasury');
+    const taxEl = () => document.getElementById('macro-tax');
 
     // Briefly flash an element when its content changes — proof-of-life cue.
     const lastVal = new WeakMap();
@@ -786,17 +785,17 @@ function initMacroChart(kc) {
         }
         chart.update('none');
 
-        setFlashing(giniEl(),  s.metrics.gini.toFixed(3));
+        setFlashing(giniEl(), s.metrics.gini.toFixed(3));
         setFlashing(moneyEl(), '$' + fmtMoney(s.metrics.total_money));
         setFlashing(treasEl(), fmtMoney(s.metrics.treasury));
-        setFlashing(taxEl(),   (s.policy.tax_rate * 100).toFixed(1) + '%');
+        setFlashing(taxEl(), (s.policy.tax_rate * 100).toFixed(1) + '%');
     });
 }
 
 function setupTooltips() {
     const tip = document.createElement('div');
     tip.id = 'tooltip';
-    if(document.body) document.body.appendChild(tip);
+    if (document.body) document.body.appendChild(tip);
 
     /** @type {HTMLElement | null} */
     let activeEl = null;
@@ -824,7 +823,7 @@ function setupTooltips() {
         left = Math.max(half + MARGIN, Math.min(left, window.innerWidth - half - MARGIN));
 
         tip.style.left = `${left}px`;
-        tip.style.top  = `${top}px`;
+        tip.style.top = `${top}px`;
         tip.style.transform = placeBelow ? 'translate(-50%, 0)' : 'translate(-50%, -100%)';
         tip.classList.add('visible');
     };
@@ -902,14 +901,14 @@ function startTour() {
         </div>
     `;
 
-    if(document.body) document.body.append(overlay, spotlight, callout);
+    if (document.body) document.body.append(overlay, spotlight, callout);
 
-    const titleEl   = callout.querySelector('#tour-title');
-    const bodyEl    = callout.querySelector('#tour-body');
+    const titleEl = callout.querySelector('#tour-title');
+    const bodyEl = callout.querySelector('#tour-body');
     const stepNumEl = callout.querySelector('#tour-step-num');
-    const prevBtn   = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-prev'));
-    const nextBtn   = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-next'));
-    const skipBtn   = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-skip'));
+    const prevBtn = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-prev'));
+    const nextBtn = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-next'));
+    const skipBtn = /** @type {HTMLButtonElement | null} */ (callout.querySelector('#tour-skip'));
     if (!titleEl || !bodyEl || !stepNumEl || !prevBtn || !nextBtn || !skipBtn) return;
 
     let stepIdx = 0;
@@ -917,7 +916,7 @@ function startTour() {
     /** @param {boolean} completed */
     const cleanup = (completed) => {
         overlay.remove(); spotlight.remove(); callout.remove();
-        if (completed) { try { localStorage.setItem('econos.tourSeen', '1'); } catch (_) {} }
+        if (completed) { try { localStorage.setItem('econos.tourSeen', '1'); } catch (_) { } }
     };
 
     /** @param {HTMLElement|null} target */
@@ -931,26 +930,26 @@ function startTour() {
         }
         const r = target.getBoundingClientRect();
         spotlight.style.opacity = '1';
-        spotlight.style.top    = `${r.top - 6}px`;
-        spotlight.style.left   = `${r.left - 6}px`;
-        spotlight.style.width  = `${r.width + 12}px`;
+        spotlight.style.top = `${r.top - 6}px`;
+        spotlight.style.left = `${r.left - 6}px`;
+        spotlight.style.width = `${r.width + 12}px`;
         spotlight.style.height = `${r.height + 12}px`;
 
         const cw = 360, ch = callout.offsetHeight || 220;
         let top, left;
         // Prefer below the target; fall back to above; fall back to right.
         if (r.bottom + ch + 24 < window.innerHeight) {
-            top  = r.bottom + 16;
+            top = r.bottom + 16;
             left = r.left + r.width / 2 - cw / 2;
         } else if (r.top - ch - 24 > 0) {
-            top  = r.top - ch - 16;
+            top = r.top - ch - 16;
             left = r.left + r.width / 2 - cw / 2;
         } else {
-            top  = r.top + r.height / 2 - ch / 2;
+            top = r.top + r.height / 2 - ch / 2;
             left = r.right + 16;
         }
         left = Math.max(20, Math.min(left, window.innerWidth - cw - 20));
-        top  = Math.max(20, Math.min(top,  window.innerHeight - ch - 20));
+        top = Math.max(20, Math.min(top, window.innerHeight - ch - 20));
         callout.style.top = `${top}px`;
         callout.style.left = `${left}px`;
         callout.style.transform = 'none';
@@ -961,10 +960,10 @@ function startTour() {
         if (step.focusWindow) {
             const w = document.getElementById(step.focusWindow === 'process-explorer' ? 'processes' : step.focusWindow);
             if (w) _w.econWM.focusWindow(w);
-            else if(_w.launchWindow) _w.launchWindow(step.focusWindow);
+            else if (_w.launchWindow) _w.launchWindow(step.focusWindow);
         }
         titleEl.textContent = step.title;
-        bodyEl.textContent  = step.body;
+        bodyEl.textContent = step.body;
         stepNumEl.textContent = String(stepIdx + 1);
         prevBtn.disabled = stepIdx === 0;
         nextBtn.textContent = stepIdx === TOUR_STEPS.length - 1 ? 'Done' : 'Next →';
@@ -998,9 +997,9 @@ const THEME_KEY = 'econos.themePref';
 /** @type {Object<string, string>} */
 const THEME_ICONS = { dark: 'ph-moon', light: 'ph-sun', system: 'ph-desktop' };
 /** @type {Object<string, string>} */
-const THEME_TIPS  = {
-    dark:   'Theme: dark (click for light)',
-    light:  'Theme: light (click for system)',
+const THEME_TIPS = {
+    dark: 'Theme: dark (click for light)',
+    light: 'Theme: light (click for system)',
     system: 'Theme: system (click for dark)',
 };
 /** @type {Object<string, string>} */
@@ -1028,7 +1027,7 @@ function applyTheme(pref) {
 }
 /** @param {string} pref */
 function setThemePref(pref) {
-    try { localStorage.setItem(THEME_KEY, pref); } catch (_) {}
+    try { localStorage.setItem(THEME_KEY, pref); } catch (_) { }
     applyTheme(pref);
     if (typeof _w.va === 'function') {
         _w.va('event', { name: 'theme_changed', data: { pref } });
@@ -1059,7 +1058,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bootWin = wm.createWindow('boot-loader', 'EconOS Boot', 100, 50, 420, 280,
         '<div id="boot-log" class="font-mono text-[12px] text-terminal-green space-y-1"></div>'
     );
-    const bootLog = document.getElementById('boot-log'); if(!bootLog) return;
+    const bootLog = document.getElementById('boot-log'); if (!bootLog) return;
     const messages = [
         '[    0.000] Initializing EconOS Kernel v5.4...',
         '[    0.124] Attaching to shared market shard /ws...',
@@ -1077,14 +1076,14 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(bootInterval);
             setTimeout(() => {
                 bootWin.remove();
-                if(_w.launchWindow) _w.launchWindow('macro-monitor');
-                if(_w.launchWindow) _w.launchWindow('process-explorer');
+                if (_w.launchWindow) _w.launchWindow('macro-monitor');
+                if (_w.launchWindow) _w.launchWindow('process-explorer');
                 // First-visit only: show the README/about window so newcomers
                 // know what they're looking at. Repeat visitors get the
                 // dashboard clean; the ? icon in the taskbar reopens it.
                 let seen = false;
-                try { seen = !!localStorage.getItem('econos.aboutSeen'); } catch (_) {}
-                if (!seen) if(_w.launchWindow) _w.launchWindow('about');
+                try { seen = !!localStorage.getItem('econos.aboutSeen'); } catch (_) { }
+                if (!seen) if (_w.launchWindow) _w.launchWindow('about');
             }, 800);
         }
     }, 350);

@@ -2,7 +2,6 @@ export interface EconWindowManager {
   focusWindow?: (w: unknown) => void;
   openWindow?: (appId: string, options?: Record<string, unknown>) => void;
   closeWindow?: (windowId: string) => void;
-  [key: string]: unknown;
 }
 
 export interface EconKernelClient {
@@ -10,7 +9,6 @@ export interface EconKernelClient {
   connect?: () => void;
   disconnect?: () => void;
   send?: (data: unknown) => void;
-  [key: string]: unknown;
 }
 
 export type VercelAnalyticsFn = (event: string, properties?: Record<string, unknown>) => void;
@@ -19,7 +17,7 @@ declare global {
   interface Window {
     econWM?: EconWindowManager;
     kernelClient?: EconKernelClient;
-    launchWindow?: (appId: string, options?: Record<string, unknown>) => void;
+    launchWindow?: (type: string) => void;
     startTour?: () => void;
     cycleTheme?: () => void;
     va?: VercelAnalyticsFn;
@@ -28,4 +26,4 @@ declare global {
   }
 }
 
-export {};
+export { };
