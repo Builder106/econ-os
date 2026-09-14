@@ -10,7 +10,7 @@ const { test, expect } = require('@playwright/test');
  *   - CORS denials from the production kernel (post-tightening)
  *   - Dead Tailscale Funnel / DNS / cert issues
  *   - Tailwind CDN, Phosphor, Chart.js CDN outages affecting prod only
- *   - /og-image.png, /favicon.svg, /_vercel/insights/script.js routing breaks
+ *   - /og-image.png, /favicon.svg routing breaks
  *
  * Run:
  *   npx playwright test --config playwright.live.config.js
@@ -28,6 +28,9 @@ test('deployed dashboard connects to remote kernel and ticks', async ({ page }) 
         // Browser extensions and chrome internals sometimes log to console;
         // we only care about errors from this origin.
         if (!url || url.startsWith('chrome-extension://')) return;
+        // Vercel Analytics' /_vercel/insights/script.js is non-critical (app gates
+        // safely on window.va) and may 404 if analytics is unprovisioned or filtered.
+        if (url.includes('/_vercel/insights/script.js')) return;
         errors.push(`console.error: ${m.text()} (${url})`);
     });
 

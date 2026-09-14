@@ -55,3 +55,8 @@ Running `pytest simulation/tests/`from the repo root blew up with`ModuleNotFound
 ## 2026-04-08 — Closed-loop economy with a money-conservation test #decision
 
 The economic kernel was built as a PettingZoo `ParallelEnv`with a hard design constraint: no money is created or destroyed inside`step()`. Consumers earn wage income, spend on consumption, producers collect revenue and pay the wage bill — every flow has a matching counterparty, so total money across all agents stays constant. `test_money_conservation`pins this down explicitly, since it's the invariant that makes the Gini and Lorenz analytics trustworthy. When the tax feature came later, the skim went into an explicit`env.treasury` rather than vanishing — taxes move money, they don't delete it, so conservation still holds with the treasury counted in.
+
+## 2026-09-14 — Filter non-critical Vercel Analytics 404s in live smoke suite #incident
+
+The scheduled live smoke workflow (`Live deployment smoke` on main) failed because production Vercel returned 404 for `/_vercel/insights/script.js`, tripping Playwright's strict zero-console-error assertion in `e2e/live.spec.js`. While the original local smoke spec had filtered this non-critical route, `e2e/live.spec.js` lacked the filter. The dashboard already gates analytics calls safely behind `typeof window.va === 'function'`, so an unprovisioned or blocked analytics script does not impair functionality. Aligned `e2e/live.spec.js` by ignoring console errors originating from `/_vercel/insights/script.js`.
+
