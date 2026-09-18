@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-09-17 — Guarded dashboard WebSocket and browser boundaries #type-safety
+
+Added typed kernel state, acknowledgement, and event guards before accepting WebSocket frames, plus canvas constructor checks and a malformed-frame browser regression scenario. The existing single-writer connection and reconnect behavior remain unchanged; dynamic JSON is rejected or retained as an explicitly guarded boundary.
+
 ## 2026-09-07 — Kept the admin broadcast invariant in deterministic QA #decision
 
 The dashboard smoke test now uses two local WebSocket clients and accounts for the server broadcasting an admin event before returning that command's acknowledgement. This keeps the shared-kernel contract explicit without relying on a live deployment, and the test retains the warnings-as-errors and 100% coverage gates.
@@ -59,4 +63,3 @@ The economic kernel was built as a PettingZoo `ParallelEnv`with a hard design co
 ## 2026-09-14 — Filter non-critical Vercel Analytics 404s in live smoke suite #incident
 
 The scheduled live smoke workflow (`Live deployment smoke` on main) failed because production Vercel returned 404 for `/_vercel/insights/script.js`, tripping Playwright's strict zero-console-error assertion in `e2e/live.spec.js`. While the original local smoke spec had filtered this non-critical route, `e2e/live.spec.js` lacked the filter. The dashboard already gates analytics calls safely behind `typeof window.va === 'function'`, so an unprovisioned or blocked analytics script does not impair functionality. Aligned `e2e/live.spec.js` by ignoring console errors originating from `/_vercel/insights/script.js`.
-
