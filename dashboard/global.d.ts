@@ -17,9 +17,9 @@ export interface EconWindowManager {
 }
 
 export interface EconKernelClient {
-  state?: unknown;
-  subscribe: (callback: (state: unknown, connected: boolean) => void) => () => void;
-  onEvent: (callback: (event: unknown) => void) => () => void;
+  state?: EconJsonValue;
+  subscribe: (callback: (state: EconJsonValue, connected: boolean) => void) => () => void;
+  onEvent: (callback: (event: EconJsonValue) => void) => () => void;
   onAdminChange: (callback: (isAdmin: boolean) => void) => () => void;
   sendCommand: (line: string) => Promise<EconAckMessage>;
 }
