@@ -36,14 +36,14 @@
  * @property {MarketState} market
  * @property {MetricsState} metrics
  * @property {PolicyState} policy
- * @property {Record<string, unknown>} [extra]
+ * @property {Object<string, string|number|boolean|null>} [extra]
  */
 
 /**
  * @typedef {Object} KernelEvent
  * @property {string} [kind]
  * @property {string} [by]
- * @property {Record<string, unknown>} [detail]
+ * @property {Object<string, string|number|boolean|null>} [detail]
  */
 
 /**
@@ -57,18 +57,43 @@
  */
 
 /**
+ * @typedef {new (ctx: CanvasRenderingContext2D | null, config: Record<string, string|number|boolean|null|object>) => { data: { labels: (number|string)[], datasets: Array<{ data: number[] }> }, update: (mode?: string) => void }} EconChartConstructor
+ */
+
+/**
  * @typedef {Window & typeof globalThis & {
  *   econWM?: WindowManager;
  *   kernelClient?: KernelClient;
  *   launchWindow?: (type: string) => void;
  *   startTour?: () => void;
  *   cycleTheme?: () => void;
- *   va?: (event: string, properties?: Record<string, unknown>) => void;
+ *   va?: (event: string, properties?: Record<string, string|number|boolean|null>) => void;
  *   ECONOS_KERNEL_WS_URL?: string;
- *   Chart?: new (ctx: CanvasRenderingContext2D | null, config: Record<string, unknown>) => { data: { labels: (number | string)[], datasets: Array<{ data: number[] }> }, update: (mode?: string) => void };
- *   [key: string]: unknown;
+ *   Chart?: EconChartConstructor;
  * }} CustomWindow
  */
+
+/** @param {unknown} value @returns {value is Record<string, unknown>} */
+function isRecord(value) {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** @param {Record<string, unknown>} value @returns {value is KernelState} */
+function isKernelState(value) {
+    return typeof value.step === 'number' && typeof value.uptime_s === 'number'
+        && Array.isArray(value.agents) && isRecord(value.market) && isRecord(value.metrics) && isRecord(value.policy);
+}
+
+/** @param {Record<string, unknown>} value @returns {value is AckMessage} */
+function isAckMessage(value) {
+    return value.type === 'ack' && (value.id === undefined || typeof value.id === 'string')
+        && (value.ok === undefined || typeof value.ok === 'boolean');
+}
+
+/** @param {Record<string, unknown>} value @returns {value is KernelEvent} */
+function isKernelEvent(value) {
+    return value.type === 'event';
+}
 
 const _w = /** @type {CustomWindow} */ (window);
 /**
@@ -205,7 +230,7 @@ class KernelClient {
         /** @type {Set<Function>} */ this.tickListeners = new Set();
         /** @type {Set<Function>} */ this.eventListeners = new Set();
         /** @type {Set<Function>} */ this.adminListeners = new Set();
-        /** @type {Record<string, unknown> | null} */ this.state = null;
+        /** @type {KernelState | null} */ this.state = null;
         this.connected = false;
         this.isAdmin = false;
         this._reconnectMs = 800;
@@ -238,22 +263,21 @@ class KernelClient {
     /** @param {MessageEvent} e */
     _onMessage(e) {
         let msg;
-        try { msg = JSON.parse(e.data); } catch { return; }
-        if (msg.type === 'tick' || (msg.market && msg.agents)) {
+        try { msg = JSON.parse(typeof e.data === 'string' ? e.data : String(e.data)); } catch { return; }
+        if (!isRecord(msg)) return;
+        if (isKernelState(msg)) {
             this.state = msg;
             this._notifyTick();
             return;
         }
-        if (msg.type === 'ack') {
+        if (isAckMessage(msg)) {
             const p = this._pendingAcks.get(msg.id);
             if (!p) return;
-            const ackMsg = /** @type {AckMessage} */ (msg);
-            if (true) {
-                clearTimeout(p.timer);
-                this._pendingAcks.delete(msg.id);
-                if (msg.ok) p.resolve(msg);
-                else p.reject(Object.assign(new Error(ackMsg.error || 'command failed'), { ack: msg }));
-            }
+            const ackMsg = msg;
+            clearTimeout(p.timer);
+            this._pendingAcks.delete(msg.id);
+            if (msg.ok) p.resolve(msg);
+            else p.reject(Object.assign(new Error(ackMsg.error || 'command failed'), { ack: msg }));
             if (ackMsg.auth && ackMsg.auth.is_admin && !this.isAdmin) {
                 this.isAdmin = true;
                 this._notifyAdmin();
@@ -261,7 +285,7 @@ class KernelClient {
             }
             return;
         }
-        if (msg.type === 'event') {
+        if (isKernelEvent(msg)) {
             for (const cb of this.eventListeners) { try { cb(msg); } catch (err) { console.error(err); } }
             return;
         }
@@ -720,8 +744,9 @@ sudo &lt;token&gt;          # Fed mode (admin)</pre>
 /** @param {KernelClient} kc */
 function initMacroChart(kc) {
     const canvas = document.getElementById('mainChart');
-    if (!canvas) return;
-    const ctx = /** @type {HTMLCanvasElement} */ (canvas).getContext('2d');
+    if (!(canvas instanceof HTMLCanvasElement) || !_w.Chart) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
     const chart = new _w.Chart(ctx, {
         type: 'line',

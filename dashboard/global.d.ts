@@ -1,28 +1,39 @@
+export type EconJsonValue = string | number | boolean | null | { [key: string]: EconJsonValue } | EconJsonValue[];
+
 export interface WindowOpenOptions {
   title?: string;
   width?: number;
   height?: number;
   x?: number;
   y?: number;
-  [key: string]: string | number | boolean | null | undefined;
+  [key: string]: EconJsonValue | undefined;
 }
 
 export interface EconWindowManager {
+  createWindow: (id: string, title: string, x: number, y: number, width: number, height: number, contentHTML: string) => HTMLElement;
   focusWindow?: (w: HTMLElement) => void;
   openWindow?: (appId: string, options?: WindowOpenOptions) => void;
   closeWindow?: (windowId: string) => void;
 }
 
 export interface EconKernelClient {
-  isConnected?: boolean;
-  connect?: () => void;
-  disconnect?: () => void;
-  send?: (data: string | ArrayBufferView | Blob | Record<string, string | number | boolean | null>) => void;
+  state?: unknown;
+  subscribe: (callback: (state: unknown, connected: boolean) => void) => () => void;
+  onEvent: (callback: (event: unknown) => void) => () => void;
+  onAdminChange: (callback: (isAdmin: boolean) => void) => () => void;
+  sendCommand: (line: string) => Promise<EconAckMessage>;
+}
+
+export interface EconAckMessage {
+  output?: string;
+  error?: string;
+  ok?: boolean;
+  id?: string;
 }
 
 export type VercelAnalyticsFn = (
   event: string,
-  properties?: Record<string, string | number | boolean | null>,
+  properties?: Record<string, EconJsonValue>,
 ) => void;
 
 export interface EconChartInstance {
@@ -42,7 +53,7 @@ export interface EconChartInstance {
 
 export type EconChartConstructor = new (
   ctx: CanvasRenderingContext2D | null,
-  config: Record<string, string | number | boolean | null | object>,
+  config: Record<string, EconJsonValue>,
 ) => EconChartInstance;
 
 declare global {

@@ -6,7 +6,8 @@
   "scripts": {
     "bddgen": "bddgen",
     "test:e2e": "bddgen && playwright test",
-    "test:live": "playwright test --config playwright.live.config.js"
+    "test:live": "playwright test --config playwright.live.config.js",
+    "typecheck": "tsc --noEmit"
   },
   "packageManager": "npm@10.9.9",
   "devDependencies": {
