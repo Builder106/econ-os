@@ -16,6 +16,11 @@ services:
       - PORT=8000
       - ADMIN_TOKEN=${ADMIN_TOKEN}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+      - ALLOWED_ORIGIN_REGEX=${ALLOWED_ORIGIN_REGEX:-}
+      - TICK_MS=${TICK_MS:-500}
+      - MAX_CYCLES=${MAX_CYCLES:-5000}
+      - CONSUMER_MODEL=${CONSUMER_MODEL:-models/consumer_policy.zip}
+      - PRODUCER_MODEL=${PRODUCER_MODEL:-models/producer_policy.zip}
     ports:
       - "127.0.0.1:8000:8000"
     healthcheck:
