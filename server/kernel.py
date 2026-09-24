@@ -21,10 +21,10 @@ from simulation.logic import (
     calculate_real_gdp,
 )
 
-CONSUMER_MODEL_PATH = os.environ.get("CONSUMER_MODEL", "models/consumer_policy.zip")
-PRODUCER_MODEL_PATH = os.environ.get("PRODUCER_MODEL", "models/producer_policy.zip")
-TICK_MS = int(os.environ.get("TICK_MS", "500"))
-MAX_CYCLES = int(os.environ.get("MAX_CYCLES", "5000"))
+CONSUMER_MODEL_PATH = os.environ.get("CONSUMER_MODEL", "").strip() or "models/consumer_policy.zip"
+PRODUCER_MODEL_PATH = os.environ.get("PRODUCER_MODEL", "").strip() or "models/producer_policy.zip"
+TICK_MS = int(os.environ.get("TICK_MS", "").strip() or "500")
+MAX_CYCLES = int(os.environ.get("MAX_CYCLES", "").strip() or "5000")
 
 
 def _try_load_ppo(path: str):
