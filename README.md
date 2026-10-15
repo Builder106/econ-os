@@ -62,32 +62,9 @@ After `sudo <token>` elevates permissions, entering `tax 25` in the shell update
 
 Every visitor lands in the same shared environment: the shared simulation ticks continuously regardless of how many people are watching. Authenticated administrators can adjust market parameters (taxes, price shocks, pauses) that broadcast in real time to every connected user.
 
-```mermaid
-flowchart TD
-    Start([Visit econ-os.vercel.app]) --> Boot[Boot sequence ~3.5s]
-    Boot --> Auto[Macro Monitor + Process Explorer + README auto-open]
-    Auto --> Live[(Live kernel<br/>ticks every 500ms<br/>shared across all viewers)]
+![EconOS shared simulation and admin flow](assets/diagrams/user-flow.png)
 
-    Live --> Choice{What now?}
-
-    Choice -->|observe| Watch[Watch live macro &amp; process telemetry]
-    Choice -->|learn| Tour[Take the 5-step guided tour]
-    Choice -->|inspect| ShellRO["Shell: help / inspect / top / gini / who"]
-    Choice -->|act| Auth{{sudo &lt;ADMIN_TOKEN&gt;}}
-
-    Auth -->|invalid| Choice
-    Auth -->|valid| Admin[Fed mode unlocked]
-
-    Admin --> Tax[Set tax rate τ]
-    Admin --> Shock["Shock wage / price ±5 / ±10 %"]
-    Admin --> Lifecycle[Pause / Resume / Reset]
-
-    Tax --> Event[ADMIN event<br/>broadcasts to every connected viewer]
-    Shock --> Event
-    Lifecycle --> Event
-
-    Event -.-> Live
-```
+Every viewer sees the same kernel tick every 500 ms. Visitors can watch the monitors, take the tour, or use read-only shell commands. A valid `sudo` token unlocks tax changes, wage or price shocks of ±5% or ±10%, and pause, resume, or reset commands. Their ADMIN events broadcast to every connected viewer. Invalid tokens leave the visitor on the read-only path. [Editable HTML source](assets/diagrams/user-flow.html).
 
 The feedback loop ensures that one user's policy adjustment immediately reflects on every other visitor's dashboard.
 
@@ -127,33 +104,20 @@ The feedback loop ensures that one user's policy adjustment immediately reflects
 
 ## CI/CD Pipeline
 
-```mermaid
-flowchart LR
-    Push(["git push origin main"]) --> GHA{GitHub Actions}
-    GHA --> Pytest["pytest<br/>14 tests"]
-    GHA --> PW["Playwright<br/>9 tests"]
+![EconOS checks, dashboard deployment, and manual kernel update](assets/diagrams/delivery-flow.png)
 
-    Push --> Vercel{Vercel hook}
-    Vercel --> Build["node scripts/build-config.js<br/>injects ECONOS_KERNEL_WS_URL"]
-    Build --> CDN[("econ-os.vercel.app<br/>static dashboard")]
+A push to `main` starts CI. The secret scan, Python checks, and Playwright job gate the Vercel production hook, which builds the static dashboard with `ECONOS_KERNEL_WS_URL`. The shared kernel is updated separately with `git pull` and `docker compose up -d`; the dashboard connects to its WebSocket endpoint. [Editable HTML source](assets/diagrams/delivery-flow.html).
 
-    Push -.-> Manual{{"Manual on VM:<br/>git pull &amp; docker compose up -d"}}
-    Manual -.-> Kernel[("wss://econos-kernel…ts.net<br/>live shared kernel")]
-
-    Pytest -.-> Badge(["CI badge"])
-    PW -.-> Badge
-```
-
-| Stage | Trigger | What runs | Wall-clock (warm cache) | Where it shows up |
-| --- | --- | --- | --- | --- |
-| **CI · pytest** | push to `main`, every PR | env + command-dispatch tests | ~30 s | [Actions tab](https://github.com/Builder106/econ-os/actions) + green badge |
-| **CI · Playwright** | push to `main`, every PR | 3 smoke + 6 admin-flow e2e | ~2 min | same |
-| **CD · Vercel (frontend)** | push to `main` | [`scripts/build-config.js`](scripts/build-config.js) writes `dashboard/config.js`from`ECONOS_KERNEL_WS_URL`; static `dashboard/` deploys | ~30 s | [econ-os.vercel.app](https://econ-os.vercel.app) |
-| **CD · kernel VM (backend)** | **manual** | SSH in, `git pull && sudo docker compose -f deploy/docker-compose.yml up -d` | ~30 s if image is cached | `wss://econos-kernel.<tailnet>.ts.net` |
+| Stage | Trigger | What runs | Where it shows up |
+| --- | --- | --- | --- |
+| **CI: secret scan and pytest** | Push to `main` or `staging`, or a PR to `main` | Gitleaks, Python audits, build and lint checks, and pytest with coverage | [Actions tab](https://github.com/Builder106/econ-os/actions) and CI badge |
+| **CI: Playwright** | After the pytest job passes | TypeScript checks, dependency audit, generated Gherkin specs, and browser tests | Same Actions run; failure artifacts are uploaded |
+| **CD: Vercel frontend** | Passing CI on a push to `main` or `staging` | The deploy hook runs [`scripts/build-config.js`](scripts/build-config.js) to write `dashboard/config.js` from `ECONOS_KERNEL_WS_URL` | [econ-os.vercel.app](https://econ-os.vercel.app) for production |
+| **CD: shared kernel** | Manual | SSH to the host, pull source, then run `docker compose up -d` | `wss://econos-kernel.<tailnet>.ts.net` |
 
 Config lives in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (CI), [`vercel.json`](vercel.json) (frontend CD), and [`deploy/docker-compose.yml`](deploy/docker-compose.yml) (backend, run manually).
 
-**What's automatic.** Every push to `main` runs both test suites in parallel jobs (`concurrency: cancel-in-progress`cancels stale runs when commits land back-to-back). Vercel listens on the same push hook and rebuilds the dashboard with the latest committed code + the prod`ECONOS_KERNEL_WS_URL`env var — typically live ~60 seconds after`git push` returns. The CI job caches pip, npm, and the Playwright Chromium binary so cold-start vs. warm-cache is a 5×–10× swing.
+**What's automatic.** The Playwright job waits for pytest. The deploy job waits for the secret scan and Playwright, then calls the branch's Vercel hook. Pull requests run checks but do not call a deploy hook. CI caches Python and npm dependencies and the Playwright browser binary.
 
 **What's manual, and why.** The backend kernel on Oracle Always Free is updated by hand: `git pull && docker compose up -d` over SSH. Automating this would require committing an SSH private key as a GitHub Secret and adding a deploy job — small footprint, real attack surface for a portfolio repo. The kernel changes once every few PRs at most; manual SSH is fine until that frequency justifies the secret. See [CONTRIBUTING.md → What's open for contribution](CONTRIBUTING.md) — automating it is on the punch list when it pays for itself.
 

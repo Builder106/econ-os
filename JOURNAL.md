@@ -4,6 +4,14 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-15: Separated user roles from deployment paths #decision
+
+The README figures now use a swimlane for viewer, admin, and shared-kernel behavior and a topology for the two deployment routes. The user flow shows invalid tokens staying read-only and valid actions reaching every viewer. The delivery figure keeps CI-gated Vercel deployment separate from the manual kernel update. Each PNG still has an editable HTML source.
+
+## 2026-10-13: Replaced README Mermaid diagrams #decision
+
+The README now has separate figures for the shared-kernel user flow and the delivery paths, each with a PNG embed and editable HTML source. The delivery drawing follows the current workflow: CI gates the Vercel hook, while the kernel update is manual. Old fixed pytest and Playwright counts were removed because the workflow no longer promises those counts.
+
 ## 2026-09-17 — Guarded dashboard WebSocket and browser boundaries #type-safety
 
 Added typed kernel state, acknowledgement, and event guards before accepting WebSocket frames, plus canvas constructor checks and a malformed-frame browser regression scenario. The existing single-writer connection and reconnect behavior remain unchanged; dynamic JSON is rejected or retained as an explicitly guarded boundary.
