@@ -62,7 +62,10 @@ After `sudo <token>` elevates permissions, entering `tax 25` in the shell update
 
 Every visitor lands in the same shared environment: the shared simulation ticks continuously regardless of how many people are watching. Authenticated administrators can adjust market parameters (taxes, price shocks, pauses) that broadcast in real time to every connected user.
 
-![EconOS shared simulation and admin flow](assets/diagrams/user-flow.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/user-flow-dark.png">
+  <img src="assets/diagrams/user-flow.png" alt="EconOS viewer and admin paths through one shared simulation kernel">
+</picture>
 
 Every viewer sees the same kernel tick every 500 ms. Visitors can watch the monitors, take the tour, or use read-only shell commands. A valid `sudo` token unlocks tax changes, wage or price shocks of ±5% or ±10%, and pause, resume, or reset commands. Their ADMIN events broadcast to every connected viewer. Invalid tokens leave the visitor on the read-only path. [Editable HTML source](assets/diagrams/user-flow.html).
 
@@ -104,7 +107,10 @@ The feedback loop ensures that one user's policy adjustment immediately reflects
 
 ## CI/CD Pipeline
 
-![EconOS checks, dashboard deployment, and manual kernel update](assets/diagrams/delivery-flow.png)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/delivery-flow-dark.png">
+  <img src="assets/diagrams/delivery-flow.png" alt="EconOS dashboard CI and deployment alongside the separate kernel update">
+</picture>
 
 A push to `main` starts CI. The secret scan, Python checks, and Playwright job gate the Vercel production hook, which builds the static dashboard with `ECONOS_KERNEL_WS_URL`. The shared kernel is updated separately with `git pull` and `docker compose up -d`; the dashboard connects to its WebSocket endpoint. [Editable HTML source](assets/diagrams/delivery-flow.html).
 
