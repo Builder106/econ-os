@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Put the desktop and Linux lab on separate tracks #decision
+
+The live-first redesign made the economy easier to read but weakened the OS feel. The roadmap now restores working desktop behavior around the shared kernel and tests a browser Linux image separately. A Linux distro remains a decision for after the prototype proves a useful research workflow, acceptable browser performance, and a viable license.
+
 ## 2026-10-19: Restore the production deploy gate #incident
 
 The push passed CI, but the Vercel job was skipped because it depended on commit lint, a job that runs only for pull requests. Deployment now depends on the secret scan and browser checks; those checks include the Python suite. Commit lint still runs for pull requests.
