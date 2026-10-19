@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Record the three E2E scenarios as GIFs, in BOTH dark and light themes,
+# Record the two admin E2E scenarios as GIFs, in BOTH dark and light themes,
 # for the README.
 #
 # Runs in RECORD_DEMOS=1 mode (see playwright.config.js): full video, 1920x1080
@@ -9,9 +9,9 @@
 # parks them in docs/media/ as `{label}-{theme}.gif`.
 #
 # Usage:
-#   ./scripts/record-demos.sh                # both themes (6 GIFs total)
-#   ./scripts/record-demos.sh dark           # dark theme only (3 GIFs)
-#   ./scripts/record-demos.sh light          # light theme only (3 GIFs)
+#   ./scripts/record-demos.sh                # both themes (4 GIFs total)
+#   ./scripts/record-demos.sh dark           # dark theme only (2 GIFs)
+#   ./scripts/record-demos.sh light          # light theme only (2 GIFs)
 #
 # Idempotent: re-running overwrites the GIFs with fresh footage.
 
@@ -32,12 +32,10 @@ case "${1:-both}" in
 esac
 
 SPECS=(
-    "renders live kernel feed"
     "tax command propagates"
     "shock fires a broadcast event"
 )
 LABELS=(
-    "01-boot-and-live"
     "02-admin-tax-propagation"
     "03-admin-shock-broadcast"
 )
