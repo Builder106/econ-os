@@ -112,19 +112,42 @@ class WindowManager {
         /** @type {HTMLElement | null} */ this.activeWindow = null;
         this.highestZ = 100;
         /** @type {HTMLElement | null} */ this.desktop = document.getElementById('window-layer');
-        this.offsetX = 0;
-        this.offsetY = 0;
+        /** @type {Map<string, {left: number, top: number, width: number, height: number, maximized: boolean}>} */
+        this.savedLayouts = new Map();
+        this.hadLayout = false;
+        try {
+            const saved = JSON.parse(localStorage.getItem('econos.windows') || 'null');
+            if (Array.isArray(saved)) {
+                this.hadLayout = true;
+                for (const item of saved) {
+                    if (item && typeof item.id === 'string' &&
+                        ['macro-monitor', 'processes', 'econ-shell', 'policy-manager', 'about'].includes(item.id) &&
+                        [item.left, item.top, item.width, item.height].every(Number.isFinite)) {
+                        this.savedLayouts.set(item.id, item);
+                    }
+                }
+            }
+        } catch (_) { /* Private browsing can block local storage. */ }
         this.initEvents();
     }
 
     initEvents() {
-        document.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => {
+        document.addEventListener('pointerdown', (/** @type {PointerEvent} */ e) => {
             const target = /** @type {HTMLElement} */ (e.target);
             const win = target ? /** @type {HTMLElement} */ (target.closest('.window')) : null;
             if (win) this.focusWindow(win);
         });
-        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        document.addEventListener('mouseup', () => this.stopDragging());
+        document.addEventListener('keydown', (e) => {
+            if (!(e.ctrlKey && e.altKey && ['ArrowLeft', 'ArrowRight'].includes(e.key))) return;
+            const open = this.windows.filter(win => win.isConnected);
+            if (!open.length) return;
+            e.preventDefault();
+            const index = open.indexOf(this.activeWindow || open[0]);
+            const next = (index + (e.key === 'ArrowRight' ? 1 : open.length - 1)) % open.length;
+            this.focusWindow(open[next]);
+            open[next].querySelector('button')?.focus();
+        });
+        window.addEventListener('resize', () => this.windows.forEach(win => this.clampWindow(win)));
     }
 
     /**
@@ -140,53 +163,115 @@ class WindowManager {
         const existing = document.getElementById(id);
         if (existing) {
             this.focusWindow(existing);
-            if (!existing.classList.contains('docked') && window.matchMedia('(max-width: 600px)').matches) {
-                existing.scrollIntoView({ block: 'start' });
-            }
             return existing;
         }
 
-        // The workspace is narrower than the viewport because the tool rail
-        // sits beside it. Keep floating windows inside that workspace.
-        const MARGIN = 20;
         const vw = this.desktop?.clientWidth || window.innerWidth;
         const vh = this.desktop?.clientHeight || window.innerHeight;
-        w = Math.min(w, vw - MARGIN * 2);
-        h = Math.min(h, vh - MARGIN * 2);
-        x = Math.max(MARGIN, Math.min(x, vw - w - MARGIN));
-        y = Math.max(MARGIN, Math.min(y, vh - h - MARGIN));
+        if (id === 'macro-monitor') { x = 12; y = 12; w = Math.round(vw * 0.64) - 18; h = vh - 24; }
+        if (id === 'processes') { x = Math.round(vw * 0.64) + 6; y = 12; w = Math.round(vw * 0.36) - 18; h = vh - 24; }
+        const saved = this.savedLayouts.get(id);
+        if (saved) { x = saved.left; y = saved.top; w = saved.width; h = saved.height; }
 
         const win = document.createElement('div');
         win.id = id;
         win.className = 'window active';
-        if (id === 'macro-monitor' || id === 'processes') win.classList.add('docked');
         win.style.left = `${x}px`;
         win.style.top = `${y}px`;
         win.style.width = `${w}px`;
         win.style.height = `${h}px`;
         win.style.zIndex = String(++this.highestZ);
+        if (saved?.maximized) win.classList.add('maximized');
 
         win.innerHTML = `
             <div class="window-header">
-                <h2 class="window-title">${title}</h2>
+                <h2 class="window-title" tabindex="0" aria-label="${title}; use arrow keys to move window">${title}</h2>
                 <div class="window-controls">
-                    <button type="button" class="control-btn" aria-label="Close ${title}">Close <i class="ph ph-x" aria-hidden="true"></i></button>
+                    <button type="button" class="control-btn" data-action="minimize" aria-label="Minimize ${title}"><i class="ph ph-minus" aria-hidden="true"></i></button>
+                    <button type="button" class="control-btn" data-action="maximize" aria-label="Maximize ${title}"><i class="ph ph-arrows-out" aria-hidden="true"></i></button>
+                    <button type="button" class="control-btn" data-action="close" aria-label="Close ${title}">Close <i class="ph ph-x" aria-hidden="true"></i></button>
                 </div>
             </div>
             <div class="window-content">${contentHTML}</div>
         `;
 
-        const header = win.querySelector('.window-header');
-        if (header && !win.classList.contains('docked')) header.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => this.startDragging(e, win));
-        const close = win.querySelector('.control-btn');
-        if (close) close.addEventListener('click', () => win.remove());
+        const handle = /** @type {HTMLElement | null} */ (win.querySelector('.window-title'));
+        handle?.addEventListener('pointerdown', e => {
+            if (e.button !== 0 || win.classList.contains('maximized') || window.innerWidth <= 600) return;
+            const startX = e.clientX - win.offsetLeft;
+            const startY = e.clientY - win.offsetTop;
+            handle.setPointerCapture(e.pointerId);
+            handle.classList.add('dragging');
+            const move = (/** @type {PointerEvent} */ event) => {
+                if (!handle.hasPointerCapture(event.pointerId)) return;
+                this.moveWindow(win, event.clientX - startX, event.clientY - startY);
+            };
+            handle.addEventListener('pointermove', move);
+            handle.addEventListener('lostpointercapture', () => {
+                handle.classList.remove('dragging');
+                handle.removeEventListener('pointermove', move);
+                this.saveLayout();
+            }, { once: true });
+        });
+        handle?.addEventListener('keydown', e => {
+            if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+            e.preventDefault();
+            const dx = e.key === 'ArrowLeft' ? -16 : e.key === 'ArrowRight' ? 16 : 0;
+            const dy = e.key === 'ArrowUp' ? -16 : e.key === 'ArrowDown' ? 16 : 0;
+            this.moveWindow(win, win.offsetLeft + dx, win.offsetTop + dy);
+            this.saveLayout();
+        });
+        win.querySelector('[data-action="minimize"]')?.addEventListener('click', () => {
+            win.classList.add('minimized');
+            const next = this.windows.find(other => other !== win && other.isConnected && !other.classList.contains('minimized'));
+            if (next) {
+                this.focusWindow(next);
+                const title = next.querySelector('.window-title');
+                if (title instanceof HTMLElement) title.focus();
+            } else {
+                win.classList.remove('active');
+                this.activeWindow = null;
+                this.renderTaskbar();
+                document.getElementById('launcher-toggle')?.focus();
+            }
+            this.saveLayout();
+        });
+        win.querySelector('[data-action="maximize"]')?.addEventListener('click', () => {
+            win.classList.toggle('maximized');
+            this.clampWindow(win);
+            this.saveLayout();
+        });
+        /** @type {ResizeObserver | null} */
+        let observer = null;
+        win.querySelector('[data-action="close"]')?.addEventListener('click', () => {
+            observer?.disconnect();
+            win.remove();
+            this.windows = this.windows.filter(other => other !== win);
+            if (this.activeWindow === win) {
+                this.activeWindow = null;
+                const next = this.windows.find(other => !other.classList.contains('minimized'));
+                if (next) {
+                    this.focusWindow(next);
+                    const title = next.querySelector('.window-title');
+                    if (title instanceof HTMLElement) title.focus();
+                } else document.getElementById('launcher-toggle')?.focus();
+            }
+            this.renderTaskbar();
+            this.saveLayout();
+        });
 
         if (this.desktop) this.desktop.appendChild(win);
         this.windows.push(win);
+        this.clampWindow(win);
+        observer = new ResizeObserver(() => {
+            if (win.isConnected && !win.classList.contains('maximized') && window.innerWidth > 600) {
+                this.clampWindow(win);
+                this.saveLayout();
+            }
+        });
+        observer.observe(win);
         this.focusWindow(win);
-        if (!win.classList.contains('docked') && window.matchMedia('(max-width: 600px)').matches) {
-            win.scrollIntoView({ block: 'start' });
-        }
+        this.saveLayout();
         return win;
     }
 
@@ -194,32 +279,54 @@ class WindowManager {
     focusWindow(win) {
         if (this.activeWindow) this.activeWindow.classList.remove('active');
         this.activeWindow = win;
+        win.classList.remove('minimized');
         win.classList.add('active');
         win.style.zIndex = String(++this.highestZ);
+        this.renderTaskbar();
+        this.saveLayout();
     }
 
-    /** @param {MouseEvent} e
-     * @param {HTMLElement} win */
-    startDragging(e, win) {
-        this.isDragging = true;
-        this.dragWin = win;
-        this.offsetX = e.clientX - win.offsetLeft;
-        this.offsetY = e.clientY - win.offsetTop;
-        if (document.body) document.body.style.cursor = 'move';
+    /** @param {HTMLElement} win @param {number} left @param {number} top */
+    moveWindow(win, left, top) {
+        const width = this.desktop?.clientWidth || window.innerWidth;
+        const height = this.desktop?.clientHeight || window.innerHeight;
+        win.style.left = `${Math.max(0, Math.min(left, width - win.offsetWidth))}px`;
+        win.style.top = `${Math.max(0, Math.min(top, height - win.offsetHeight))}px`;
     }
 
-    /** @param {MouseEvent} e */
-    handleMouseMove(e) {
-        const dragWin = this.dragWin; if (this.isDragging && dragWin) {
-            dragWin.style.left = `${e.clientX - this.offsetX}px`;
-            dragWin.style.top = `${e.clientY - this.offsetY}px`;
-        }
+    /** @param {HTMLElement} win */
+    clampWindow(win) {
+        if (window.innerWidth <= 600 || win.classList.contains('maximized')) return;
+        const width = this.desktop?.clientWidth || window.innerWidth;
+        const height = this.desktop?.clientHeight || window.innerHeight;
+        win.style.width = `${Math.min(win.offsetWidth, width)}px`;
+        win.style.height = `${Math.min(win.offsetHeight, height)}px`;
+        this.moveWindow(win, win.offsetLeft, win.offsetTop);
     }
 
-    stopDragging() {
-        this.isDragging = false;
-        this.dragWin = null;
-        if (document.body) document.body.style.cursor = 'default';
+    renderTaskbar() {
+        const bar = document.getElementById('running-apps');
+        if (!bar) return;
+        bar.replaceChildren(...this.windows.filter(win => win.isConnected).map(win => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = win.querySelector('.window-title')?.textContent || win.id;
+            button.className = 'running-app' + (win === this.activeWindow ? ' active' : '');
+            button.setAttribute('aria-label', `Switch to ${button.textContent}`);
+            button.addEventListener('click', () => this.focusWindow(win));
+            return button;
+        }));
+    }
+
+    saveLayout() {
+        try {
+            localStorage.setItem('econos.windows', JSON.stringify(this.windows.filter(win => win.isConnected).map(win => ({
+                id: win.id,
+                left: parseFloat(win.style.left), top: parseFloat(win.style.top),
+                width: parseFloat(win.style.width), height: parseFloat(win.style.height),
+                maximized: win.classList.contains('maximized'),
+            }))));
+        } catch (_) { /* Layout remains usable without storage. */ }
     }
 }
 
@@ -381,6 +488,10 @@ _w.launchWindow = function (/** @type {string} */ type) {
     const wm = _w.econWM;
     const kc = _w.kernelClient;
     if (!wm || !kc) return;
+    const ids = { 'process-explorer': 'processes', 'macro-monitor': 'macro-monitor',
+        'policy-manager': 'policy-manager', 'econ-shell': 'econ-shell', about: 'about' };
+    const existing = ids[type] ? document.getElementById(ids[type]) : null;
+    if (existing) { wm.focusWindow(existing); return; }
 
     if (type === 'process-explorer') {
         wm.createWindow('processes', 'Agents', 80, 180, 700, 520,
@@ -832,7 +943,7 @@ function startTour() {
     if (document.getElementById('tour-overlay')) return; // already running
     // Close README if open so it doesn't block the tour visually
     const aboutWin = document.getElementById('about');
-    if (aboutWin) aboutWin.remove();
+    if (aboutWin) aboutWin.querySelector('[data-action="close"]')?.dispatchEvent(new Event('click'));
     if (typeof _w.va === 'function') _w.va('event', { name: 'tour_started' });
 
     const overlay = document.createElement('div');
@@ -1009,8 +1120,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } catch (_) { /* Safari < 14 lacks addEventListener on MediaQueryList; ignore */ }
 
-    if (_w.launchWindow) _w.launchWindow('macro-monitor');
-    if (_w.launchWindow) _w.launchWindow('process-explorer');
+    const launcher = document.getElementById('launcher-toggle');
+    const apps = document.getElementById('desktop-icons');
+    launcher?.addEventListener('click', () => {
+        if (!apps) return;
+        apps.hidden = !apps.hidden;
+        launcher.setAttribute('aria-expanded', String(!apps.hidden));
+    });
+    apps?.addEventListener('click', () => {
+        apps.hidden = true;
+        launcher?.setAttribute('aria-expanded', 'false');
+    });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && apps && !apps.hidden) {
+            apps.hidden = true;
+            launcher?.setAttribute('aria-expanded', 'false');
+            launcher?.focus();
+        }
+    });
+
+    if (wm.hadLayout) {
+        const types = { 'macro-monitor': 'macro-monitor', processes: 'process-explorer',
+            'econ-shell': 'econ-shell', 'policy-manager': 'policy-manager', about: 'about' };
+        for (const id of wm.savedLayouts.keys()) _w.launchWindow?.(types[id]);
+    } else {
+        _w.launchWindow?.('macro-monitor');
+        _w.launchWindow?.('process-explorer');
+    }
+    if (window.innerWidth <= 600) {
+        const market = document.getElementById('macro-monitor');
+        if (market) wm.focusWindow(market);
+    }
 
     // taskbar status: clock + kernel step + connection state
     const sysTime = document.getElementById('sys-time');
