@@ -6,7 +6,7 @@ This is an improvement of the existing desktop, not a new brand. The live EconOS
 
 ## Layout
 
-The work surface fills the space between a compact system bar and the taskbar. Market and Agents open side by side for a new visitor, with the market taking about two thirds of the width. The app launcher opens Market, Agents, Shell, Policy, and the guide. The taskbar switches between running apps and shows the real connection state and kernel step.
+The work surface fills the space between a compact system bar and the taskbar. Market and Agents open side by side for a new visitor, with the market taking about two thirds of the width. The app launcher opens Market, Agents, Shell, Policy, and the guide, and downloads a run snapshot. The taskbar switches between running apps and shows the real connection state and kernel step.
 
 Windows can move, resize, minimize, maximize, and close. Their positions and sizes are stored in the visitor's browser and clamped when the viewport changes. Use Ctrl+Alt+Left or Ctrl+Alt+Right to switch apps; focus a window title and use the arrow keys to move it. At 600px or below, show one app at a time and use the taskbar to switch. A first visit shows Market on a phone. The page must work at 320px without horizontal page overflow.
 
@@ -35,7 +35,7 @@ The spacing vocabulary is 4, 8, 12, 18, and 24px. Keep ledger rows compact, abou
 
 - **Market monitor:** One streamed Chart.js plot with wage and price named in its legend. The Gini coefficient and money in circulation sit beneath it with plain-language labels. The chart is the signature element because it draws actual kernel data.
 - **Agent ledger:** Four columns for ID, role, balance, and latest reward. Preserve the short `C-` and `P-` IDs. Use aligned mono numbers and a quiet row rule. Positive and negative rewards keep a visible sign as well as color.
-- **App launcher:** Native buttons with an icon and a readable label. Tour starts the walkthrough; Guide opens the plain-language explanation.
+- **App launcher:** Native buttons with an icon and a readable label. Export snapshot downloads the shared run's state and provenance, with completion or failure announced in the taskbar. Tour starts the walkthrough; Guide opens the plain-language explanation.
 - **Windows:** Solid surfaces with a title, minimize, maximize, and close controls. Each app can be moved and resized on desktop. The title is also a keyboard movement handle.
 - **Taskbar:** Show running apps, connection state, and the current step in words. A clock is supporting information. Do not fabricate uptime, viewers, or a successful connection.
 - **Guide:** Explain the shared simulation, the plot, and a few useful commands. Keep it on demand so it does not hide the live economy.

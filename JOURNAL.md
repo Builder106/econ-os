@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Explain the shared run in a snapshot #decision
+
+The Apps menu now downloads a versioned JSON snapshot from the shared kernel. It includes the current state, initial conditions, checkpoint digests or sampled-action status, and the admin changes made during the run. A reset starts a new run ID. The file explicitly says exact replay is unavailable because the kernel does not record each action or random generator state. The format is documented before adding a Files app or private experiments.
+
 ## 2026-10-19: Make the shared economy a working desktop #milestone
 
 Market and Agents now open as windows on the work surface. The app launcher opens the other tools, while the taskbar switches between running apps and shows the kernel's real connection state and step. Visitors can move, resize, minimize, and maximize windows; their layout stays in local storage and is clamped after a viewport change. Phones show one app at a time. The shared WebSocket and admin boundary stay in the existing kernel client.
