@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Make the shared economy a working desktop #milestone
+
+Market and Agents now open as windows on the work surface. The app launcher opens the other tools, while the taskbar switches between running apps and shows the kernel's real connection state and step. Visitors can move, resize, minimize, and maximize windows; their layout stays in local storage and is clamped after a viewport change. Phones show one app at a time. The shared WebSocket and admin boundary stay in the existing kernel client.
+
 ## 2026-10-19: Put the desktop and Linux lab on separate tracks #decision
 
 The live-first redesign made the economy easier to read but weakened the OS feel. The roadmap now restores working desktop behavior around the shared kernel and tests a browser Linux image separately. A Linux distro remains a decision for after the prototype proves a useful research workflow, acceptable browser performance, and a viable license.
