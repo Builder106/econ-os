@@ -4,9 +4,13 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Put the live economy first #decision
+
+The dashboard now opens directly on the wage and price plot beside the agent ledger. Those two instruments dock into the workspace; the shell, policy controls, and guide remain separate windows. Removed the timed boot and first-visit guide because they covered the data and implied a successful connection before the WebSocket had proved it. `DESIGN.md` records the color roles, type, spacing, layout, and states so later UI changes can use the same system.
+
 ## 2026-10-15: Separated user roles from deployment paths #decision
 
-The README figures now use a swimlane for viewer, admin, and shared-kernel behavior and a topology for the two deployment routes. The user flow shows invalid tokens staying read-only and valid actions reaching every viewer. The delivery figure keeps CI-gated Vercel deployment separate from the manual kernel update. Each PNG still has an editable HTML source.
+The README figures now use a swimlane for viewer, admin, and shared-kernel behavior and a topology for the two deployment routes. The user flow shows invalid tokens staying read-only and valid actions reaching every viewer. The delivery figure keeps CI-gated Vercel deployment separate from the manual kernel update. Both figures use the dashboard's warm paper and dark terminal palettes, with cyan for connections, green for valid actions, and red for invalid input. Each light and dark PNG pair comes from one editable HTML source.
 
 ## 2026-10-13: Replaced README Mermaid diagrams #decision
 

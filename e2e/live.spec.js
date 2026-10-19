@@ -36,9 +36,9 @@ test('deployed dashboard connects to remote kernel and ticks', async ({ page }) 
 
     await page.goto('/');
 
-    // Boot loader + first frame from the remote kernel. WAN-latency-tolerant.
+    // Dashboard and first frame from the remote kernel. WAN-latency-tolerant.
     await expect(page.locator('#mainChart')).toBeVisible({ timeout: 25_000 });
-    await expect(page.locator('#sys-link')).toHaveText(/LIVE/, { timeout: 25_000 });
+    await expect(page.locator('#sys-link')).toHaveText(/Live/, { timeout: 25_000 });
     await expect(page.locator('#proc-rows > div')).toHaveCount(12, { timeout: 25_000 });
 
     // Step counter must advance — proves the remote kernel is actually ticking

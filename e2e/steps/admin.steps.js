@@ -8,7 +8,7 @@ const ADMIN_TOKEN = 'test-token-abc';
 
 async function bootAndOpenShell(page) {
   await page.goto('/');
-  await expect(page.locator('#sys-link')).toHaveText(/LIVE/, { timeout: 15_000 });
+  await expect(page.locator('#sys-link')).toHaveText(/Live/, { timeout: 15_000 });
   await page.evaluate(() => window.launchWindow('econ-shell'));
   await expect(page.locator('#shell-input')).toBeEnabled({ timeout: 5_000 });
 }

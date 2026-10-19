@@ -48,7 +48,12 @@ export interface EconChartInstance {
       fill?: boolean;
     }>;
   };
+  options: {
+    plugins: { legend: { labels: { color: string } } };
+    scales: { y: { grid: { color: string }; ticks: { color: string } } };
+  };
   update: (mode?: string) => void;
+  destroy: () => void;
 }
 
 export type EconChartConstructor = new (

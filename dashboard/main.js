@@ -57,7 +57,12 @@
  */
 
 /**
- * @typedef {new (ctx: CanvasRenderingContext2D | null, config: Record<string, string|number|boolean|null|object>) => { data: { labels: (number|string)[], datasets: Array<{ data: number[] }> }, update: (mode?: string) => void }} EconChartConstructor
+ * @typedef {new (ctx: CanvasRenderingContext2D | null, config: Record<string, string|number|boolean|null|object>) => {
+ *   data: { labels: (number|string)[], datasets: Array<{ data: number[], borderColor: string }> },
+ *   options: { plugins: { legend: { labels: { color: string } } }, scales: { y: { grid: { color: string }, ticks: { color: string } } } },
+ *   update: (mode?: string) => void,
+ *   destroy: () => void
+ * }} EconChartConstructor
  */
 
 /**
@@ -106,7 +111,7 @@ class WindowManager {
         /** @type {HTMLElement[]} */ this.windows = [];
         /** @type {HTMLElement | null} */ this.activeWindow = null;
         this.highestZ = 100;
-        /** @type {HTMLElement | null} */ this.desktop = document.getElementById('desktop');
+        /** @type {HTMLElement | null} */ this.desktop = document.getElementById('window-layer');
         this.offsetX = 0;
         this.offsetY = 0;
         this.initEvents();
@@ -133,23 +138,28 @@ class WindowManager {
      */
     createWindow(id, title, x, y, w, h, contentHTML) {
         const existing = document.getElementById(id);
-        if (existing) { this.focusWindow(existing); return existing; }
+        if (existing) {
+            this.focusWindow(existing);
+            if (!existing.classList.contains('docked') && window.matchMedia('(max-width: 600px)').matches) {
+                existing.scrollIntoView({ block: 'start' });
+            }
+            return existing;
+        }
 
-        // Clamp to viewport so windows never spawn partially offscreen on
-        // narrower displays (coords were originally tuned for 1920+ widths).
-        // 20px margin on sides; 60px reserved at the bottom for the taskbar.
+        // The workspace is narrower than the viewport because the tool rail
+        // sits beside it. Keep floating windows inside that workspace.
         const MARGIN = 20;
-        const TASKBAR_RESERVE = 60;
-        const vw = window.innerWidth;
-        const vh = window.innerHeight;
+        const vw = this.desktop?.clientWidth || window.innerWidth;
+        const vh = this.desktop?.clientHeight || window.innerHeight;
         w = Math.min(w, vw - MARGIN * 2);
-        h = Math.min(h, vh - MARGIN - TASKBAR_RESERVE);
+        h = Math.min(h, vh - MARGIN * 2);
         x = Math.max(MARGIN, Math.min(x, vw - w - MARGIN));
-        y = Math.max(MARGIN, Math.min(y, vh - h - TASKBAR_RESERVE));
+        y = Math.max(MARGIN, Math.min(y, vh - h - MARGIN));
 
         const win = document.createElement('div');
         win.id = id;
         win.className = 'window active';
+        if (id === 'macro-monitor' || id === 'processes') win.classList.add('docked');
         win.style.left = `${x}px`;
         win.style.top = `${y}px`;
         win.style.width = `${w}px`;
@@ -158,22 +168,25 @@ class WindowManager {
 
         win.innerHTML = `
             <div class="window-header">
-                <span class="window-title">${title}</span>
+                <h2 class="window-title">${title}</h2>
                 <div class="window-controls">
-                    <div class="control-btn btn-min"></div>
-                    <div class="control-btn btn-max"></div>
-                    <div class="control-btn btn-close" onclick="this.closest('.window').remove()"></div>
+                    <button type="button" class="control-btn" aria-label="Close ${title}">Close <i class="ph ph-x" aria-hidden="true"></i></button>
                 </div>
             </div>
             <div class="window-content">${contentHTML}</div>
         `;
 
         const header = win.querySelector('.window-header');
-        if (header) header.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => this.startDragging(e, win));
+        if (header && !win.classList.contains('docked')) header.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => this.startDragging(e, win));
+        const close = win.querySelector('.control-btn');
+        if (close) close.addEventListener('click', () => win.remove());
 
         if (this.desktop) this.desktop.appendChild(win);
         this.windows.push(win);
         this.focusWindow(win);
+        if (!win.classList.contains('docked') && window.matchMedia('(max-width: 600px)').matches) {
+            win.scrollIntoView({ block: 'start' });
+        }
         return win;
     }
 
@@ -362,7 +375,7 @@ const procIdFor = (agentId) => {
 
 /** @param {string} agentId */
 const procNameFor = (agentId) =>
-    agentId.startsWith('consumer') ? 'CONSUMER_POLICY_NET' : 'PRODUCER_RL_OPTIMIZER';
+    agentId.startsWith('consumer') ? 'Consumer' : 'Producer';
 
 _w.launchWindow = function (/** @type {string} */ type) {
     const wm = _w.econWM;
@@ -370,14 +383,13 @@ _w.launchWindow = function (/** @type {string} */ type) {
     if (!wm || !kc) return;
 
     if (type === 'process-explorer') {
-        wm.createWindow('processes', 'Process Telemetry Hub', 80, 180, 700, 520,
-            `<div class="font-mono text-[12px]">
-                <div class="grid grid-cols-[60px_1fr_80px_60px_20px] gap-2 text-white/55 uppercase pb-1 border-b border-white/5 mb-2">
-                    <span data-tip="Process ID: C-* are consumers, P-* producers">PID</span>
-                    <span data-tip="Underlying RL policy network controlling this agent">Process</span>
+        wm.createWindow('processes', 'Agents', 80, 180, 700, 520,
+            `<div class="agent-ledger font-mono text-[12px]">
+                <div class="agent-heading grid grid-cols-[48px_minmax(0,1fr)_70px_68px] gap-2 text-white/55 pb-2 border-b border-white/5 mb-2">
+                    <span data-tip="Agent ID: C-* are consumers, P-* producers">Agent</span>
+                    <span>Role</span>
                     <span data-tip="Current cash on hand for this agent">Balance</span>
-                    <span data-tip="Reward signal from the most recent tick (utility for consumers, profit for producers)">Δ Reward</span>
-                    <span data-tip="Status indicator">​</span>
+                    <span data-tip="Reward from the latest tick: utility or profit">Reward</span>
                 </div>
                 <div id="proc-rows" class="space-y-1.5 text-[12px]">
                     <div class="text-white/55 italic">connecting to kernel…</div>
@@ -393,56 +405,53 @@ _w.launchWindow = function (/** @type {string} */ type) {
                 return;
             }
             rowsEl.innerHTML = s.agents.map((/** @type {AgentRecord} */ a) => {
-                const isCons = a.role === 'consumer';
-                const dotColor = isCons ? 'var(--terminal-cyan)' : 'var(--terminal-gold)';
                 const reward = (a.reward >= 0 ? '+' : '') + a.reward.toFixed(3);
                 const rewardCls = a.reward >= 0 ? 'text-terminal-green' : 'text-terminal-red';
-                return `<div class="grid grid-cols-[60px_1fr_80px_60px_20px] gap-2 items-center">
+                return `<div class="agent-row grid grid-cols-[48px_minmax(0,1fr)_70px_68px] gap-2 items-center">
                     <span class="text-terminal-cyan">${procIdFor(a.id)}</span>
                     <span class="text-white/70">${procNameFor(a.id)}</span>
                     <span class="text-white/60">${fmtMoney(a.balance)}</span>
                     <span class="${rewardCls}">${reward}</span>
-                    <div class="status-pulse" style="background:${dotColor};box-shadow:0 0 8px ${dotColor};"></div>
                 </div>`;
             }).join('');
         });
 
     } else if (type === 'macro-monitor') {
-        wm.createWindow('macro-monitor', 'Market Analytics Suite', 800, 100, 820, 600,
-            `<div class="grid grid-cols-2 gap-4 h-full font-mono text-[12px]">
-                <div class="col-span-2 border-b border-white/10 pb-2" data-tip="Live wage and price across the simulation. Both move as agents trade. Updates every 500ms.">
+        wm.createWindow('macro-monitor', 'Market monitor', 800, 100, 820, 600,
+            `<div class="macro-layout grid grid-cols-2 gap-4 h-full font-mono text-[12px]">
+                <div class="macro-plot col-span-2 border-b border-white/10 pb-2" data-tip="Live wage and price across the simulation. Both move as agents trade. Updates every 500ms.">
                     <div class="flex justify-between items-center mb-1">
-                        <span class="text-white/40 uppercase">Global Asset Equilibrium (Wage vs Price)</span>
+                        <span class="chart-caption">Wage and price over time</span>
                         <span id="macro-status" class="text-terminal-green" data-tip="WebSocket connection status to the kernel">CONNECTING…</span>
                     </div>
-                    <div class="h-64 w-full"><canvas id="mainChart" class="chart-glow"></canvas></div>
+                    <div class="chart-frame w-full"><canvas id="mainChart" aria-label="Live wage and price chart" role="img"></canvas></div>
                 </div>
-                <div class="space-y-2 border-r border-white/5 pr-2" data-tip="Gini coefficient: 0 means perfect equality, 1 means total wealth concentration">
-                    <span class="text-white/55 uppercase">Structural Inequality (Gini)</span>
-                    <div class="text-4xl font-bold text-terminal-cyan tracking-tight value-flash" id="macro-gini">—</div>
-                    <div class="text-[11px] text-white/55">consumer wealth distribution</div>
+                <div class="macro-metric space-y-2" data-tip="Gini coefficient: 0 means perfect equality, 1 means total wealth concentration">
+                    <span class="metric-label">Gini coefficient</span>
+                    <div class="text-4xl font-bold text-terminal-cyan tracking-tight" id="macro-gini">—</div>
+                    <div class="metric-help">0 is equal; 1 is concentrated</div>
                 </div>
-                <div class="space-y-2 pl-2" data-tip="Total money in circulation = sum of agent balances + treasury. Conserved unless taxed.">
-                    <span class="text-white/55 uppercase">System Liquidity</span>
-                    <div class="text-3xl font-bold text-white tracking-tighter value-flash" id="macro-money">—</div>
+                <div class="macro-metric space-y-2" data-tip="Total money in circulation = sum of agent balances + treasury.">
+                    <span class="metric-label">Money in circulation</span>
+                    <div class="text-3xl font-bold text-white tracking-tighter" id="macro-money">—</div>
                     <div class="flex gap-3 text-[11px] text-white/40">
-                        <span data-tip="Tax revenue accumulated in the public coffer">TREASURY <span id="macro-treasury" class="text-terminal-gold">—</span></span>
-                        <span data-tip="Income tax rate: admin sets via Policy Manager or shell">τ <span id="macro-tax" class="text-terminal-magenta">—</span></span>
+                        <span data-tip="Tax revenue accumulated in the public coffer">Treasury <span id="macro-treasury" class="text-terminal-gold">—</span></span>
+                        <span data-tip="Income tax rate: admin sets via Policy Manager or shell">Tax <span id="macro-tax" class="text-terminal-magenta">—</span></span>
                     </div>
                 </div>
             </div>`);
         initMacroChart(kc);
 
     } else if (type === 'policy-manager') {
-        wm.createWindow('policy-manager', 'Monetary Command Center', 240, 240, 480, 540,
-            `<div class="space-y-3 font-mono text-[13px]">
-                <div class="flex justify-between items-center text-[11px] uppercase pb-2 border-b border-white/5">
-                    <span class="text-white/55">FED MODE</span>
+        wm.createWindow('policy-manager', 'Policy controls', 240, 240, 480, 540,
+            `<div class="policy-controls space-y-3 font-mono text-[13px]">
+                <div class="flex justify-between items-center pb-2 border-b border-white/5">
+                    <span class="text-white/55">Access</span>
                     <span id="pm-auth" class="text-terminal-red" data-tip="Sudo via the Econ Shell to elevate this connection to admin">visitor</span>
                 </div>
                 <div class="space-y-2" data-tip="Income tax rate. Skims gross wage income from consumers; revenue accrues to the treasury.">
-                    <div class="flex justify-between items-center uppercase">
-                        <span class="text-white/40">Income Tax τ</span>
+                    <div class="flex justify-between items-center">
+                        <label for="pm-tax-slider" class="text-white/60">Income tax</label>
                         <span id="pm-tax" class="text-terminal-cyan text-sm">—</span>
                     </div>
                     <input id="pm-tax-slider" type="range" min="0" max="100" step="1" value="0" disabled
@@ -450,21 +459,21 @@ _w.launchWindow = function (/** @type {string} */ type) {
                     <div class="flex justify-between text-[11px] text-white/40"><span>0%</span><span>100%</span></div>
                 </div>
                 <div class="space-y-1 border-t border-white/5 pt-2" data-tip="One-shot multiplicative shock to market wage; lands on the next tick">
-                    <span class="text-white/40 uppercase text-[11px]">Wage Shock</span>
+                    <span class="text-white/60">Wage shock</span>
                     <div class="grid grid-cols-4 gap-1" id="pm-wage-shocks"></div>
                 </div>
                 <div class="space-y-1" data-tip="One-shot multiplicative shock to market price; lands on the next tick">
-                    <span class="text-white/40 uppercase text-[11px]">Price Shock</span>
+                    <span class="text-white/60">Price shock</span>
                     <div class="grid grid-cols-4 gap-1" id="pm-price-shocks"></div>
                 </div>
                 <div class="grid grid-cols-3 gap-1 border-t border-white/5 pt-2">
-                    <button data-cmd="pause"  data-tip="Halt the kernel tick loop" class="pm-admin py-1 text-[12px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Pause</button>
-                    <button data-cmd="resume" data-tip="Resume the kernel tick loop" class="pm-admin py-1 text-[12px] uppercase border border-white/10 text-white/60 hover:bg-white/5">Resume</button>
-                    <button data-cmd="reset"  data-tip="Reset the simulation: all balances back to defaults, treasury cleared" class="pm-admin py-1 text-[12px] uppercase border border-terminal-red/30 text-terminal-red hover:bg-terminal-red/10">Reset</button>
+                    <button data-cmd="pause"  data-tip="Halt the kernel tick loop" class="pm-admin text-white/60">Pause</button>
+                    <button data-cmd="resume" data-tip="Resume the kernel tick loop" class="pm-admin text-white/60">Resume</button>
+                    <button data-cmd="reset"  data-tip="Reset the simulation: all balances back to defaults, treasury cleared" class="pm-admin text-terminal-red">Reset</button>
                 </div>
                 <div class="text-[11px] text-white/55 flex justify-between border-t border-white/5 pt-2">
-                    <span>STEP <span id="pm-step" class="text-terminal-gold">—</span></span>
-                    <span>UPTIME <span id="pm-uptime">—</span>s</span>
+                    <span>Step <span id="pm-step" class="text-terminal-gold">—</span></span>
+                    <span>Uptime <span id="pm-uptime">—</span>s</span>
                     <span id="pm-policies">—</span>
                 </div>
             </div>`);
@@ -475,7 +484,7 @@ _w.launchWindow = function (/** @type {string} */ type) {
         const mkBtn = (target, pct) => {
             const sign = pct > 0 ? '+' : '';
             const cls = pct > 0 ? 'text-terminal-green' : 'text-terminal-red';
-            return `<button class="pm-admin py-1 text-[12px] border border-white/10 ${cls} hover:bg-white/5"
+            return `<button class="pm-admin ${cls}" aria-label="${target} shock ${sign}${pct}%"
                 data-shock="${target}" data-pct="${pct}">${sign}${pct}%</button>`;
         };
         const wSh = document.getElementById('pm-wage-shocks'); if (wSh) wSh.innerHTML = SHOCKS.map(p => mkBtn('wage', p)).join('');
@@ -532,16 +541,13 @@ _w.launchWindow = function (/** @type {string} */ type) {
             }
             const pmStep = document.getElementById('pm-step'); if (pmStep) pmStep.textContent = String(s.step);
             const pmUptime = document.getElementById('pm-uptime'); if (pmUptime) pmUptime.textContent = String(s.uptime_s);
-            const pmPol = document.getElementById('pm-policies'); if (pmPol) pmPol.innerHTML = s.policies_loaded
-                ? '<i class="ph-bold ph-check-circle text-terminal-green"></i>&nbsp; PPO loaded'
-                : '<i class="ph-bold ph-dice-five text-white/50"></i>&nbsp; random fallback';
+            const pmPol = document.getElementById('pm-policies'); if (pmPol) pmPol.textContent = s.policies_loaded
+                ? 'PPO loaded' : 'Random fallback';
         });
 
         const unsubAdmin = kc.onAdminChange((/** @type {boolean} */ isAdmin) => {
             if (!document.getElementById('pm-auth')) { unsubAdmin(); return; }
-            authLabel.innerHTML = isAdmin
-                ? '<i class="ph-fill ph-lock-open"></i>&nbsp; admin'
-                : '<i class="ph-fill ph-lock"></i>&nbsp; visitor';
+            authLabel.textContent = isAdmin ? 'admin' : 'visitor';
             authLabel.className = isAdmin ? 'text-terminal-green' : 'text-terminal-red';
             slider.disabled = !isAdmin;
             slider.classList.toggle('opacity-40', !isAdmin);
@@ -553,14 +559,14 @@ _w.launchWindow = function (/** @type {string} */ type) {
         });
 
     } else if (type === 'econ-shell') {
-        wm.createWindow('econ-shell', 'EconOS Institutional Terminal', 1080, 80, 620, 480,
+        wm.createWindow('econ-shell', 'Econ Shell', 1080, 80, 620, 480,
             `<div class="flex flex-col h-full font-mono text-[12px]">
                 <div id="shell-output" class="flex-1 text-white/60 overflow-auto mb-2 space-y-0.5"></div>
                 <div class="flex items-center gap-2 border-t border-white/5 pt-2">
-                    <span class="text-terminal-cyan font-bold">root@econos:~$</span>
+                    <label for="shell-input" class="text-terminal-cyan font-bold">econos&gt;</label>
                     <input id="shell-input" type="text"
-                        class="bg-transparent outline-none flex-1 font-mono text-white text-[12px]"
-                        placeholder="type 'help' or 'sudo <token>' for admin" autocomplete="off" autocapitalize="off" spellcheck="false">
+                        class="bg-transparent flex-1 font-mono text-white text-[12px]"
+                        placeholder="Try help or gini" autocomplete="off" autocapitalize="off" spellcheck="false">
                 </div>
             </div>`);
 
@@ -577,8 +583,8 @@ _w.launchWindow = function (/** @type {string} */ type) {
             output.appendChild(row);
             output.scrollTop = output.scrollHeight;
         };
-        append('>>> [SYSTEM_AUTH] read-only session attached to shared kernel', 'text-terminal-cyan');
-        append("type 'help' to list commands. 'sudo <token>' to elevate.", 'text-white/40');
+        append('Read-only shell. Type help to list commands.', 'text-terminal-cyan');
+        append('Administrators can enter sudo <token> to change policy.', 'text-white/55');
 
         /** @type {string[]} */
         const history = [];
@@ -642,102 +648,16 @@ _w.launchWindow = function (/** @type {string} */ type) {
             </div>`);
 
     } else if (type === 'about') {
-        wm.createWindow('about', 'README.TXT', 380, 60, 720, 720,
-            `<div class="font-mono text-white/80 space-y-4 leading-relaxed">
-                <div>
-                    <div class="text-terminal-cyan text-2xl font-bold uppercase tracking-wider">EconOS</div>
-                    <div class="text-white/55 text-[13px] mt-1">Economic Operating System &mdash; a live, shared mainframe.</div>
-                </div>
-
-                <div class="bg-terminal-cyan/5 border border-terminal-cyan/20 rounded p-3 space-y-1">
-                    <div class="flex justify-between items-baseline">
-                        <span class="text-white/55 uppercase text-[11px] tracking-wide">Live now</span>
-                        <span class="text-terminal-green text-[11px] uppercase animate-pulse flex items-center gap-1.5">
-                            <i class="ph-fill ph-circle text-[8px]"></i> broadcasting
-                        </span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-3 mt-2">
-                        <div>
-                            <div class="text-white/40 text-[11px] uppercase">Step</div>
-                            <div id="about-step" class="text-terminal-cyan text-2xl font-bold value-flash">—</div>
-                        </div>
-                        <div>
-                            <div class="text-white/40 text-[11px] uppercase">Uptime</div>
-                            <div id="about-uptime" class="text-terminal-gold text-2xl font-bold">—</div>
-                        </div>
-                        <div>
-                            <div class="text-white/40 text-[11px] uppercase">Viewers</div>
-                            <div id="about-viewers" class="text-terminal-magenta text-2xl font-bold">—</div>
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="startTour()"
-                    class="w-full px-4 py-3 text-[14px] uppercase font-semibold tracking-wide border-2 border-terminal-cyan/50 text-terminal-cyan bg-terminal-cyan/10 hover:bg-terminal-cyan/20 hover:border-terminal-cyan rounded transition-colors flex items-center justify-center gap-2"
-                    data-tip="5-step guided walkthrough of the desktop">
-                    <i class="ph-bold ph-compass"></i> Take a 5-step tour &rarr;
-                </button>
-
-                <p class="text-[14px] text-white/75 leading-relaxed">
-                    Twelve RL agents (10 consumers, 2 producers) trade labor and goods continuously.
-                    You're seeing the same simulation every other visitor sees, in real time.
-                    Watch the macro chart, inspect agents in the shell, or
-                    <span class="text-terminal-gold">sudo</span> in to shock the economy as the Fed.
-                </p>
-
-                <div class="border-t border-white/10 pt-3">
-                    <div class="text-white/55 uppercase text-[12px] mb-2 tracking-wide">Windows</div>
-                    <ul class="space-y-1.5 text-[13px] text-white/75">
-                        <li><span class="text-terminal-cyan font-bold">Macro Viz</span> &mdash; live wage, price, Gini, treasury, total liquidity</li>
-                        <li><span class="text-terminal-cyan font-bold">Processes</span> &mdash; every agent's balance + last reward, per tick</li>
-                        <li><span class="text-terminal-cyan font-bold">Econ Shell</span> &mdash; read-only inspection; <span class="text-terminal-gold">sudo</span> for Fed mode</li>
-                        <li><span class="text-terminal-cyan font-bold">Policy Mgr</span> &mdash; tax slider + wage/price shock buttons (admin)</li>
-                    </ul>
-                </div>
-
-                <div class="border-t border-white/10 pt-3">
-                    <div class="text-white/55 uppercase text-[12px] mb-2 tracking-wide">Try in the shell</div>
-                    <pre class="text-[13px] text-terminal-green leading-relaxed whitespace-pre bg-black/30 rounded p-2">help                  # list every command
-inspect consumer_3    # one agent
-top 5                 # richest agents
-gini                  # current inequality
-sudo &lt;token&gt;          # Fed mode (admin)</pre>
-                </div>
-
-                <div class="border-t border-white/10 pt-3">
-                    <div class="text-white/55 uppercase text-[12px] mb-2 tracking-wide">Stack</div>
-                    <p class="text-[13px] text-white/65">
-                        PettingZoo · Stable-Baselines3 (PPO) · FastAPI · WebSocket fan-out
-                        · Tailscale Funnel · Vercel
-                    </p>
-                </div>
-
-                <div class="border-t border-white/10 pt-3 flex justify-between items-center">
-                    <a href="https://github.com/Builder106/econ-os" target="_blank" rel="noopener"
-                       class="text-terminal-cyan hover:text-white text-[13px] underline">
-                        github.com/Builder106/econ-os &rarr;
-                    </a>
-                    <span class="text-white/45 text-[12px] italic">close to dismiss</span>
-                </div>
+        wm.createWindow('about', 'How EconOS works', 260, 40, 600, 600,
+            `<div class="guide-content">
+                <p>Twelve learning agents trade labor and goods in one shared simulation. The market continues to run while you watch. A policy change made by an administrator reaches every connected viewer.</p>
+                <button type="button" class="guide-tour" onclick="startTour()">Take the guided tour <i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+                <h3>Watch the market</h3>
+                <p>The chart plots wage and price on each tick. The Gini coefficient tracks how unevenly consumer wealth is distributed; the ledger shows each agent's balance and latest reward.</p>
+                <h3>Try the shell</h3>
+                <p>Inspection commands work for everyone. Enter <code>help</code>, <code>gini</code>, or <code>inspect consumer_3</code>. Administrators can use <code>sudo &lt;token&gt;</code> to unlock tax and market controls.</p>
+                <a href="https://github.com/Builder106/econ-os" target="_blank" rel="noopener">Read the source and methodology <i class="ph ph-arrow-up-right" aria-hidden="true"></i></a>
             </div>`);
-
-        /** @param {number} s */
-        const formatUptime = (s) => {
-            if (s == null) return '—';
-            if (s < 60) return `${Math.floor(s)}s`;
-            if (s < 3600) return `${Math.floor(s / 60)}m ${Math.floor(s % 60)}s`;
-            return `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
-        };
-        const unsubAbout = kc.subscribe((/** @type {KernelState} */ s) => {
-            if (!document.getElementById('about-step')) { unsubAbout(); return; }
-            if (!s) return;
-            const as = document.getElementById('about-step'); if (as) as.textContent = s.step.toLocaleString();
-            const au = document.getElementById('about-uptime'); if (au) au.textContent = formatUptime(s.uptime_s);
-            // viewers count isn't in the snapshot; fall back to '1' (you).
-            const av = document.getElementById('about-viewers'); if (av) av.textContent = '1+';
-        });
-
-        try { localStorage.setItem('econos.aboutSeen', '1'); } catch (_) { }
     }
 };
 
@@ -753,19 +673,30 @@ function initMacroChart(kc) {
         data: {
             labels: [],
             datasets: [
-                { label: 'WAGE', borderColor: '#FFD700', borderWidth: 1, pointRadius: 0, data: [], tension: 0.2 },
-                { label: 'PRICE', borderColor: '#00FF41', borderWidth: 1, pointRadius: 0, data: [], tension: 0.2 }
+                { label: 'Wage', borderColor: getComputedStyle(document.documentElement).getPropertyValue('--terminal-gold').trim(), borderWidth: 2, pointRadius: 0, data: [], tension: 0.2 },
+                { label: 'Price', borderColor: getComputedStyle(document.documentElement).getPropertyValue('--terminal-green').trim(), borderWidth: 2, pointRadius: 0, data: [], tension: 0.2 }
             ]
         },
         options: {
             responsive: true, maintainAspectRatio: false, animation: false,
-            plugins: { legend: { labels: { color: 'rgba(255,255,255,0.7)', font: { size: 12 } } } },
+            plugins: { legend: { labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--fg-muted').trim(), font: { size: 12 } } } },
             scales: {
                 x: { display: false },
-                y: { grid: { color: 'rgba(255,255,255,0.07)' }, ticks: { color: 'rgba(255,255,255,0.6)', font: { size: 12 } } }
+                y: { grid: { color: getComputedStyle(document.documentElement).getPropertyValue('--glass-border').trim() }, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--fg-muted').trim(), font: { size: 12 } } }
             }
         }
     });
+
+    const updateChartTheme = () => {
+        const style = getComputedStyle(document.documentElement);
+        chart.data.datasets[0].borderColor = style.getPropertyValue('--terminal-gold').trim();
+        chart.data.datasets[1].borderColor = style.getPropertyValue('--terminal-green').trim();
+        chart.options.plugins.legend.labels.color = style.getPropertyValue('--fg-muted').trim();
+        chart.options.scales.y.grid.color = style.getPropertyValue('--glass-border').trim();
+        chart.options.scales.y.ticks.color = style.getPropertyValue('--fg-muted').trim();
+        chart.update('none');
+    };
+    window.addEventListener('econos:theme', updateChartTheme);
 
     const MAX_POINTS = 100;
     const statusEl = () => document.getElementById('macro-status');
@@ -774,24 +705,21 @@ function initMacroChart(kc) {
     const treasEl = () => document.getElementById('macro-treasury');
     const taxEl = () => document.getElementById('macro-tax');
 
-    // Briefly flash an element when its content changes — proof-of-life cue.
-    const lastVal = new WeakMap();
     /** @param {HTMLElement|null} el
      * @param {string} text */
-    const setFlashing = (el, text) => {
+    const setValue = (el, text) => {
         if (!el) return;
-        if (lastVal.get(el) === text) return;
-        lastVal.set(el, text);
         el.textContent = text;
-        el.classList.remove('flashing');
-        // force reflow so the animation re-triggers
-        void el.offsetWidth;
-        el.classList.add('value-flash', 'flashing');
     };
 
     let lastStep = -1;
     const unsub = kc.subscribe((/** @type {KernelState} */ s, /** @type {boolean} */ connected) => {
-        if (!document.getElementById('mainChart')) { unsub(); return; }
+        if (document.getElementById('mainChart') !== canvas) {
+            unsub();
+            window.removeEventListener('econos:theme', updateChartTheme);
+            chart.destroy();
+            return;
+        }
         const st = statusEl();
         if (st) {
             st.textContent = connected ? 'LIVE' : (s ? 'RECONNECTING…' : 'CONNECTING…');
@@ -810,10 +738,10 @@ function initMacroChart(kc) {
         }
         chart.update('none');
 
-        setFlashing(giniEl(), s.metrics.gini.toFixed(3));
-        setFlashing(moneyEl(), '$' + fmtMoney(s.metrics.total_money));
-        setFlashing(treasEl(), fmtMoney(s.metrics.treasury));
-        setFlashing(taxEl(), (s.policy.tax_rate * 100).toFixed(1) + '%');
+        setValue(giniEl(), s.metrics.gini.toFixed(3));
+        setValue(moneyEl(), '$' + fmtMoney(s.metrics.total_money));
+        setValue(treasEl(), fmtMoney(s.metrics.treasury));
+        setValue(taxEl(), (s.policy.tax_rate * 100).toFixed(1) + '%');
     });
 }
 
@@ -1049,6 +977,7 @@ function applyTheme(pref) {
         btn.innerHTML = `<i class="ph ${THEME_ICONS[pref]}"></i>`;
         btn.setAttribute('data-tip', THEME_TIPS[pref]);
     }
+    window.dispatchEvent(new Event('econos:theme'));
 }
 /** @param {string} pref */
 function setThemePref(pref) {
@@ -1080,63 +1009,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     } catch (_) { /* Safari < 14 lacks addEventListener on MediaQueryList; ignore */ }
 
-    const bootWin = wm.createWindow('boot-loader', 'EconOS Boot', 100, 50, 420, 280,
-        '<div id="boot-log" class="font-mono text-[12px] text-terminal-green space-y-1"></div>'
-    );
-    const bootLog = document.getElementById('boot-log'); if (!bootLog) return;
-    const messages = [
-        '[    0.000] Initializing EconOS Kernel v5.4...',
-        '[    0.124] Attaching to shared market shard /ws...',
-        '[    0.450] Loading agent telemetry stream...',
-        '[    0.782] Mounting MARL parameter store...',
-        '[    1.120] PPO inference pipeline online...',
-        '[    1.540] Synchronizing tick clock...',
-        '[    2.100] SUCCESS: Connected to running kernel.',
-        '[    2.500] Starting Web_Desktop_System...'
-    ];
-    let i = 0;
-    const bootInterval = setInterval(() => {
-        if (i < messages.length) { bootLog.innerHTML += `<div>${messages[i]}</div>`; i++; }
-        else {
-            clearInterval(bootInterval);
-            setTimeout(() => {
-                bootWin.remove();
-                if (_w.launchWindow) _w.launchWindow('macro-monitor');
-                if (_w.launchWindow) _w.launchWindow('process-explorer');
-                // First-visit only: show the README/about window so newcomers
-                // know what they're looking at. Repeat visitors get the
-                // dashboard clean; the ? icon in the taskbar reopens it.
-                let seen = false;
-                try { seen = !!localStorage.getItem('econos.aboutSeen'); } catch (_) { }
-                if (!seen) if (_w.launchWindow) _w.launchWindow('about');
-            }, 800);
-        }
-    }, 350);
+    if (_w.launchWindow) _w.launchWindow('macro-monitor');
+    if (_w.launchWindow) _w.launchWindow('process-explorer');
 
     // taskbar status: clock + kernel step + connection state
     const sysTime = document.getElementById('sys-time');
-    if (sysTime) setInterval(() => { sysTime.innerText = new Date().toLocaleTimeString(); }, 1000);
+    if (sysTime) {
+        const updateTime = () => { sysTime.textContent = new Date().toLocaleTimeString(); };
+        updateTime();
+        setInterval(updateTime, 1000);
+    }
 
-    const taskMeta = sysTime ? sysTime.parentElement : null;
+    const taskMeta = document.getElementById('task-meta');
     if (!taskMeta) return;
     const stepBadge = document.createElement('span');
     stepBadge.id = 'sys-step';
     stepBadge.className = 'text-terminal-cyan';
-    stepBadge.textContent = 'STEP —';
+    stepBadge.textContent = 'Step —';
     stepBadge.setAttribute('data-tip', 'Current simulation tick (advances every ~500ms while live)');
     taskMeta.insertBefore(stepBadge, taskMeta.firstChild);
 
     const linkBadge = document.createElement('span');
     linkBadge.id = 'sys-link';
-    linkBadge.className = 'text-terminal-red flex items-center gap-1.5';
-    linkBadge.innerHTML = '<i class="ph-fill ph-circle text-[8px]"></i> OFFLINE';
+    linkBadge.className = 'text-terminal-gold';
+    linkBadge.textContent = 'Connecting';
+    linkBadge.setAttribute('aria-live', 'polite');
     linkBadge.setAttribute('data-tip', 'WebSocket connection state: LIVE means kernel ticks are streaming');
     taskMeta.insertBefore(linkBadge, taskMeta.firstChild);
 
     if (_w.kernelClient) _w.kernelClient.subscribe((/** @type {KernelState} */ s, /** @type {boolean=} */ connected) => {
-        const label = connected ? 'LIVE' : (s ? 'RECONNECTING' : 'CONNECTING');
-        linkBadge.innerHTML = `<i class="ph-fill ph-circle text-[8px]"></i> ${label}`;
-        linkBadge.className = (connected ? 'text-terminal-green' : 'text-terminal-gold') + ' flex items-center gap-1.5';
-        if (s) stepBadge.textContent = `STEP ${s.step}`;
+        const label = connected ? 'Live' : (s ? 'Reconnecting' : 'Connecting');
+        linkBadge.textContent = label;
+        linkBadge.className = connected ? 'text-terminal-green' : 'text-terminal-gold';
+        if (s) stepBadge.textContent = `Step ${s.step}`;
     });
 });

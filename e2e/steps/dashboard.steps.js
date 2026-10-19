@@ -19,7 +19,7 @@ Then('the process explorer shows {int} agents', async ({ page }, count) => {
 });
 
 Then('the kernel status shows LIVE', async ({ page }) => {
-  await expect(page.locator('#sys-link')).toHaveText(/LIVE/, { timeout: 10_000 });
+  await expect(page.locator('#sys-link')).toHaveText(/Live/, { timeout: 10_000 });
 });
 
 Then('the macro values are populated', async ({ page }) => {
@@ -29,7 +29,7 @@ Then('the macro values are populated', async ({ page }) => {
 
 Then('the step counter is advancing', async ({ page }) => {
   const stepEl = page.locator('#sys-step');
-  await expect(stepEl).toContainText(/STEP \d+/);
+  await expect(stepEl).toContainText(/Step \d+/);
   const readStep = async () => {
     const t = (await stepEl.textContent()) || '';
     return parseInt(t.replace(/\D/g, ''), 10);

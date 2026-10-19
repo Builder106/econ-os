@@ -1,11 +1,8 @@
-/* EconOS Desktop Aesthetic DNA — themeable */
+/* EconOS workspace */
 
 /* ============================================================
-   Theme tokens. data-theme="dark" is the canonical neon terminal;
-   data-theme="light" is the same product in "data-terminal /
-   paper" mode for daytime use. Both share the same hue families;
-   only saturation + value flip. The wordmark accent stays cyan in
-   both themes — darker on light bg for contrast.
+   Dark and light modes share the same data color roles. Both use
+   solid instrument surfaces and readable ink.
    ============================================================ */
 
 :root {
@@ -18,67 +15,57 @@
     color-scheme: dark;
 
     /* Surfaces */
-    --bg-grad-from: #1a1b24;
-    --bg-grad-to:   #0a0b0e;
-    --glass-bg:     rgba(10, 11, 14, 0.75);
-    --glass-bg-strong: rgba(10, 11, 14, 0.96);
+    --page-bg: #10161b;
+    --glass-bg:     #1b252b;
     --glass-border: rgba(255, 255, 255, 0.10);
     --glass-border-active: rgba(255, 255, 255, 0.25);
-    --window-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-    --window-shadow-active: 0 12px 48px 0 rgba(0, 0, 0, 0.9), inset 0 0 10px rgba(0, 245, 255, 0.05);
-    --taskbar-bg: rgba(255, 255, 255, 0.05);
-    --header-bg: rgba(255, 255, 255, 0.03);
+    --window-shadow: 0 14px 38px rgba(0, 0, 0, 0.18);
+    --taskbar-bg: #1b252b;
+    --header-bg: #1b252b;
 
     /* Text scale */
     --fg-strong: rgba(255, 255, 255, 0.92);
     --fg:        rgba(255, 255, 255, 0.85);
     --fg-muted:  rgba(255, 255, 255, 0.65);
-    --fg-faint:  rgba(255, 255, 255, 0.40);
 
-    /* Accent palette (kept saturated for neon feel) */
-    --terminal-green:   #00FF41;
-    --terminal-gold:    #FFD700;
-    --terminal-red:     #FF4136;
-    --terminal-cyan:    #00F5FF;
-    --terminal-magenta: #FF00FF;
+    /* Data and action colors */
+    --terminal-green:   #76d7aa;
+    --terminal-gold:    #efc879;
+    --terminal-red:     #f18f84;
+    --terminal-cyan:    #76cbd9;
+    --terminal-magenta: #c7a2dc;
 
     /* Overlays */
     --tour-backdrop: rgba(0, 0, 0, 0.62);
     --dim-shadow:    rgba(0, 0, 0, 0.5);
-    --scanline-overlay: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
 }
 
 :root[data-theme="light"] {
     color-scheme: light;
 
-    /* Surfaces — warm paper gradient instead of stark white */
-    --bg-grad-from: #f7f3e9;
-    --bg-grad-to:   #ece6d6;
-    --glass-bg:     rgba(252, 249, 241, 0.82);
-    --glass-bg-strong: rgba(252, 249, 241, 0.97);
+    /* Neutral daylight surfaces */
+    --page-bg: #e9eef0;
+    --glass-bg:     #ffffff;
     --glass-border: rgba(20, 24, 32, 0.12);
     --glass-border-active: rgba(20, 24, 32, 0.28);
-    --window-shadow: 0 8px 32px 0 rgba(20, 24, 32, 0.16), inset 0 0 0 1px rgba(255, 255, 255, 0.6);
-    --window-shadow-active: 0 12px 48px 0 rgba(20, 24, 32, 0.22), inset 0 0 10px rgba(0, 107, 122, 0.06);
-    --taskbar-bg: rgba(252, 249, 241, 0.75);
+    --window-shadow: 0 12px 28px rgba(20, 24, 32, 0.08);
+    --taskbar-bg: #ffffff;
     --header-bg: rgba(20, 24, 32, 0.04);
 
     /* Text scale (inverted) */
     --fg-strong: rgba(20, 24, 32, 0.92);
     --fg:        rgba(20, 24, 32, 0.82);
     --fg-muted:  rgba(20, 24, 32, 0.62);
-    --fg-faint:  rgba(20, 24, 32, 0.42);
 
-    /* Accent palette — darker, more saturated for paper backgrounds */
-    --terminal-green:   #0E7A2A;
-    --terminal-gold:    #8A5D00;
-    --terminal-red:     #B82A20;
-    --terminal-cyan:    #006B7A;
-    --terminal-magenta: #8A0099;
+    /* Data colors are darker against the light surface. */
+    --terminal-green:   #13704a;
+    --terminal-gold:    #805600;
+    --terminal-red:     #b63c32;
+    --terminal-cyan:    #086579;
+    --terminal-magenta: #815397;
 
     --tour-backdrop: rgba(20, 24, 32, 0.45);
     --dim-shadow:    rgba(20, 24, 32, 0.15);
-    --scanline-overlay: linear-gradient(rgba(20, 24, 32, 0) 50%, rgba(20, 24, 32, 0.025) 50%);
 }
 
 /* No-FOUC: if the inline init script in index.html hasn't set data-theme yet,
@@ -88,7 +75,7 @@
 }
 
 body {
-    background: radial-gradient(circle at center, var(--bg-grad-from) 0%, var(--bg-grad-to) 100%);
+    background: var(--page-bg);
     color: var(--fg);
     font-family: var(--font-sans);
     transition: background 0.25s ease, color 0.25s ease;
@@ -98,40 +85,25 @@ body {
    Window chrome
    ============================================================ */
 
-.window::after {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
-    background: var(--scanline-overlay),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.01), rgba(0, 255, 0, 0.005), rgba(0, 0, 255, 0.01));
-    z-index: 10;
-    background-size: 100% 2px, 3px 100%;
-    pointer-events: none;
-    opacity: 0.3;
-}
-
 .window {
     position: absolute;
     background: var(--glass-bg);
-    backdrop-filter: blur(25px) saturate(180%);
     border: 1px solid var(--glass-border);
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: var(--window-shadow);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: box-shadow 0.2s ease, transform 0.1s ease, background 0.25s ease, border-color 0.25s ease;
+    transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .window.active {
     border-color: var(--glass-border-active);
-    box-shadow: var(--window-shadow-active);
 }
 
 .window-header {
     background: var(--header-bg);
-    padding: 8px 12px;
+    padding: 12px 18px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -141,32 +113,31 @@ body {
 
 .window-title {
     font-family: var(--font-mono);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--fg-muted);
+    font-family: var(--font-sans);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--fg-strong);
+    margin: 0;
 }
 
-.window.active .window-title {
-    color: var(--terminal-cyan);
-    text-shadow: 0 0 8px color-mix(in srgb, var(--terminal-cyan) 30%, transparent);
-}
+.window.active .window-title { color: var(--fg-strong); }
 
 .window-controls { display: flex; gap: 6px; }
 .control-btn {
-    width: 10px; height: 10px; border-radius: 50%;
-    cursor: pointer; opacity: 0.6;
-    transition: opacity 0.2s;
+    border: 0;
+    background: transparent;
+    color: var(--fg-muted);
+    cursor: pointer;
+    font: 500 12px var(--font-sans);
+    min-height: 32px;
+    padding: 4px 0 4px 8px;
 }
-.control-btn:hover { opacity: 1; }
-.btn-close { background: var(--terminal-red); }
-.btn-min   { background: var(--terminal-gold); }
-.btn-max   { background: var(--terminal-green); }
+.control-btn:hover { color: var(--fg-strong); }
 
 .window-content {
     flex: 1;
-    padding: 12px;
+    padding: 18px;
     overflow: auto;
     position: relative;
 }
@@ -202,17 +173,6 @@ body {
     color: var(--terminal-green);
 }
 
-.chart-glow {
-    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--terminal-cyan) 15%, transparent));
-}
-
-@keyframes value-flash {
-    0%   { text-shadow: 0 0 0   color-mix(in srgb, var(--terminal-cyan) 0%, transparent); }
-    25%  { text-shadow: 0 0 14px color-mix(in srgb, var(--terminal-cyan) 70%, transparent); }
-    100% { text-shadow: 0 0 0   color-mix(in srgb, var(--terminal-cyan) 0%, transparent); }
-}
-.value-flash.flashing { animation: value-flash 0.5s ease-out; }
-
 button:focus-visible,
 input:focus-visible,
 a:focus-visible {
@@ -226,7 +186,7 @@ a:focus-visible {
 
 #tooltip {
     position: fixed;
-    background: var(--glass-bg-strong);
+    background: var(--glass-bg);
     border: 1px solid color-mix(in srgb, var(--terminal-cyan) 35%, transparent);
     color: var(--fg-strong);
     font-family: var(--font-mono);
@@ -246,10 +206,9 @@ a:focus-visible {
 }
 #tooltip.visible { opacity: 1; }
 
-/* Light-mode tooltip: full opacity dark text, fully opaque cream
-   background so it never washes out against pale window content. */
+/* Keep help text legible on the light surface. */
 :root[data-theme="light"] #tooltip {
-    background: #fbf8f0;
+    background: #ffffff;
     color: #14181f;
     border-color: color-mix(in srgb, var(--terminal-cyan) 55%, transparent);
     box-shadow: 0 4px 16px rgba(20, 24, 32, 0.18),
@@ -275,8 +234,7 @@ a:focus-visible {
     position: fixed;
     border: 2px solid var(--terminal-cyan);
     border-radius: 8px;
-    box-shadow: 0 0 0 9999px var(--tour-backdrop),
-                0 0 28px color-mix(in srgb, var(--terminal-cyan) 45%, transparent);
+    box-shadow: 0 0 0 9999px var(--tour-backdrop);
     pointer-events: none;
     transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
     z-index: 9001;
@@ -285,11 +243,10 @@ a:focus-visible {
 #tour-callout {
     position: fixed;
     width: 360px;
-    background: var(--glass-bg-strong);
+    background: var(--glass-bg);
     border: 1px solid color-mix(in srgb, var(--terminal-cyan) 45%, transparent);
     border-radius: 6px;
-    box-shadow: 0 0 30px color-mix(in srgb, var(--terminal-cyan) 18%, transparent),
-                0 12px 36px var(--dim-shadow);
+    box-shadow: 0 12px 36px var(--dim-shadow);
     padding: 18px;
     color: var(--fg);
     font-family: var(--font-mono);
@@ -349,87 +306,9 @@ a:focus-visible {
 }
 #tour-next:hover:not(:disabled) {
     background: color-mix(in srgb, var(--terminal-cyan) 20%, transparent);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--terminal-cyan) 30%, transparent);
 }
 
 .sparkline-container { height: 20px; width: 60px; }
-
-@keyframes neon-pulse {
-    0%   { opacity: 0.4; transform: scale(0.98); }
-    50%  { opacity: 1;   transform: scale(1); }
-    100% { opacity: 0.4; transform: scale(0.98); }
-}
-
-.status-pulse {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--terminal-green);
-    animation: neon-pulse 2s infinite ease-in-out;
-    box-shadow: 0 0 8px var(--terminal-green);
-}
-
-/* ============================================================
-   Desktop chrome
-   ============================================================ */
-
-#desktop-icons {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
-.desktop-icon {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 72px;
-    gap: 6px;
-    cursor: pointer;
-    transition: filter 0.2s;
-}
-.desktop-icon:hover {
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--terminal-cyan) 40%, transparent));
-}
-.desktop-icon i {
-    font-size: 32px;
-    color: var(--terminal-cyan);
-}
-.desktop-icon span {
-    font-size: 9px;
-    font-weight: 600;
-    color: var(--fg-muted);
-    text-shadow: 0 2px 4px var(--dim-shadow);
-}
-
-#taskbar {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--taskbar-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    padding: 6px 12px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    z-index: 1000;
-    transition: background 0.25s ease, border-color 0.25s ease;
-}
-
-.task-icon {
-    font-size: 20px;
-    opacity: 0.6;
-    cursor: pointer;
-    transition: all 0.2s;
-    color: var(--fg);
-}
-.task-icon:hover {
-    opacity: 1;
-    transform: translateY(-2px);
-    color: var(--terminal-cyan);
-}
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 2px; }
@@ -439,7 +318,7 @@ a:focus-visible {
    Tailwind utility overrides — light mode only.
    The inline window content uses Tailwind's text-white/X and
    bg-white/X opacity utilities for muted text/surfaces. Those
-   white channels are illegible against a paper background; remap
+   white channels are illegible against a light background; remap
    them to dark-on-light at the same opacity stops. Dark mode uses
    Tailwind's defaults unchanged.
    ============================================================ */
@@ -465,7 +344,7 @@ a:focus-visible {
 :root[data-theme="light"] .bg-white\/5      { background-color: rgba(20, 24, 32, 0.04) !important; }
 :root[data-theme="light"] .bg-white\/10     { background-color: rgba(20, 24, 32, 0.08) !important; }
 :root[data-theme="light"] .bg-white\/20     { background-color: rgba(20, 24, 32, 0.14) !important; }
-:root[data-theme="light"] .bg-black         { background-color: var(--bg-grad-to) !important; }
+:root[data-theme="light"] .bg-black         { background-color: var(--page-bg) !important; }
 :root[data-theme="light"] .bg-black\/30     { background-color: rgba(20, 24, 32, 0.06) !important; }
 
 /* border-white/X */
@@ -473,8 +352,196 @@ a:focus-visible {
 :root[data-theme="light"] .border-white\/10 { border-color: rgba(20, 24, 32, 0.12) !important; }
 :root[data-theme="light"] .border-white\/20 { border-color: rgba(20, 24, 32, 0.18) !important; }
 
-/* Body background utility used by <body class="bg-black ..."> in index.html */
-body.bg-black { background: radial-gradient(circle at center, var(--bg-grad-from) 0%, var(--bg-grad-to) 100%) !important; }
+/* The live instruments occupy the workspace; auxiliary windows float above it. */
+body { min-width: 320px; }
 
-/* Theme toggle button — a touch larger than other task icons */
-#theme-toggle { font-size: 18px; }
+#desktop {
+    display: grid;
+    grid-template-columns: 164px minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 18px;
+    height: 100dvh;
+    min-height: 600px;
+    padding: 24px;
+}
+
+.skip-link {
+    position: fixed;
+    z-index: 11000;
+    top: 12px;
+    left: 12px;
+    padding: 10px 14px;
+    background: var(--glass-bg);
+    color: var(--fg-strong);
+    transform: translateY(-150%);
+}
+.skip-link:focus { transform: none; }
+
+#desk-header {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 24px;
+    padding-bottom: 2px;
+}
+#desk-header h1 {
+    margin: 0;
+    color: var(--fg-strong);
+    font-size: clamp(30px, 3vw, 42px);
+    font-weight: 700;
+    letter-spacing: -0.065em;
+    line-height: 1;
+}
+#desk-header p {
+    margin: 10px 0 0;
+    color: var(--fg-muted);
+    font-size: 14px;
+}
+.guide-button {
+    background: none;
+    color: var(--fg-strong);
+    border: 0;
+    border-bottom: 1px solid var(--fg-muted);
+    padding: 8px 0;
+    cursor: pointer;
+    font: 600 13px var(--font-sans);
+    white-space: nowrap;
+}
+.guide-button:hover { color: var(--terminal-cyan); border-color: currentColor; }
+
+#desktop-icons {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 12px 0;
+    border-top: 1px solid var(--glass-border);
+}
+.desktop-icon {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    color: var(--fg-muted);
+    text-align: left;
+    font: 600 14px var(--font-sans);
+    cursor: pointer;
+}
+.desktop-icon:hover { background: var(--taskbar-bg); color: var(--fg-strong); filter: none; }
+.desktop-icon i { font-size: 19px; color: currentColor; }
+.desktop-icon span { font-size: inherit; color: inherit; text-shadow: none; }
+
+#window-layer {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.9fr);
+    gap: 18px;
+    min-width: 0;
+    min-height: 0;
+}
+.window.docked {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0;
+    min-height: 0;
+}
+.window.docked .window-header { cursor: default; }
+#macro-monitor { grid-column: 1; grid-row: 1; }
+#processes { grid-column: 2; grid-row: 1; }
+
+#macro-monitor .macro-layout { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 0; }
+.macro-plot { width: 100%; margin-bottom: 24px; }
+.chart-caption, .metric-label { color: var(--fg-muted); font: 500 13px var(--font-sans); }
+.chart-frame { height: clamp(240px, 40vh, 700px); margin-top: 16px; }
+.macro-metric { flex: 1 1 190px; min-width: 0; padding-top: 4px; }
+.macro-metric + .macro-metric { padding-left: 20px; border-left: 1px solid var(--glass-border); }
+.macro-metric .text-4xl { font-size: clamp(32px, 3vw, 48px); }
+.metric-help { color: var(--fg-muted); font: 12px var(--font-sans); }
+.agent-ledger { min-width: 300px; }
+.agent-heading { color: var(--fg-muted); font: 500 11px var(--font-sans); }
+.agent-row { min-height: 37px; padding-block: 4px; border-bottom: 1px solid var(--glass-border); }
+.agent-row:last-child { border-bottom: 0; }
+
+.guide-content { max-width: 56ch; color: var(--fg); font: 15px/1.65 var(--font-sans); }
+.guide-content p { margin: 0 0 22px; }
+.guide-content h3 { margin: 24px 0 8px; color: var(--fg-strong); font: 600 18px var(--font-sans); }
+.guide-content code { color: var(--terminal-cyan); font: 13px var(--font-mono); }
+.guide-content a { display: inline-block; margin-top: 8px; color: var(--terminal-cyan); text-underline-offset: 3px; }
+.guide-tour { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0; border: 0; border-bottom: 1px solid currentColor; background: transparent; color: var(--terminal-cyan); cursor: pointer; font: 600 14px var(--font-sans); }
+.policy-controls { color: var(--fg); }
+.policy-controls .pm-admin { min-height: 34px; border: 1px solid var(--glass-border); border-radius: 5px; background: transparent; font: 500 12px var(--font-mono); }
+.policy-controls .pm-admin:hover:not(:disabled) { background: var(--page-bg); }
+.policy-controls .pm-admin:disabled { cursor: not-allowed; }
+
+#taskbar {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    position: static;
+    transform: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 50px;
+    padding: 8px 16px;
+    background: var(--taskbar-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    box-shadow: none;
+    z-index: 1000;
+}
+.taskbar-label { color: var(--fg-strong); font: 600 13px var(--font-sans); }
+#task-meta { display: flex; align-items: center; gap: 20px; margin-left: auto; color: var(--fg-muted); font: 12px var(--font-mono); }
+#sys-link { order: -2; }
+#sys-step { order: -1; }
+.task-icon { min-width: 36px; min-height: 36px; display: grid; place-items: center; border: 0; background: transparent; border-radius: 6px; color: var(--fg); font-size: 20px; cursor: pointer; }
+.task-icon:hover { color: var(--terminal-cyan); background: var(--page-bg); }
+
+@media (max-width: 980px) {
+    #desktop { height: auto; min-height: 100dvh; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 12px; padding: 16px; }
+    #desk-header { grid-column: 1; }
+    #desktop-icons { grid-column: 1; grid-row: 2; flex-direction: row; overflow-x: auto; padding: 6px 0; }
+    .desktop-icon { width: auto; min-width: 88px; justify-content: center; flex: 0 0 auto; }
+    #window-layer { grid-column: 1; grid-row: 3; display: flex; flex-direction: column; }
+    .window.docked { min-height: 360px; }
+    #taskbar { grid-column: 1; grid-row: 4; }
+    .chart-frame { height: clamp(240px, 42vh, 440px); }
+}
+
+@media (max-width: 600px) {
+    #desk-header { align-items: start; }
+    #desk-header h1 { font-size: 30px; }
+    #desk-header p { max-width: 230px; font-size: 12px; line-height: 1.45; }
+    .guide-button { font-size: 12px; }
+    #desktop-icons { gap: 2px; }
+    .desktop-icon { min-width: 72px; flex-direction: column; gap: 4px; font-size: 11px; }
+    .desktop-icon i { font-size: 21px; }
+    #window-layer .window { position: relative; left: auto !important; top: auto !important; width: 100% !important; height: auto !important; min-height: 320px; }
+    .window-content { padding: 14px; }
+    .macro-metric { flex-basis: 100%; }
+    .macro-metric + .macro-metric { padding: 16px 0 0; margin-top: 16px; border-left: 0; border-top: 1px solid var(--glass-border); }
+    .agent-ledger { min-width: 0; overflow-x: auto; }
+    #taskbar { gap: 8px; padding: 8px 10px; }
+    .taskbar-label, #sys-time { display: none; }
+    #task-meta { gap: 12px; margin-left: 0; }
+    #tour-callout { width: min(360px, calc(100vw - 24px)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .window, #tour-spotlight, #tour-callout { transition: none; }
+}
