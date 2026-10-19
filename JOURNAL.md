@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Restore the production deploy gate #incident
+
+The push passed CI, but the Vercel job was skipped because it depended on commit lint, a job that runs only for pull requests. Deployment now depends on the secret scan and browser checks; those checks include the Python suite. Commit lint still runs for pull requests.
+
 ## 2026-10-19: Put the live economy first #decision
 
 The dashboard now opens directly on the wage and price plot beside the agent ledger. Those two instruments dock into the workspace; the shell, policy controls, and guide remain separate windows. Removed the timed boot and first-visit guide because they covered the data and implied a successful connection before the WebSocket had proved it. `DESIGN.md` records the color roles, type, spacing, layout, and states so later UI changes can use the same system.

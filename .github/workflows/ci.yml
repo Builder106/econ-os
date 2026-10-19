@@ -144,7 +144,7 @@ jobs:
 
   deploy:
     name: Trigger Vercel Deploy
-    needs: [secrets, commitlint, playwright]
+    needs: [secrets, playwright]
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging')
     runs-on: ubuntu-24.04
     steps:
