@@ -26,12 +26,6 @@ EconOS treats economic agents as system processes, providing a glassmorphic desk
 
 **Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app) (multi-tenant shared mainframe where every visitor observes the simulation in real time). The dashboard ships with dark and light themes that cycle via the taskbar moon icon.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/media/01-boot-and-live-dark.gif">
-  <source media="(prefers-color-scheme: light)" srcset="docs/media/01-boot-and-live-light.gif">
-  <img alt="EconOS boot + live kernel feed" src="docs/media/01-boot-and-live-dark.gif">
-</picture>
-
 <details>
 <summary><b>Fed mode: admin tax changes propagate from shell to Policy Manager</b></summary>
 
