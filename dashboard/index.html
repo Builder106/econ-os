@@ -80,6 +80,7 @@
             <button type="button" class="desktop-icon" onclick="launchWindow('process-explorer')" data-tip="Balances and rewards for all twelve agents"><i class="ph ph-users-three" aria-hidden="true"></i><span>Agents</span></button>
             <button type="button" class="desktop-icon" onclick="launchWindow('econ-shell')" data-tip="Inspect the economy or enter Fed mode"><i class="ph ph-terminal-window" aria-hidden="true"></i><span>Shell</span></button>
             <button type="button" class="desktop-icon" onclick="launchWindow('policy-manager')" data-tip="Tax and market controls require Fed mode"><i class="ph ph-sliders-horizontal" aria-hidden="true"></i><span>Policy</span></button>
+            <button type="button" class="desktop-icon" id="export-snapshot" data-tip="Download the shared run's current state and provenance"><i class="ph ph-download-simple" aria-hidden="true"></i><span>Export snapshot</span></button>
             <button type="button" class="desktop-icon" onclick="launchWindow('about')"><i class="ph ph-question" aria-hidden="true"></i><span>Guide</span></button>
             <button type="button" class="desktop-icon" onclick="startTour()" data-tip="Guided walkthrough of the economy"><i class="ph ph-compass" aria-hidden="true"></i><span>Tour</span></button>
         </nav>
@@ -88,6 +89,7 @@
 
         <footer id="taskbar">
             <div id="running-apps" aria-label="Running apps"></div>
+            <span id="export-status" role="status"></span>
             <div id="task-meta" aria-label="Kernel status">
                 <span id="sys-time">--:--:--</span>
             </div>

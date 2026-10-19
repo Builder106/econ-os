@@ -18,3 +18,8 @@ Feature: Dashboard boot and live kernel feed
     Given I am on the dashboard
     And the kernel status shows LIVE
     Then the chart canvas has visible data
+
+  Scenario: Visitor downloads a run snapshot
+    Given I am on the dashboard
+    When I export the run snapshot
+    Then the download explains the shared economy

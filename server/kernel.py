@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import hashlib
 import json
 import os
 import time
+from datetime import datetime, timezone
+from uuid import uuid4
 
 from simulation.environment import MarketEnv
 from simulation.logic import (
@@ -25,6 +28,15 @@ CONSUMER_MODEL_PATH = os.environ.get("CONSUMER_MODEL", "").strip() or "models/co
 PRODUCER_MODEL_PATH = os.environ.get("PRODUCER_MODEL", "").strip() or "models/producer_policy.zip"
 TICK_MS = int(os.environ.get("TICK_MS", "").strip() or "500")
 MAX_CYCLES = int(os.environ.get("MAX_CYCLES", "").strip() or "5000")
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _model_sha256(path: str) -> str:
+    with open(path, "rb") as model_file:
+        return hashlib.file_digest(model_file, "sha256").hexdigest()
 
 
 def _try_load_ppo(path: str):
@@ -47,12 +59,21 @@ class KernelService:
         self.env.reset()
         self.consumer_model = _try_load_ppo(CONSUMER_MODEL_PATH)
         self.producer_model = _try_load_ppo(PRODUCER_MODEL_PATH)
+        self.model_versions = {
+            "consumer": (
+                _model_sha256(CONSUMER_MODEL_PATH) if self.consumer_model is not None else None
+            ),
+            "producer": (
+                _model_sha256(PRODUCER_MODEL_PATH) if self.producer_model is not None else None
+            ),
+        }
         self.subscribers: set[asyncio.Queue] = set()
         self.paused = False
         self.last_rewards: dict = {}
         self.uptime_seconds = 0.0
         self._started_at = time.monotonic()
         self._task: asyncio.Task | None = None
+        self._begin_run("startup")
 
     @property
     def policies_loaded(self) -> bool:
@@ -130,6 +151,67 @@ class KernelService:
             ],
         }
 
+    def _begin_run(self, reason: str) -> None:
+        self.run_id = uuid4().hex
+        self.run_started_at = _utc_now()
+        self.run_start_reason = reason
+        self.initial_conditions = {
+            "environment": self.env.metadata["name"],
+            "seed": None,
+            "max_cycles": self.env.max_cycles,
+            "num_consumers": self.env.num_consumers,
+            "num_producers": self.env.num_producers,
+            "market": {
+                "wage": float(self.env.market_wage),
+                "price": float(self.env.market_price),
+                "base_price": float(self.env.base_price),
+            },
+            "policy": {"tax_rate": float(self.env.tax_rate)},
+            "treasury": float(self.env.treasury),
+            "agent_balances": {
+                agent: float(balance) for agent, balance in self.env.agent_balances.items()
+            },
+        }
+        self.policy_changes: list[dict] = []
+
+    def _record_change(self, command: str, detail: dict) -> None:
+        self.policy_changes.append(
+            {
+                "step": int(self.env.num_cycles),
+                "at": _utc_now(),
+                "command": command,
+                "detail": detail,
+            }
+        )
+
+    def export_run(self) -> dict:
+        state = self.snapshot()
+        return {
+            "format": "econos-run-snapshot",
+            "schema_version": 1,
+            "captured_at": _utc_now(),
+            "run": {
+                "id": self.run_id,
+                "started_at": self.run_started_at,
+                "start_reason": self.run_start_reason,
+                "step_interval": {"from": 0, "to": state["step"]},
+                "initial_conditions": self.initial_conditions,
+                "models": {
+                    role: {
+                        "sha256": digest,
+                        "action_source": "trained_ppo" if digest is not None else "sampled_actions",
+                    }
+                    for role, digest in self.model_versions.items()
+                },
+                "policy_changes": list(self.policy_changes),
+            },
+            "state": state,
+            "replay": {
+                "exact": False,
+                "reason": "Per-step actions and random generator state are not recorded.",
+            },
+        }
+
     async def _run(self) -> None:
         last_obs = {a: self.env._get_obs(a) for a in self.env.agents}
         period = TICK_MS / 1000.0
@@ -145,6 +227,8 @@ class KernelService:
 
                 if truncations and any(truncations.values()):
                     self.env.reset()
+                    self.last_rewards = {}
+                    self._begin_run("cycle_limit")
                     last_obs = {a: self.env._get_obs(a) for a in self.env.agents}
 
             payload = json.dumps(self.snapshot())
@@ -164,27 +248,35 @@ class KernelService:
 
     def cmd_pause(self) -> dict:
         self.paused = True
+        self._record_change("pause", {"paused": True})
         return {"ok": True, "paused": True}
 
     def cmd_resume(self) -> dict:
         self.paused = False
+        self._record_change("resume", {"paused": False})
         return {"ok": True, "paused": False}
 
     def cmd_set_tax(self, rate: float) -> dict:
         self.env.set_tax_rate(rate)
+        self._record_change("tax", {"tax_rate": float(self.env.tax_rate)})
         return {"ok": True, "tax_rate": float(self.env.tax_rate)}
 
     def cmd_redistribute(self) -> dict:
         total, per_consumer = self.env.redistribute_treasury()
+        self._record_change(
+            "redistribute", {"total": float(total), "per_consumer": float(per_consumer)}
+        )
         return {"ok": True, "total": float(total), "per_consumer": float(per_consumer)}
 
     def cmd_shock(self, kind: str, magnitude: float) -> dict:
         self.env.apply_shock(kind, magnitude)
+        self._record_change("shock_queued", {"kind": kind, "magnitude": magnitude})
         return {"ok": True, "queued": {"kind": kind, "magnitude": magnitude}}
 
     def cmd_reset(self) -> dict:
         self.env.reset()
         self.last_rewards = {}
+        self._begin_run("manual_reset")
         return {"ok": True, "reset": True}
 
     def broadcast_event(self, payload: dict) -> None:

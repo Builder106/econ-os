@@ -6,6 +6,7 @@ import pytest
 from fastapi import WebSocketDisconnect
 from fastapi.testclient import TestClient
 
+import server.kernel as kernel_module
 from server.kernel import KernelService, _try_load_ppo
 from server.main import _ack, app, ws
 
@@ -33,6 +34,65 @@ def test_state_endpoint():
         assert "policy" in data
         assert "metrics" in data
         assert "agents" in data
+
+
+def test_export_endpoint_is_public_and_read_only():
+    with TestClient(app) as client:
+        res = client.get("/export")
+        assert res.status_code == 200
+        assert res.headers["cache-control"] == "no-store"
+        assert res.headers["content-disposition"].startswith('attachment; filename="econos-run-')
+        data = res.json()
+        assert data["format"] == "econos-run-snapshot"
+        assert data["schema_version"] == 1
+        assert data["state"]["type"] == "tick"
+        assert data["run"]["step_interval"]["to"] == data["state"]["step"]
+        assert data["run"]["initial_conditions"]["agent_balances"]
+        assert "consumer" in data["run"]["models"]
+        assert "producer" in data["run"]["models"]
+        assert "test-token" not in res.text
+        assert data["replay"]["exact"] is False
+        assert client.post("/export").status_code == 405
+
+
+def test_export_records_policy_changes_and_resets_run():
+    ks = KernelService()
+    first = ks.export_run()
+    assert first["run"]["start_reason"] == "startup"
+    assert first["run"]["initial_conditions"]["market"]["wage"] == 10.0
+
+    ks.cmd_pause()
+    ks.cmd_set_tax(0.2)
+    ks.cmd_shock("wage", 0.05)
+    ks.cmd_redistribute()
+    ks.cmd_resume()
+    capture = ks.export_run()
+    changes = capture["run"]["policy_changes"]
+    assert [change["command"] for change in changes] == [
+        "pause",
+        "tax",
+        "shock_queued",
+        "redistribute",
+        "resume",
+    ]
+    assert changes[1]["detail"] == {"tax_rate": 0.2}
+    assert changes[2]["detail"] == {"kind": "wage", "magnitude": 0.05}
+    assert capture["run"]["step_interval"] == {"from": 0, "to": 0}
+
+    ks.cmd_reset()
+    reset = ks.export_run()
+    assert reset["run"]["id"] != first["run"]["id"]
+    assert reset["run"]["start_reason"] == "manual_reset"
+    assert reset["run"]["initial_conditions"]["policy"]["tax_rate"] == 0.2
+    assert reset["run"]["policy_changes"] == []
+
+
+def test_export_explains_sampled_actions_when_models_are_missing(monkeypatch):
+    monkeypatch.setattr(kernel_module, "_try_load_ppo", lambda _: None)
+    capture = KernelService().export_run()
+    assert capture["state"]["policies_loaded"] is False
+    for model in capture["run"]["models"].values():
+        assert model == {"sha256": None, "action_source": "sampled_actions"}
 
 
 def test_ack_helper():
@@ -235,6 +295,7 @@ async def test_kernel_service_run_loop_and_admin_cmds():
 async def test_kernel_service_truncation_reset_in_run_loop():
     """Verify that truncation in the tick loop triggers environment reset."""
     ks = KernelService()
+    first_run_id = ks.run_id
     ks.env.max_cycles = 1  # Force immediate truncation after 1 tick
     q = ks.subscribe()
 
@@ -243,6 +304,10 @@ async def test_kernel_service_truncation_reset_in_run_loop():
     _ = await asyncio.wait_for(q.get(), timeout=2.0)
     _ = await asyncio.wait_for(q.get(), timeout=2.0)
     await ks.stop()
+    capture = ks.export_run()
+    assert capture["run"]["id"] != first_run_id
+    assert capture["run"]["start_reason"] == "cycle_limit"
+    assert capture["state"]["step"] == 0
 
 
 @pytest.mark.asyncio

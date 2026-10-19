@@ -3,6 +3,7 @@
 - Static dashboard mounted at /
 - /healthz for the platform's healthcheck
 - /state one-shot snapshot
+- /export read-only run snapshot with provenance
 - /ws bidirectional: kernel ticks + events outbound; shell commands inbound
 
 Per-connection: one receive coroutine pushes acks onto the same queue the
@@ -80,6 +81,19 @@ async def healthz():
 @app.get("/state")
 async def state():
     return JSONResponse(kernel.snapshot())
+
+
+@app.get("/export")
+async def export():
+    capture = kernel.export_run()
+    filename = f"econos-run-{capture['run']['id']}-step-{capture['state']['step']}.json"
+    return JSONResponse(
+        capture,
+        headers={
+            "Cache-Control": "no-store",
+            "Content-Disposition": f'attachment; filename="{filename}"',
+        },
+    )
 
 
 def _ack(cmd_id, **fields) -> str:

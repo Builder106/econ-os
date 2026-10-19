@@ -1131,6 +1131,41 @@ document.addEventListener('DOMContentLoaded', () => {
         apps.hidden = true;
         launcher?.setAttribute('aria-expanded', 'false');
     });
+    const exportButton = document.getElementById('export-snapshot');
+    const exportStatus = document.getElementById('export-status');
+    exportButton?.addEventListener('click', async () => {
+        const kernelUrl = _w.kernelClient?.url;
+        if (!(exportButton instanceof HTMLButtonElement) || !kernelUrl || !exportStatus) return;
+        exportButton.disabled = true;
+        exportStatus.textContent = 'Preparing snapshot';
+        try {
+            const url = new URL(kernelUrl);
+            url.protocol = url.protocol === 'wss:' ? 'https:' : 'http:';
+            url.pathname = '/export';
+            url.search = '';
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`Export returned ${response.status}`);
+            const capture = await response.json();
+            if (!isRecord(capture) || capture.format !== 'econos-run-snapshot' || capture.schema_version !== 1) {
+                throw new Error('Unexpected export format');
+            }
+            const blob = new Blob([JSON.stringify(capture, null, 2) + '\n'], { type: 'application/json' });
+            const href = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = href;
+            link.download = `econos-snapshot-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(href), 1000);
+            exportStatus.textContent = 'Snapshot downloaded';
+        } catch (error) {
+            console.error('Snapshot export failed', error);
+            exportStatus.textContent = 'Export failed. Try again.';
+        } finally {
+            exportButton.disabled = false;
+        }
+    });
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape' && apps && !apps.hidden) {
             apps.hidden = true;

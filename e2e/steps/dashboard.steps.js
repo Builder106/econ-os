@@ -1,8 +1,10 @@
 // @ts-check
 const { createBdd } = require('playwright-bdd');
 const { expect } = require('@playwright/test');
+const { readFile } = require('node:fs/promises');
 
-const { Given, Then } = createBdd();
+const { Given, When, Then } = createBdd();
+const snapshots = new WeakMap();
 
 Given('I am on the dashboard', async ({ page }) => {
   await page.goto('/');
@@ -68,4 +70,28 @@ Then('the chart canvas has visible data', async ({ page }) => {
     return false;
   });
   expect(hasInk).toBe(true);
+});
+
+When('I export the run snapshot', async ({ page }) => {
+  await page.getByRole('button', { name: 'Apps' }).click();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export snapshot' }).click();
+  const download = await downloadPromise;
+  snapshots.set(page, JSON.parse(await readFile(await download.path(), 'utf8')));
+  expect(download.suggestedFilename()).toMatch(/^econos-snapshot-.*\.json$/);
+});
+
+Then('the download explains the shared economy', async ({ page }) => {
+  const capture = snapshots.get(page);
+  expect(capture.format).toBe('econos-run-snapshot');
+  expect(capture.schema_version).toBe(1);
+  expect(capture.run.id).toMatch(/^[0-9a-f]{32}$/);
+  expect(capture.run.initial_conditions.agent_balances).toBeTruthy();
+  expect(capture.run.models.consumer.action_source).toMatch(/^(trained_ppo|sampled_actions)$/);
+  expect(capture.run.step_interval.to).toBe(capture.state.step);
+  expect(capture.state.agents).toHaveLength(12);
+  expect(capture.replay.exact).toBe(false);
+  await expect(page.locator('#export-status')).toHaveText('Snapshot downloaded');
+  await page.setViewportSize({ width: 320, height: 700 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
 });
