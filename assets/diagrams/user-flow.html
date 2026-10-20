@@ -1,9 +1,153 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>One kernel, two roles</title>
-<style>:root{color-scheme:light;--bg:#f7f3e9;--ink:#141820;--muted:#4e5a55;--panel:#fcf9f1;--panel-alt:#e8f3eb;--line:#a9b9ad;--accent:#006b7a;--success:#0e7a2a;--warning:#b82a20;--mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;--sans:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif}@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0a0b0e;--ink:#f7faf8;--muted:#b1bdb8;--panel:#171b20;--panel-alt:#10282b;--line:#4c6162;--accent:#00f5ff;--success:#00ff41;--warning:#ff4136;}}html,body{margin:0;background:var(--bg)}body{font-family:var(--sans)}.figure-scroll{max-width:960px;margin:auto;overflow-x:auto}svg{display:block;width:100%;min-width:960px}@media print{.figure-scroll{overflow-x:visible}svg{min-width:0}}</style></head>
-<body><div class="figure-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="figure-title figure-desc">
-<title id="figure-title">One kernel, two roles</title><desc id="figure-desc">Viewer, admin and shared-kernel swimlanes. Invalid tokens keep users read-only. Valid Fed actions mutate the shared kernel; an ADMIN event reaches every viewer, and the kernel ticks every 500 milliseconds.</desc>
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--accent)" stroke-width="1.8"/></marker></defs>
-<rect width="960" height="600" fill="var(--bg)"/>
-<text x="40" y="67" font-size="30" fill="var(--ink)" font-weight="700">One kernel, two roles</text><path d="M40 94 H920" fill="none" stroke="var(--line)" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="40" y="114" width="880" height="130" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="56" y="142" font-size="12" fill="var(--accent)" font-weight="700" font-family="var(--mono)">VIEWER</text><rect x="40" y="254" width="880" height="130" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="56" y="282" font-size="12" fill="var(--accent)" font-weight="700" font-family="var(--mono)">ADMIN</text><rect x="40" y="394" width="880" height="130" rx="2" fill="var(--panel-alt)" stroke="var(--line)" stroke-width="1"/><text x="56" y="422" font-size="12" fill="var(--accent)" font-weight="700" font-family="var(--mono)">SHARED KERNEL</text><path d="M250 184 H356" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/><path d="M684 443 H611 V207 H567" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/><path d="M246 324 H355" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/><path d="M560 324 H632 V456 H684" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/><path d="M887 455 H903 V185 H887" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/><rect x="95" y="155" width="155" height="64" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="110" y="179" font-size="13" fill="var(--ink)" font-weight="700">Open dashboard</text><text x="110" y="200" font-size="11" fill="var(--muted)" font-weight="400">read-only by default</text><rect x="356" y="155" width="211" height="64" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="372" y="179" font-size="15" fill="var(--ink)" font-weight="700">Monitor and explore</text><text x="372" y="200" font-size="11" fill="var(--muted)" font-weight="400" font-family="var(--mono)">help / inspect / top / gini</text><rect x="740" y="155" width="147" height="64" rx="2" fill="var(--panel-alt)" stroke="var(--accent)" stroke-width="1"/><text x="753" y="178" font-size="15" fill="var(--ink)" font-weight="700">All viewers</text><text x="753" y="199" font-size="11" fill="var(--muted)" font-weight="400">see ADMIN event</text><rect x="95" y="295" width="151" height="64" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="110" y="319" font-size="10" fill="var(--ink)" font-weight="700" font-family="var(--mono)">sudo &lt;ADMIN_TOKEN&gt;</text><text x="110" y="340" font-size="10" fill="var(--warning)" font-weight="400">invalid → read-only</text><rect x="355" y="295" width="205" height="64" rx="2" fill="var(--panel)" stroke="var(--success)" stroke-width="1"/><text x="371" y="319" font-size="15" fill="var(--ink)" font-weight="700">Valid: Fed mode</text><text x="371" y="340" font-size="11" fill="var(--muted)" font-weight="400" font-family="var(--mono)">tax / shock / pause / reset</text><rect x="684" y="425" width="203" height="82" rx="2" fill="var(--panel-alt)" stroke="var(--accent)" stroke-width="1.5"/><text x="701" y="453" font-size="16" fill="var(--ink)" font-weight="700">Single live kernel</text><text x="701" y="476" font-size="12" fill="var(--success)" font-weight="400" font-family="var(--mono)">500 ms ticks</text><text x="701" y="494" font-size="11" fill="var(--muted)" font-weight="400">action changes shared state</text>
-</svg></div></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EconOS viewer and admin access</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #1f2328; --muted: #59636e; --edge: #59636e; --box: #8c959f; --group: #d1d9e0; --groupfill: #f6f8fa; --accent: #0969da; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --ink: #f0f6fc; --muted: #9198a1; --edge: #9198a1; --box: #656c76; --group: #3d444d; --groupfill: #151b23; --accent: #4493f8; } }
+html, body { margin: 0; background: var(--bg); }
+main { max-width: 880px; margin: 0 auto; }
+svg { display: block; width: 100%; height: auto; }
+text { font-family: "IBM Plex Sans", system-ui, sans-serif; fill: var(--ink); }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.muted { fill: var(--muted); }
+.accent-text { fill: var(--accent); }
+.bg, .halo { fill: var(--bg); }
+.node { fill: var(--bg); stroke-width: 1.25; }
+.node.box { stroke: var(--box); }
+.node.accent { stroke: var(--accent); stroke-width: 2; }
+.group { fill: var(--groupfill); stroke: var(--group); }
+.boundary { fill: none; stroke: var(--box); stroke-dasharray: 6 6; }
+.edge { fill: none; stroke: var(--edge); stroke-width: 1.5; }
+.edge.accent { stroke: var(--accent); stroke-width: 2; }
+.edge.dashed { stroke-dasharray: 6 5; }
+.lifeline { fill: none; stroke: var(--group); stroke-dasharray: 4 5; }
+.tip { fill: var(--edge); }
+.tip-accent { fill: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 254" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">EconOS viewer and admin access</title>
+<desc id="diagram-desc">Any viewer can run read-only commands such as help, gini, top, and inspect against the shared kernel. A session that runs sudo with the right token can also change it with tax, shock, pause, and reset. A wrong token leaves the session read-only. The kernel ticks every 500 ms and pushes ticks and admin events to every connected dashboard.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="tip" d="M0,0 L10,5 L0,10 Z"/></marker>
+<marker id="arrow-accent" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="tip-accent" d="M0,0 L10,5 L0,10 Z"/></marker>
+</defs>
+<rect class="bg" width="880" height="254"/>
+<rect class="node box" x="16" y="16" width="250" height="67" rx="6"/>
+<text x="30" y="43" font-size="16" font-weight="600">Any viewer</text>
+<text x="30" y="64" font-size="14" class="muted mono">help, gini, top, inspect</text>
+<rect class="node box" x="16" y="150" width="250" height="88" rx="6"/>
+<text x="30" y="177" font-size="16" font-weight="600">Admin session</text>
+<text x="30" y="198" font-size="14" class="muted mono">sudo &lt;token&gt;</text>
+<text x="30" y="219" font-size="14" class="muted mono">tax, shock, pause, reset</text>
+<rect class="node accent" x="380" y="83" width="220" height="67" rx="6"/>
+<text x="394" y="110" font-size="16" font-weight="600">Shared kernel</text>
+<text x="394" y="131" font-size="14" class="muted">one tick every 500 ms</text>
+<rect class="node box" x="680" y="83" width="184" height="67" rx="6"/>
+<text x="694" y="110" font-size="16" font-weight="600">Every dashboard</text>
+<text x="694" y="131" font-size="14" class="muted">ticks and events</text>
+<path class="edge" d="M266,49.5 L323,49.5 L323,103.1 L380,103.1" marker-end="url(#arrow)"/>
+<rect class="halo" x="270.9" y="29" width="47.2" height="19"/>
+<text x="294.5" y="42" font-size="14" class="label" text-anchor="middle">reads</text>
+<path class="edge" d="M266,194 L323,194 L323,129.9 L380,129.9" marker-end="url(#arrow)"/>
+<rect class="halo" x="266.98" y="173" width="55.04" height="19"/>
+<text x="294.5" y="186" font-size="14" class="label" text-anchor="middle">writes</text>
+<path class="edge accent" d="M600,116.5 L680,116.5" marker-end="url(#arrow-accent)"/>
+<rect class="halo" x="612.48" y="95.5" width="55.04" height="19"/>
+<text x="640" y="108.5" font-size="14" class="label accent-text" text-anchor="middle">pushes</text>
+</svg>
+</main>
+<script type="application/json" id="diagram-spec">
+{
+  "title": "EconOS viewer and admin access",
+  "desc": "Any viewer can run read-only commands such as help, gini, top, and inspect against the shared kernel. A session that runs sudo with the right token can also change it with tax, shock, pause, and reset. A wrong token leaves the session read-only. The kernel ticks every 500 ms and pushes ticks and admin events to every connected dashboard.",
+  "width": 880,
+  "nodes": [
+    {
+      "id": "viewer",
+      "x": 16,
+      "y": 16,
+      "w": 250,
+      "title": "Any viewer",
+      "lines": [
+        {
+          "text": "help, gini, top, inspect",
+          "mono": true
+        }
+      ]
+    },
+    {
+      "id": "admin",
+      "x": 16,
+      "y": 150,
+      "w": 250,
+      "title": "Admin session",
+      "lines": [
+        {
+          "text": "sudo <token>",
+          "mono": true
+        },
+        {
+          "text": "tax, shock, pause, reset",
+          "mono": true
+        }
+      ]
+    },
+    {
+      "id": "kernel",
+      "x": 380,
+      "y": 83,
+      "w": 220,
+      "title": "Shared kernel",
+      "lines": [
+        "one tick every 500 ms"
+      ],
+      "accent": true
+    },
+    {
+      "id": "dash",
+      "x": 680,
+      "y": 83,
+      "w": 184,
+      "title": "Every dashboard",
+      "lines": [
+        "ticks and events"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "viewer.r",
+      "to": "kernel.l@0.3",
+      "label": "reads",
+      "at": [
+        294.5,
+        42
+      ]
+    },
+    {
+      "from": "admin.r",
+      "to": "kernel.l@0.7",
+      "label": "writes",
+      "at": [
+        294.5,
+        186
+      ]
+    },
+    {
+      "from": "kernel.r",
+      "to": "dash.l",
+      "label": "pushes",
+      "accent": true
+    }
+  ]
+}
+</script>
+</body>
+</html>

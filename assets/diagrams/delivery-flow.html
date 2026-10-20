@@ -1,9 +1,156 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Dashboard and kernel ship separately</title>
-<style>:root{color-scheme:light;--bg:#f7f3e9;--ink:#141820;--muted:#4e5a55;--panel:#fcf9f1;--panel-alt:#e8f3eb;--line:#a9b9ad;--accent:#006b7a;--success:#0e7a2a;--warning:#b82a20;--mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;--sans:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif}@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0a0b0e;--ink:#f7faf8;--muted:#b1bdb8;--panel:#171b20;--panel-alt:#10282b;--line:#4c6162;--accent:#00f5ff;--success:#00ff41;--warning:#ff4136;}}html,body{margin:0;background:var(--bg)}body{font-family:var(--sans)}.figure-scroll{max-width:960px;margin:auto;overflow-x:auto}svg{display:block;width:100%;min-width:960px}@media print{.figure-scroll{overflow-x:visible}svg{min-width:0}}</style></head>
-<body><div class="figure-scroll"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="figure-title figure-desc">
-<title id="figure-title">Dashboard and kernel ship separately</title><desc id="figure-desc">GitHub Actions gates the Vercel dashboard deployment after a main push. An operator separately updates the live kernel over SSH with git pull and docker compose. The deployed dashboard connects to the kernel over WebSocket.</desc>
-<defs><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M1 1 L8 5 L1 9" fill="none" stroke="var(--accent)" stroke-width="1.8"/></marker></defs>
-<rect width="960" height="600" fill="var(--bg)"/>
-<text x="40" y="67" font-size="30" fill="var(--ink)" font-weight="700">Dashboard and kernel ship separately</text><path d="M40 94 H920" fill="none" stroke="var(--line)" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/><rect x="40" y="119" width="425" height="414" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="58" y="147" font-size="12" fill="var(--accent)" font-weight="700" font-family="var(--mono)">AUTOMATED DASHBOARD</text><rect x="495" y="119" width="425" height="414" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="513" y="147" font-size="12" fill="var(--accent)" font-weight="700" font-family="var(--mono)">OPERATOR KERNEL</text><path d="M246 221 V253" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/><path d="M246 337 V369" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#arrow)"/><path d="M710 221 V282" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5 5" marker-end="url(#arrow)"/><path d="M710 364 V395" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5 5" marker-end="url(#arrow)"/><path d="M415 433 H543" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="5 5" marker-end="url(#arrow)"/><text x="479" y="418" font-size="10" fill="var(--accent)" font-weight="700" text-anchor="middle">browser WSS</text><rect x="77" y="165" width="338" height="56" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="92" y="190" font-size="16" fill="var(--ink)" font-weight="700">Push to main</text><text x="92" y="207" font-size="11" fill="var(--muted)" font-weight="400">starts GitHub Actions</text><rect x="77" y="253" width="338" height="84" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="92" y="278" font-size="16" fill="var(--ink)" font-weight="700">CI gate</text><text x="92" y="300" font-size="12" fill="var(--muted)" font-weight="400" font-family="var(--mono)">secret scan / pytest / Playwright</text><text x="92" y="319" font-size="11" fill="var(--success)" font-weight="700">pass → production Vercel hook</text><rect x="77" y="369" width="338" height="128" rx="2" fill="var(--panel-alt)" stroke="var(--accent)" stroke-width="1.5"/><text x="92" y="395" font-size="17" fill="var(--ink)" font-weight="700">Vercel static dashboard</text><text x="92" y="420" font-size="12" fill="var(--muted)" font-weight="400" font-family="var(--mono)">build-config.js injects</text><text x="92" y="441" font-size="12" fill="var(--accent)" font-weight="700" font-family="var(--mono)">ECONOS_KERNEL_WS_URL</text><text x="92" y="471" font-size="12" fill="var(--muted)" font-weight="400" font-family="var(--mono)">econ-os.vercel.app</text><rect x="543" y="165" width="334" height="56" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="558" y="190" font-size="16" fill="var(--ink)" font-weight="700">Manual host update</text><text x="558" y="207" font-size="11" fill="var(--muted)" font-weight="400">separate operator action</text><rect x="543" y="282" width="334" height="82" rx="2" fill="var(--panel)" stroke="var(--line)" stroke-width="1"/><text x="558" y="307" font-size="16" fill="var(--ink)" font-weight="700">SSH to Oracle host</text><text x="558" y="330" font-size="12" fill="var(--muted)" font-weight="400" font-family="var(--mono)">git pull; docker compose up -d</text><rect x="543" y="395" width="334" height="102" rx="2" fill="var(--panel-alt)" stroke="var(--accent)" stroke-width="1"/><text x="558" y="424" font-size="17" fill="var(--ink)" font-weight="700">Shared live kernel</text><text x="558" y="449" font-size="12" fill="var(--muted)" font-weight="400">WebSocket endpoint</text><text x="558" y="473" font-size="12" fill="var(--muted)" font-weight="400">receives dashboard clients</text>
-</svg></div></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EconOS dashboard and kernel deploy separately</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+:root { color-scheme: light dark; --bg: #ffffff; --ink: #1f2328; --muted: #59636e; --edge: #59636e; --box: #8c959f; --group: #d1d9e0; --groupfill: #f6f8fa; --accent: #0969da; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --ink: #f0f6fc; --muted: #9198a1; --edge: #9198a1; --box: #656c76; --group: #3d444d; --groupfill: #151b23; --accent: #4493f8; } }
+html, body { margin: 0; background: var(--bg); }
+main { max-width: 736px; margin: 0 auto; }
+svg { display: block; width: 100%; height: auto; }
+text { font-family: "IBM Plex Sans", system-ui, sans-serif; fill: var(--ink); }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.muted { fill: var(--muted); }
+.accent-text { fill: var(--accent); }
+.bg, .halo { fill: var(--bg); }
+.node { fill: var(--bg); stroke-width: 1.25; }
+.node.box { stroke: var(--box); }
+.node.accent { stroke: var(--accent); stroke-width: 2; }
+.group { fill: var(--groupfill); stroke: var(--group); }
+.boundary { fill: none; stroke: var(--box); stroke-dasharray: 6 6; }
+.edge { fill: none; stroke: var(--edge); stroke-width: 1.5; }
+.edge.accent { stroke: var(--accent); stroke-width: 2; }
+.edge.dashed { stroke-dasharray: 6 5; }
+.lifeline { fill: none; stroke: var(--group); stroke-dasharray: 4 5; }
+.tip { fill: var(--edge); }
+.tip-accent { fill: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 736 285" role="img" aria-labelledby="diagram-title diagram-desc">
+<title id="diagram-title">EconOS dashboard and kernel deploy separately</title>
+<desc id="diagram-desc">A push to main runs CI: gitleaks, pytest, and Playwright. When CI passes, a Vercel deploy hook builds the static dashboard. The shared kernel is updated by hand over SSH with git pull and docker compose up -d. The two meet only over a WebSocket from the dashboard to the kernel.</desc>
+<defs>
+<marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="tip" d="M0,0 L10,5 L0,10 Z"/></marker>
+<marker id="arrow-accent" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path class="tip-accent" d="M0,0 L10,5 L0,10 Z"/></marker>
+</defs>
+<rect class="bg" width="736" height="285"/>
+<rect class="node box" x="16" y="16" width="300" height="67" rx="6"/>
+<text x="30" y="43" font-size="16" font-weight="600">Push to main</text>
+<text x="30" y="64" font-size="14" class="muted">GitHub Actions</text>
+<rect class="node box" x="16" y="109" width="300" height="67" rx="6"/>
+<text x="30" y="136" font-size="16" font-weight="600">CI checks</text>
+<text x="30" y="157" font-size="14" class="muted">gitleaks, pytest, Playwright</text>
+<rect class="node box" x="16" y="202" width="300" height="67" rx="6"/>
+<text x="30" y="229" font-size="16" font-weight="600">Vercel dashboard</text>
+<text x="30" y="250" font-size="14" class="muted">static build from the deploy hook</text>
+<rect class="node box" x="420" y="16" width="300" height="88" rx="6"/>
+<text x="434" y="43" font-size="16" font-weight="600">Manual update over SSH</text>
+<text x="434" y="64" font-size="14" class="muted mono">git pull</text>
+<text x="434" y="85" font-size="14" class="muted mono">docker compose up -d</text>
+<rect class="node box" x="420" y="202" width="300" height="67" rx="6"/>
+<text x="434" y="229" font-size="16" font-weight="600">Shared kernel</text>
+<text x="434" y="250" font-size="14" class="muted">Oracle Always Free host</text>
+<path class="edge" d="M166,83 L166,109" marker-end="url(#arrow)"/>
+<path class="edge" d="M166,176 L166,202" marker-end="url(#arrow)"/>
+<rect class="halo" x="170" y="181" width="55.04" height="19"/>
+<text x="174" y="194" font-size="14" class="label">passes</text>
+<path class="edge" d="M570,104 L570,202" marker-end="url(#arrow)"/>
+<path class="edge accent" d="M316,235.5 L420,235.5" marker-end="url(#arrow-accent)"/>
+<rect class="halo" x="328.72" y="214.5" width="78.56" height="19"/>
+<text x="368" y="227.5" font-size="14" class="label accent-text" text-anchor="middle">WebSocket</text>
+</svg>
+</main>
+<script type="application/json" id="diagram-spec">
+{
+  "title": "EconOS dashboard and kernel deploy separately",
+  "desc": "A push to main runs CI: gitleaks, pytest, and Playwright. When CI passes, a Vercel deploy hook builds the static dashboard. The shared kernel is updated by hand over SSH with git pull and docker compose up -d. The two meet only over a WebSocket from the dashboard to the kernel.",
+  "width": 880,
+  "nodes": [
+    {
+      "id": "push",
+      "x": 16,
+      "y": 16,
+      "w": 300,
+      "title": "Push to main",
+      "lines": [
+        "GitHub Actions"
+      ]
+    },
+    {
+      "id": "ci",
+      "x": 16,
+      "y": 109,
+      "w": 300,
+      "title": "CI checks",
+      "lines": [
+        "gitleaks, pytest, Playwright"
+      ]
+    },
+    {
+      "id": "vercel",
+      "x": 16,
+      "y": 202,
+      "w": 300,
+      "title": "Vercel dashboard",
+      "lines": [
+        "static build from the deploy hook"
+      ]
+    },
+    {
+      "id": "op",
+      "x": 420,
+      "y": 16,
+      "w": 300,
+      "title": "Manual update over SSH",
+      "lines": [
+        {
+          "text": "git pull",
+          "mono": true
+        },
+        {
+          "text": "docker compose up -d",
+          "mono": true
+        }
+      ]
+    },
+    {
+      "id": "kernel",
+      "x": 420,
+      "y": 202,
+      "w": 300,
+      "title": "Shared kernel",
+      "lines": [
+        "Oracle Always Free host"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "from": "push.b",
+      "to": "ci.t"
+    },
+    {
+      "from": "ci.b",
+      "to": "vercel.t",
+      "label": "passes"
+    },
+    {
+      "from": "op.b",
+      "to": "kernel.t"
+    },
+    {
+      "from": "vercel.r",
+      "to": "kernel.l",
+      "label": "WebSocket",
+      "accent": true
+    }
+  ]
+}
+</script>
+</body>
+</html>

@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-19: Redraw both README figures #decision
+
+Both figures lose the cream background and uppercase lane labels. The user flow now shows read-only and admin sessions feeding one kernel that pushes to every dashboard, without crossing wires. The delivery figure keeps its point: the dashboard deploys from CI and the kernel is updated by hand.
+
 ## 2026-10-19: Explain the shared run in a snapshot #decision
 
 The Apps menu now downloads a versioned JSON snapshot from the shared kernel. It includes the current state, initial conditions, checkpoint digests or sampled-action status, and the admin changes made during the run. A reset starts a new run ID. The file explicitly says exact replay is unavailable because the kernel does not record each action or random generator state. The format is documented before adding a Files app or private experiments.

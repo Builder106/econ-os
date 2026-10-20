@@ -58,7 +58,7 @@ Every visitor lands in the same shared environment: the shared simulation ticks 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/user-flow-dark.png">
-  <img src="assets/diagrams/user-flow.png" alt="EconOS viewer and admin paths through one shared simulation kernel">
+  <img src="assets/diagrams/user-flow.png" alt="Any viewer can read from the shared kernel with help, gini, top, and inspect. An admin session that passes sudo can also write to it with tax, shock, pause, and reset. The kernel ticks every 500 ms and pushes ticks and events to every dashboard." width="880">
 </picture>
 
 Every viewer sees the same kernel tick every 500 ms. Visitors can watch the monitors, take the tour, or use read-only shell commands. A valid `sudo` token unlocks tax changes, wage or price shocks of ±5% or ±10%, and pause, resume, or reset commands. Their ADMIN events broadcast to every connected viewer. Invalid tokens leave the visitor on the read-only path. [Editable HTML source](assets/diagrams/user-flow.html).
@@ -101,9 +101,11 @@ The feedback loop ensures that one user's policy adjustment immediately reflects
 
 ## CI/CD Pipeline
 
+The dashboard deploys from CI, and the kernel is updated by hand. The two meet only over a WebSocket.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/delivery-flow-dark.png">
-  <img src="assets/diagrams/delivery-flow.png" alt="EconOS dashboard CI and deployment alongside the separate kernel update">
+  <img src="assets/diagrams/delivery-flow.png" alt="A push to main runs CI checks, and passing CI triggers the Vercel deploy hook for the static dashboard. Separately, an operator updates the shared kernel over SSH with git pull and docker compose up -d. The dashboard connects to the kernel over a WebSocket." width="736">
 </picture>
 
 A push to `main` starts CI. The secret scan, Python checks, and Playwright job gate the Vercel production hook, which builds the static dashboard with `ECONOS_KERNEL_WS_URL`. The shared kernel is updated separately with `git pull` and `docker compose up -d`; the dashboard connects to its WebSocket endpoint. [Editable HTML source](assets/diagrams/delivery-flow.html).
