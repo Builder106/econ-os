@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-20: Compare saved runs locally #decision
+
+The first comparison tool reads two version 1 exports from disk and reports market, metric, and agent-balance changes with run identity, initial conditions, model checkpoint matching, and recorded policy actions. It never contacts or mutates the shared kernel. The report calls the differences descriptive because exported runs omit per-step actions and random state; a private experiment runner still needs a defined economic question and controlled action path.
+
 ## 2026-10-19: Redraw both README figures #decision
 
 Both figures lose the cream background and uppercase lane labels. The user flow now shows read-only and admin sessions feeding one kernel that pushes to every dashboard, without crossing wires. The delivery figure keeps its point: the dashboard deploys from CI and the kernel is updated by hand.

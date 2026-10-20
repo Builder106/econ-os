@@ -15,7 +15,7 @@ Market and Agents now open as windows on the work surface. The desktop keeps the
 
 ## 2. Make it a research workspace
 
-The first read-only run snapshot is available from the Apps menu and `GET /export`. Its [versioned format](docs/run-export.md) records the current state and run context, and states why exact replay is unavailable. The remaining work in this section is private experiments, comparisons, and question-led validation.
+The first read-only run snapshot is available from the Apps menu and `GET /export`. Its [versioned format](docs/run-export.md) records the current state and run context, and states why exact replay is unavailable. A local comparison command now describes differences between two exports. The remaining work in this section is isolated private experiment runs and question-led validation.
 
 - Add a read-only snapshot or export with the kernel step, model status, policy settings, and market and agent state. The export must say when trained policies are unavailable and the kernel is sampling actions.
 - Record enough run information to explain a result: model version, initial conditions, policy changes, and the interval captured. Define the format before adding a Files app.

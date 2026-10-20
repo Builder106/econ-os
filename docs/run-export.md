@@ -16,3 +16,15 @@ The file has `format: "econos-run-snapshot"` and `schema_version: 1`. Consumers 
 | `replay` | Whether the file can reproduce the run exactly, with a reason when it cannot. |
 
 This first format explains a captured result but cannot replay it exactly. PPO prediction can sample actions, and the kernel does not record each action or the random generator state. The export is a single state with its run context, not a time series. Keep this distinction when adding comparison tools or a Files app.
+
+## Compare two snapshots
+
+Save two exports and run:
+
+```sh
+python3 scripts/compare_snapshots.py earlier.json later.json
+```
+
+The command reads local files only. It shows changes in market values, policy, summary metrics, and balances for agents present in both files. It also reports whether the files belong to the same run and whether their initial conditions and model checkpoints match. Policy actions recorded in the later file appear below the values. For files from the same run, the list excludes actions already recorded in the earlier file.
+
+These differences describe observations, not policy effects. The exports omit per-step actions and random state, so even matching initial conditions and checkpoints do not establish a controlled counterfactual. Keep the files local if they contain data you do not want to share.
