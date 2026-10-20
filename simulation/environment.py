@@ -146,6 +146,24 @@ class MarketEnv(ParallelEnv):
             [actions[a][1] * self.agent_balances[a] for a in self.agents if "consumer" in a]
         )
 
+        producers = [agent for agent in self.agents if "producer" in agent]
+        paid_by_producer = {}
+        if producers:
+            revenue_per_producer = total_consumption_spend / self.num_producers
+            wage_due_per_producer = total_wage_bill / self.num_producers
+            paid_by_producer = {
+                agent: min(
+                    wage_due_per_producer,
+                    self.agent_balances[agent] + revenue_per_producer,
+                )
+                for agent in producers
+            }
+            wage_paid = sum(paid_by_producer.values())
+        else:
+            # Single-role training environments keep their synthetic counterparty.
+            wage_paid = total_wage_bill
+        paid_wage_per_labor = wage_paid / total_labor if total_labor else 0.0
+
         self.last_consumption_spend = float(total_consumption_spend)
         self.last_cpi = float((self.market_price / self.base_price) * 100.0)
         cpi_ratio = self.last_cpi / 100.0
@@ -156,7 +174,7 @@ class MarketEnv(ParallelEnv):
                 labor = actions[agent][0]
                 consumption_intent = actions[agent][1] * self.agent_balances[agent]
 
-                gross_income = labor * self.market_wage
+                gross_income = labor * paid_wage_per_labor
                 tax_paid = gross_income * self.tax_rate
                 self.treasury += tax_paid
 
@@ -171,10 +189,8 @@ class MarketEnv(ParallelEnv):
                 prev_balance = self.agent_balances[agent]
 
                 share_of_revenue = total_consumption_spend / self.num_producers
-                share_of_costs = total_wage_bill / self.num_producers
-
-                self.agent_balances[agent] += share_of_revenue - share_of_costs
-                self.agent_balances[agent] = max(0, self.agent_balances[agent])
+                available = prev_balance + share_of_revenue
+                self.agent_balances[agent] = available - paid_by_producer[agent]
 
                 rewards[agent] = float(self.agent_balances[agent] - prev_balance)
 

@@ -48,6 +48,28 @@ def test_money_conservation():
     assert final_money == pytest.approx(initial_money, rel=1e-5)
 
 
+def test_insolvent_producer_cannot_pay_unfunded_wages():
+    env = MarketEnv(num_consumers=2, num_producers=1, tax_rate=0.2)
+    env.reset()
+    env.market_wage = 100.0
+    env.agent_balances["producer_0"] = 1.0
+    initial_money = sum(env.agent_balances.values()) + env.treasury
+    actions = {
+        "consumer_0": np.array([1.0, 0.0]),
+        "consumer_1": np.array([1.0, 0.0]),
+        "producer_0": np.array([0.5, 0.5]),
+    }
+
+    for _ in range(3):
+        env.step(actions)
+        assert env.agent_balances["producer_0"] == pytest.approx(0.0)
+        assert sum(env.agent_balances.values()) + env.treasury == pytest.approx(initial_money)
+
+    assert env.treasury == pytest.approx(0.2)
+    assert env.agent_balances["consumer_0"] == pytest.approx(50.4)
+    assert env.agent_balances["consumer_1"] == pytest.approx(50.4)
+
+
 def test_environment_reset():
     """Verify that reset returns valid observations for all agents."""
     env = MarketEnv()
