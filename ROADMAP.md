@@ -13,16 +13,16 @@ Market and Agents now open as windows on the work surface. The desktop keeps the
 
 **Done when:** a new visitor can recognize and use the desktop, open and switch apps with a keyboard, and inspect the shared market on desktop and phone. Browser tests cover window restoration and the existing admin boundary.
 
-## 2. Make it a research workspace
+## 2. Make it a research workspace (local prototype complete)
 
-The first read-only run snapshot is available from the Apps menu and `GET /export`. Its [versioned format](docs/run-export.md) records the current state and run context, and states why exact replay is unavailable. A local comparison command now describes differences between two exports. The remaining work in this section is isolated private experiment runs and question-led validation.
+The read-only snapshot from the Apps menu and `GET /export` has a [versioned format](docs/run-export.md) with state and run context. A local comparison command describes differences between exports. A [private tax experiment](docs/private-experiments.md) now starts from a saved state and compares two tax settings under the same seeded actions. It reports money drift and explains why the trial is not a replay of the live PPO run.
 
 - Add a read-only snapshot or export with the kernel step, model status, policy settings, and market and agent state. The export must say when trained policies are unavailable and the kernel is sampling actions.
 - Record enough run information to explain a result: model version, initial conditions, policy changes, and the interval captured. Define the format before adding a Files app.
-- Explore private experiment runs for comparisons. Keep them separate from the public shared kernel so one visitor's trial cannot change everyone else's economy.
+- Explore private experiment runs for comparisons. Keep them separate from the public shared kernel so one visitor's trial cannot change everyone else's economy. The local paired tax trial is the first implementation.
 - Add phase-space views and empirical validation only when there is a specific economic question and a dataset to test against.
 
-**Done when:** someone can reproduce or explain a captured result without relying on a screenshot of the live page.
+**Done for the local prototype:** someone can explain a captured live result from its snapshot and rerun a seeded private trial without relying on a screenshot. Exact live replay remains unavailable. Empirical validation and phase-space views wait for a named dataset and calibration question.
 
 ## 3. Test a Linux lab in the browser
 

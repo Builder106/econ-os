@@ -4,6 +4,14 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-20: Keep private tax trials off the shared kernel #decision
+
+A local runner now starts two market instances from a saved snapshot's observed values and feeds both the same seeded action stream. It compares the captured tax rate with a chosen rate and records money drift in each arm. The trial does not load the live PPO checkpoints or restore pending shocks, so it is a reproducible model sensitivity check rather than a replay or empirical policy estimate. Python unit and conservation tests cover the new logic; it adds no browser or API boundary. Phase-space and data comparisons remain gated on a named dataset and calibration plan.
+
+## 2026-10-20: Stop unfunded wages from creating money #incident
+
+The saved-state tax trial exposed a 3,752-unit increase in total money over 50 steps. Producers with empty balances were clamped to zero after paying a full wage bill, while consumers still received those wages. A producer now pays only from its balance and current sales, and consumer wages and tax use the amount actually paid. The same trial conserves money in both arms; single-role training environments keep their synthetic counterparty behavior.
+
 ## 2026-10-20: Compare saved runs locally #decision
 
 The first comparison tool reads two version 1 exports from disk and reports market, metric, and agent-balance changes with run identity, initial conditions, model checkpoint matching, and recorded policy actions. It never contacts or mutates the shared kernel. The report calls the differences descriptive because exported runs omit per-step actions and random state; a private experiment runner still needs a defined economic question and controlled action path.
