@@ -1,7 +1,7 @@
 # EconOS kernel container — runs the shared MarketEnv + WS API.
 # Koyeb (and any container host) sets $PORT; uvicorn binds to it.
 
-FROM python:3.14-slim AS base
+FROM python:3.15-slim AS base
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ENV PYTHONUNBUFFERED=1 \
