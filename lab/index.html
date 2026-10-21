@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EconOS Linux lab</title>
+  <link rel="stylesheet" href="/lab.css">
+  <script type="module" src="/lab.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>EconOS Linux lab</h1>
+      <p>A local experiment in running a small Linux guest beside the shared economy.</p>
+    </header>
+
+    <section aria-labelledby="guest-heading">
+      <h2 id="guest-heading">Guest console</h2>
+      <p>Boot the guest, then run <code>econos</code> to read the current shared snapshot. The command cannot change the economy.</p>
+      <div class="controls">
+        <button id="boot" type="button">Boot Linux</button>
+        <button id="stop" type="button" disabled>Stop guest</button>
+        <span id="status" role="status">Ready to boot</span>
+      </div>
+      <label for="console">Linux output</label>
+      <textarea id="console" rows="20" readonly spellcheck="false" aria-live="off">Guest has not started.</textarea>
+      <form id="command-form">
+        <label for="command">Guest command</label>
+        <div class="controls">
+          <input id="command" name="command" type="text" value="econos" autocomplete="off" disabled>
+          <button id="run" type="submit" disabled>Run command</button>
+        </div>
+      </form>
+    </section>
+
+    <section aria-labelledby="measure-heading">
+      <h2 id="measure-heading">This session</h2>
+      <dl>
+        <div><dt>Boot to prompt</dt><dd id="boot-time">—</dd></div>
+        <div><dt>Assets transferred</dt><dd id="transfer">—</dd></div>
+        <div><dt>Guest RAM assigned</dt><dd>128 MiB</dd></div>
+      </dl>
+      <p>Transfer counts this page's emulator, BIOS, and Linux image downloads. Browser CPU and process memory are measured separately during the lab review.</p>
+    </section>
+  </main>
+</body>
+</html>
