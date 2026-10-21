@@ -17,15 +17,15 @@ The asset preparation script pins `v86@0.5.472` and SHA-256 checksums for the em
 
 ## Measurements and platform choice
 
-Measurements on 2026-10-21 used one Linux ARM64 verifier, the current shared kernel export, and three sequential `econos` queries per browser. The queries returned advancing kernel steps in each browser. The browser test used a text input and Enter to send each command, and recorded no page errors. These are local development measurements, not a capacity or public hosting benchmark.
+Measurements on 2026-10-21 used one Linux ARM64 verifier, Playwright 1.64.1, the current shared kernel export, and three sequential `econos` queries per browser. The queries returned advancing kernel steps in each browser. The browser test used a text input and Enter to send each command, and recorded no page errors. These are local development measurements, not a capacity or public hosting benchmark.
 
 | Browser | Boot to ready prompt | Assets transferred | Three guest queries |
 | --- | ---: | ---: | --- |
-| Chromium | 15.8 s | 12.0 MiB | passed |
-| Firefox | 5.8 s | 12.0 MiB | passed |
-| WebKit | 9.3 s | 12.0 MiB | passed |
+| Chromium | 23.6 s | 12.0 MiB | passed |
+| Firefox | 10.1 s | 12.0 MiB | passed |
+| WebKit | 17.0 s | 12.0 MiB | passed |
 
-The final Chromium run measured 35.83 process CPU seconds and 556.88 MiB summed browser-process RSS after the queries. Chrome's page metrics reported 18.06 s of task duration and 7.75 MiB of JavaScript heap. A prior run reached 609.55 MiB RSS, and one boot took 32.6 s under verifier load; resource use and startup vary. The 128 MiB assigned to guest RAM is included in browser process memory, so do not add it to RSS. Asset transfer is the page's resource-timing total for emulator, BIOS, and Linux downloads, rounded to one decimal MiB. The CPU figure sums the browser processes' reported CPU time, so it can exceed elapsed time when processes run in parallel. Run `node lab/measure.mjs chromium`, `firefox`, or `webkit` against the local server to repeat the interaction check.
+The final Chromium run measured 35.41 process CPU seconds and 583.69 MiB summed browser-process RSS after the queries. Chrome's page metrics reported 23.99 s of task duration and 7.93 MiB of JavaScript heap. Earlier Chromium runs ranged from 557 to 610 MiB RSS, and one boot took 32.6 s under verifier load; resource use and startup vary. The 128 MiB assigned to guest RAM is included in browser process memory, so do not add it to RSS. Asset transfer is the page's resource-timing total for emulator, BIOS, and Linux downloads, rounded to one decimal MiB. The CPU figure sums the browser processes' reported CPU time, so it can exceed elapsed time when processes run in parallel. Run `node lab/measure.mjs chromium`, `firefox`, or `webkit` against the local server to repeat the interaction check.
 
 The alternatives were screened from their upstream documentation, not deployed or benchmarked here:
 
