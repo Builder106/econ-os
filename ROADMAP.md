@@ -24,15 +24,15 @@ The read-only snapshot from the Apps menu and `GET /export` has a [versioned for
 
 **Done for the local prototype:** someone can explain a captured live result from its snapshot and rerun a seeded private trial without relying on a screenshot. Exact live replay remains unavailable. Empirical validation and phase-space views wait for a named dataset and calibration question.
 
-## 3. Test a Linux lab in the browser
+## 3. Test a Linux lab in the browser (local prototype evaluated)
 
-Build this as a separate prototype before making it part of the main experience.
+The [separate local prototype](docs/linux-lab.md) boots a Linux guest in v86 and runs a read-only `econos` command against the shared kernel export. Chromium, Firefox, and WebKit passed three keyboard-driven queries with advancing steps. The recorded startup, transfer, CPU, and memory costs are substantial for a summary already available on the desktop; distribution is deferred.
 
 - Try a small custom Linux image in [v86](https://github.com/copy/v86), which boots a Linux kernel in the browser. Compare it with [WebVM](https://github.com/leaningtech/webvm), which runs a Linux-compatible environment, and a hosted desktop reached through [Guacamole](https://guacamole.apache.org/).
 - Give the guest one useful EconOS tool first: a read-only command that queries the existing shared kernel. The guest should not start another public economy or bypass the admin boundary.
 - Measure startup time, transferred bytes, memory and CPU use, browser support, keyboard access, and whether the guest can maintain a reliable connection to the kernel. Check image redistribution and runtime licensing before choosing a platform.
 
-**Decision gate:** continue toward a distributable EconOS Linux image only if the guest helps someone run or inspect an experiment better than the web desktop. Call the browser interface a desktop environment until an actual Linux image is built and shipped.
+**Decision gate:** continue toward a distributable EconOS Linux image only if a named experiment benefits from guest tools beyond the web desktop, and the boot image's source and redistribution rights are documented. Call the browser interface a desktop environment until an actual Linux image is built and shipped.
 
 ## Simulation backlog
 

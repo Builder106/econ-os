@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-21: Keep the browser Linux lab local #decision
+
+A separate v86 prototype now boots Linux and runs a guest `econos` command that reads the shared kernel export through a fixed local proxy. Chromium, Firefox, and WebKit each returned three advancing snapshots through keyboard input. The lab transferred about 12 MiB of assets; Chromium runs used 557–610 MiB of browser-process RSS after their queries. The command adds no research ability beyond the desktop yet. Keep it out of the shipped interface until a named experiment justifies the cost and the Linux image's source and redistribution rights are documented.
+
 ## 2026-10-21: Drop the delivery figure #decision
 
 The figure joined two unrelated paths, the CI deploy and the manual kernel update, and both are short linear chains. The paragraph and stage table already say everything it did.
