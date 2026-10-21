@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-21: Verify the public snapshot export #incident
+
+The section 2 kernel is healthy, and the hosted dashboard now downloads a version 1 snapshot over public HTTPS. The first deployment check found that nginx held port 443 on every address, leaving Tailscale unable to listen on its own address. Binding nginx to the host's LAN address restored tailnet HTTPS without changing the existing sites' responses. Public Funnel TLS still failed after a route reset and daemon restart, then recovered by the next day's check. A browser test on a tailnet-connected verifier hit Chromium's local network access check because tailnet DNS resolved the public hostname to a private address; forcing the public relay address confirmed live ticks and the export button without disabling that browser protection.
+
 ## 2026-10-20: Keep private tax trials off the shared kernel #decision
 
 A local runner now starts two market instances from a saved snapshot's observed values and feeds both the same seeded action stream. It compares the captured tax rate with a chosen rate and records money drift in each arm. The trial does not load the live PPO checkpoints or restore pending shocks, so it is a reproducible model sensitivity check rather than a replay or empirical policy estimate. Python unit and conservation tests cover the new logic; it adds no browser or API boundary. Phase-space and data comparisons remain gated on a named dataset and calibration plan.
