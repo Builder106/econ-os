@@ -103,12 +103,7 @@ The feedback loop ensures that one user's policy adjustment immediately reflects
 
 The dashboard deploys from CI, and the kernel is updated by hand. The two meet only over a WebSocket.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/delivery-flow-dark.png">
-  <img src="assets/diagrams/delivery-flow.png" alt="A push to main runs CI checks, and passing CI triggers the Vercel deploy hook for the static dashboard. Separately, an operator updates the shared kernel over SSH with git pull and docker compose up -d. The dashboard connects to the kernel over a WebSocket." width="736">
-</picture>
-
-A push to `main` starts CI. The secret scan, Python checks, and Playwright job gate the Vercel production hook, which builds the static dashboard with `ECONOS_KERNEL_WS_URL`. The shared kernel is updated separately with `git pull` and `docker compose up -d`; the dashboard connects to its WebSocket endpoint. [Editable HTML source](assets/diagrams/delivery-flow.html).
+A push to `main` starts CI. The secret scan, Python checks, and Playwright job gate the Vercel production hook, which builds the static dashboard with `ECONOS_KERNEL_WS_URL`. The shared kernel is updated separately with `git pull` and `docker compose up -d`; the dashboard connects to its WebSocket endpoint.
 
 | Stage | Trigger | What runs | Where it shows up |
 | --- | --- | --- | --- |

@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-21: Drop the delivery figure #decision
+
+The figure joined two unrelated paths, the CI deploy and the manual kernel update, and both are short linear chains. The paragraph and stage table already say everything it did.
+
 ## 2026-10-21: Verify the public snapshot export #incident
 
 The section 2 kernel is healthy, and the hosted dashboard now downloads a version 1 snapshot over public HTTPS. The first deployment check found that nginx held port 443 on every address, leaving Tailscale unable to listen on its own address. Binding nginx to the host's LAN address restored tailnet HTTPS without changing the existing sites' responses. Public Funnel TLS still failed after a route reset and daemon restart, then recovered by the next day's check. A browser test on a tailnet-connected verifier hit Chromium's local network access check because tailnet DNS resolved the public hostname to a private address; forcing the public relay address confirmed live ticks and the export button without disabling that browser protection.
