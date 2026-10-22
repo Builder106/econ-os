@@ -1,6 +1,6 @@
 """FastAPI front door for the shared EconOS kernel.
 
-- Static dashboard mounted at /
+- Static desktop (desktop/dist) mounted at / when it has been built
 - /healthz for the platform's healthcheck
 - /state one-shot snapshot
 - /export read-only run snapshot with provenance
@@ -27,9 +27,9 @@ from fastapi.staticfiles import StaticFiles
 from server.commands import Connection, dispatch
 from server.kernel import KernelService
 
-DASHBOARD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard")
+DESKTOP_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "desktop", "dist")
 
-# CORS: dashboard on Vercel makes cross-origin requests to this kernel host.
+# CORS: the desktop on Vercel makes cross-origin requests to this kernel host.
 #
 # ALLOWED_ORIGINS: comma-separated exact-match list, or "*" for anything.
 #   Example: ALLOWED_ORIGINS=https://econ-os.vercel.app
@@ -153,6 +153,13 @@ async def ws(websocket: WebSocket):
         kernel.unsubscribe(out_queue)
 
 
-# Mount the dashboard last so /ws and /healthz win over static routes.
-if os.path.isdir(DASHBOARD_DIR):
-    app.mount("/", StaticFiles(directory=DASHBOARD_DIR, html=True), name="dashboard")
+def mount_desktop(target: FastAPI, directory: str) -> bool:
+    """Serve the built desktop at /, if a build exists. Returns whether it was mounted."""
+    if not os.path.isdir(directory):
+        return False
+    target.mount("/", StaticFiles(directory=directory, html=True), name="desktop")
+    return True
+
+
+# Mount the desktop last so /ws and /healthz win over static routes.
+mount_desktop(app, DESKTOP_DIR)

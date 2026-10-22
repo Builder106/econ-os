@@ -1,4 +1,4 @@
-# Vercel only needs dashboard/ + scripts/build-config.js.
+# Vercel only needs desktop/ and the npm manifest to build the static desktop.
 # Skip the Python backend, tests, caches, and trained artifacts.
 .venv/
 .pytest_cache/
@@ -12,7 +12,10 @@ playwright-report/
 playwright/.cache/
 
 e2e/
-playwright.config.js
+playwright*.config.ts
+.features-gen/
+desktop/design/*.blend
+lab/
 
 simulation/
 server/

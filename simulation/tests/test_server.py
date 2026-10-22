@@ -3,12 +3,12 @@ import json
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi import WebSocketDisconnect
+from fastapi import FastAPI, WebSocketDisconnect
 from fastapi.testclient import TestClient
 
 import server.kernel as kernel_module
 from server.kernel import KernelService, _try_load_ppo
-from server.main import _ack, app, ws
+from server.main import _ack, app, mount_desktop, ws
 
 
 def test_healthz_endpoint():
@@ -336,3 +336,19 @@ async def test_kernel_service_queue_full_pruning():
     ks.broadcast_event({"type": "event", "kind": "overflow"})
     # Full queue should have been removed from subscribers
     assert q_full not in ks.subscribers
+
+
+def test_mount_desktop_serves_a_build(tmp_path):
+    (tmp_path / "index.html").write_text("<!doctype html><title>EconOS</title>")
+    target = FastAPI()
+    assert mount_desktop(target, str(tmp_path)) is True
+    with TestClient(target) as client:
+        res = client.get("/")
+        assert res.status_code == 200
+        assert "EconOS" in res.text
+
+
+def test_mount_desktop_skips_a_missing_build(tmp_path):
+    target = FastAPI()
+    assert mount_desktop(target, str(tmp_path / "missing")) is False
+    assert all(getattr(r, "name", "") != "desktop" for r in target.routes)

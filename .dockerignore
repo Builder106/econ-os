@@ -12,13 +12,15 @@ playwright-report/
 playwright/.cache/
 
 e2e/
-playwright.config.js
-package.json
-package-lock.json
+playwright*.config.ts
+.features-gen/
+desktop/dist/
+desktop/design/*.blend
 
 vercel.json
 .vercelignore
 scripts/
+lab/
 
 deploy/
 

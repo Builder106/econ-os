@@ -28,8 +28,9 @@ models/*
 .idea/
 .gemini/
 
-# Node / Playwright
+# Node / Playwright / Vite
 node_modules/
+desktop/dist/
 test-results/
 playwright-report/
 playwright/.cache/

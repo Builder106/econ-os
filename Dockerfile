@@ -1,6 +1,15 @@
 # EconOS kernel container — runs the shared MarketEnv + WS API.
 # Koyeb (and any container host) sets $PORT; uvicorn binds to it.
 
+# Build the static desktop. ECONOS_KERNEL_WS_URL stays empty, so the desktop talks to
+# the kernel that serves it.
+FROM node:24-slim AS desktop
+WORKDIR /build
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts --no-audit --no-fund
+COPY desktop/ desktop/
+RUN npm run build
+
 FROM python:3.14-slim AS base
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
@@ -19,12 +28,12 @@ RUN apt-get update && \
 COPY pyproject.toml uv.lock ./
 RUN uv pip install --system --no-cache .
 
-# Copy the kernel and the simulation core. Dashboard is shipped via Vercel in
+# Copy the kernel and the simulation core. The desktop is shipped via Vercel in
 # the split-host deploy, but we bundle it here too so this image works
 # standalone (visiting the kernel URL directly serves the same UI).
 COPY simulation/ simulation/
 COPY server/ server/
-COPY dashboard/ dashboard/
+COPY --from=desktop /build/desktop/dist desktop/dist
 # Trained PPO checkpoints (consumer_policy.zip / producer_policy.zip). The
 # kernel's _try_load_ppo() falls back to random actions if these are absent,
 # so the build is safe even on a fresh clone before training has run — but if
