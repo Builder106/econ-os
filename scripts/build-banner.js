@@ -40,6 +40,8 @@ const TARGETS = [
     });
     const page = await context.newPage();
     await page.setContent(html, { waitUntil: 'load' });
+    // The SVGs embed their fonts; wait for them so the fallback face never ships.
+    await page.evaluate(() => document.fonts.ready);
     await page.screenshot({
       path: pngPath,
       type: 'png',
