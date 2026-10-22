@@ -4,6 +4,22 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-22: Rebuild the desktop as a tiling window manager #decision
+
+The old floating-window dashboard was removed and rebuilt from scratch as an i3 and sway style tiling desktop: panes share hairline borders with no gaps, numbered workspaces live in a text bar, and a dmenu-style launcher opens apps or runs shell commands. Three themes were written inside that family; "Temper" won because it gives data colors a material origin (the oxide colors of tempered steel) and marks focus with a double engraved rule instead of a borrowed dotfiles palette. `DESIGN.md` records the references, the scores and the genericness changes. The window manager is plain TypeScript with no UI framework: the layout is a small tree of containers and panes that saves to local storage and is rebuilt and validated on load, so a framework would only have added a renderer to keep in sync with it.
+
+## 2026-10-22: Use a binding mode instead of a modifier key #decision
+
+Browsers and operating systems already claim Super, Alt (menus, and Firefox tab switching on Linux), Cmd and most Ctrl letters, and pages cannot override Ctrl+W, Ctrl+T or Ctrl+N. The desktop borrows i3's binding modes instead: `` Ctrl+` `` enters `wm` mode, the bar says so, and single keys act until Escape. No browser or OS uses that chord. Every action also has a pointer path in the bar or the pane title bar, and the Keys pane reads the same binding table as the key handler.
+
+## 2026-10-22: Draw charts on a plain canvas #decision
+
+The wage and price plots stream a 500 ms tick into a ring buffer and redraw one polyline per series on a 2D canvas. That is the smallest route that keeps up without a charting library; the whole desktop ships about 23 KB of gzipped JavaScript. The kernel sends no history, so a new viewer's plot starts at the step they joined, and the pane says so instead of padding the line with invented values. A history frame on connect would fill the plot at once, but it is a protocol change and is left for a separate decision.
+
+## 2026-10-22: Glaxnimate and Blender assets, and one renderer gap #incident
+
+The icon sprite, mark, wordmark and OG image were authored in Glaxnimate, and the wallpapers were rendered from one Blender scene of an engine-turned plate in blued and bright finishes. The first OG render lost the mark's hatching: the Glaxnimate CLI renderer drops `clip-path`, so the hatch lines are now cut to the curve as separate segments. Browsers still render the clipped icon sprite correctly. The analytics script now loads only on the split-host build, because the standalone kernel has no `/_vercel/insights/` route and its 404 would show up in every console.
+
 ## 2026-10-21: Keep the browser Linux lab local #decision
 
 A separate v86 prototype now boots Linux and runs a guest `econos` command that reads the shared kernel export through a fixed local proxy. Chromium, Firefox, and WebKit each returned three advancing snapshots through keyboard input. The lab transferred about 12 MiB of assets; Chromium runs used 557–610 MiB of browser-process RSS after their queries. The command adds no research ability beyond the desktop yet. Keep it out of the shipped interface until a named experiment justifies the cost and the Linux image's source and redistribution rights are documented.

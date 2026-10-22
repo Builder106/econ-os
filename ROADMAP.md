@@ -2,16 +2,16 @@
 
 EconOS runs one shared economy. Visitors watch the same kernel, and an authorized policy change reaches everyone. The next interface should work like a desktop built for studying that economy. A separate prototype will test whether running Linux in the browser adds useful research tools.
 
-## 1. Restore the desktop (complete)
+## 1. Restore the desktop (complete, rebuilt as a tiling desktop)
 
-Market and Agents now open as windows on the work surface. The desktop keeps their live data and provides application behavior:
+The desktop was rebuilt on 2026-10-22 as a tiling window manager in the i3 and sway family. Market, Lorenz, Agents, Shell, Policy, Events, Run and Keys open as panes on numbered workspaces. Window behavior maps to tiling operations: open and close, keyboard and pointer focus, split resizing, fullscreen for maximize, the scratchpad for minimize, swaps and workspace moves for move, and a floating toggle. The original requirements still hold:
 
 - Make the work surface the first screen. Put running apps, connection state, and the current simulation step in a compact system bar and taskbar. Keep the product name out of the way of the work.
 - Let Market, Agents, Shell, and Policy open from an app launcher. Add minimize, maximize, resize, focus, and keyboard switching. Windows must remain reachable after a viewport change.
 - Remember each visitor's window layout and theme locally. On narrow screens, show one app at a time with a clear way to switch apps.
 - Build the desktop's visual identity from actual economy data, such as the wage and price traces. Don't invent disk activity, CPU load, processes, or files to sell the OS metaphor.
 
-**Done when:** a new visitor can recognize and use the desktop, open and switch apps with a keyboard, and inspect the shared market on desktop and phone. Browser tests cover window restoration and the existing admin boundary.
+**Done when:** a new visitor can recognize and use the desktop, open and switch apps with a keyboard, and inspect the shared market on desktop and phone. Browser tests cover window restoration and the existing admin boundary. The rebuild's browser tests cover every tiling operation by keyboard and pointer, layout restore, the phone layout, malformed frames, export and the admin boundary.
 
 ## 2. Make it a research workspace (local prototype complete)
 
@@ -46,4 +46,4 @@ The [separate local prototype](docs/linux-lab.md) boots a Linux guest in v86 and
 - Closed-source proprietary data feeds.
 - Decorative OS features with no working behavior or research use.
 
-The current UI tokens and behavior are documented in [DESIGN.md](DESIGN.md). Update that document when the desktop prototype establishes a new direction.
+The current UI tokens, keybindings, motion and assets are documented in [DESIGN.md](DESIGN.md). Update that document when the desktop changes direction.

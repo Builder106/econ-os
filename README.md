@@ -20,34 +20,34 @@
 
 ## 💡 What is EconOS?
 
-Testing new economic policies in the real world is unpredictable. EconOS creates a virtual world populated by dozens of independent AI agents acting as buyers, sellers, and workers. It provides a flight-simulator dashboard for researchers to test rules, tax rates, and market shocks safely before applying them in real life.
+Testing new economic policies in the real world is unpredictable. EconOS creates a virtual world populated by dozens of independent AI agents acting as buyers, sellers, and workers. It provides a flight-simulator desktop for researchers to test rules, tax rates, and market shocks safely before applying them in real life.
 
-EconOS treats economic agents as system processes, providing a glassmorphic desktop interface to monitor and interact with emergent market behaviors. Using reinforcement learning (PPO), agents discover pricing, wage-setting, and consumption strategies within a closed-loop economy.
+The interface is a tiling desktop in the i3 and sway tradition: Market, Lorenz, Agents, Shell, Policy, Events and Run open as panes on numbered workspaces, and a text bar shows the kernel's step, tax rate and Gini. Every number on screen comes from the running kernel. Using reinforcement learning (PPO), agents discover pricing, wage-setting, and consumption strategies within a closed-loop economy.
 
-**Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app) (multi-tenant shared mainframe where every visitor observes the simulation in real time). The dashboard ships with dark and light themes that cycle via the taskbar moon icon.
+**Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app). Every visitor watches the same running simulation. The desktop follows your system's light or dark setting; the theme button in the bar switches it. Press `` Ctrl+` `` (the key above Tab) to enter the window manager's binding mode, then `?` for the key map.
 
 <details>
-<summary><b>Fed mode: admin tax changes propagate from shell to Policy Manager</b></summary>
+<summary><b>Admin tax change: one shell, every viewer</b></summary>
 
-After `sudo <token>` elevates permissions, entering `tax 25` in the shell updates the running simulation kernel, and the Policy Manager UI updates to 25.00% on the next tick.
+After `sudo <token>`, `tax 25` in one viewer's shell changes the running kernel. A second viewer's bar shows `tax 25.00%` on the next tick, and its Events pane records who changed it.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/media/02-admin-tax-propagation-dark.gif">
-  <source media="(prefers-color-scheme: light)" srcset="docs/media/02-admin-tax-propagation-light.gif">
-  <img alt="admin tax propagation" src="docs/media/02-admin-tax-propagation-dark.gif">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/admin-tax-dark.gif">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/admin-tax-light.gif">
+  <img alt="admin tax propagation" src="docs/media/admin-tax-dark.gif">
 </picture>
 
 </details>
 
 <details>
-<summary><b>Broadcast events: economic shocks visible to every viewer</b></summary>
+<summary><b>Broadcast shock: every viewer sees the event</b></summary>
 
-`shock wage 10` issued by one user's terminal broadcasts an administrative event to every connected viewer. The simulation kernel applies the wage change on the next tick.
+`shock price 10` from one admin shell reaches every connected viewer as an event in the bar and the Events pane. The kernel applies the price change on the next tick.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/media/03-admin-shock-broadcast-dark.gif">
-  <source media="(prefers-color-scheme: light)" srcset="docs/media/03-admin-shock-broadcast-light.gif">
-  <img alt="admin shock broadcast" src="docs/media/03-admin-shock-broadcast-dark.gif">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/media/admin-shock-dark.gif">
+  <source media="(prefers-color-scheme: light)" srcset="docs/media/admin-shock-light.gif">
+  <img alt="admin shock broadcast" src="docs/media/admin-shock-dark.gif">
 </picture>
 
 </details>
@@ -61,16 +61,16 @@ Every visitor lands in the same shared environment: the shared simulation ticks 
   <img src="assets/diagrams/user-flow.png" alt="Any viewer can read from the shared kernel with help, gini, top, and inspect. An admin session that passes sudo can also write to it with tax, shock, pause, and reset. The kernel ticks every 500 ms and pushes ticks and events to every dashboard." width="880">
 </picture>
 
-Every viewer sees the same kernel tick every 500 ms. Visitors can watch the monitors, take the tour, or use read-only shell commands. A valid `sudo` token unlocks tax changes, wage or price shocks of ±5% or ±10%, and pause, resume, or reset commands. Their ADMIN events broadcast to every connected viewer. Invalid tokens leave the visitor on the read-only path. [Editable HTML source](assets/diagrams/user-flow.html).
+Every viewer sees the same kernel tick every 500 ms. Visitors can watch the panes or use read-only shell commands. A valid `sudo` token unlocks tax changes, one-shot wage or price shocks of up to ±50%, treasury redistribution, and pause, resume, or reset. Admin events broadcast to every connected viewer. An invalid token leaves the session read-only, and a dropped connection drops admin until `sudo` runs again. [Editable HTML source](assets/diagrams/user-flow.html).
 
-The feedback loop ensures that one user's policy adjustment immediately reflects on every other visitor's dashboard.
+So one admin's policy change shows up on every other visitor's desktop within a tick.
 
 ## Key Features
 
-- **EconOS Desktop**: A custom, library-free window management system in vanilla JS.
+- **EconOS Desktop**: A tiling window manager in TypeScript with no UI framework: splits, tabbed and stacked layouts, floating panes, a scratchpad, numbered workspaces, a dmenu-style launcher and a keyboard binding mode. Every action also works with the pointer.
 - **MARL Core**: Built on [PettingZoo](https://pettingzoo.farama.org/) and [Stable-Baselines3](https://stable-baselines3.readthedocs.io/).
 - **Economic Invariants**: Mathematically verified closed-loop economy (No money leakage).
-- **Process Explorer**: Monitor agent "memory" (wealth) and "status" (RL policy state) in real-time.
+- **Agents ledger**: Every agent's role, balance and latest reward, live, with signs printed rather than color-coded.
 - **Root Shell**: Interactive terminal for kernel commands (`tax`, `shock`, `redistribute`), policy overrides, and Fed mode.
 - **UBI Fiscal Mechanics**: Universal Basic Income redistribution command (`redistribute`) disbursing treasury tax revenue to active consumer agents.
 - **Deep Macro Analytics**: Real-time Gini Index, Lorenz Curves, CPI tracking, and Real GDP calculation.
@@ -78,7 +78,7 @@ The feedback loop ensures that one user's policy adjustment immediately reflects
 ## Architecture
 
 - **`simulation/`**: Core Gym/PettingZoo environment and economic logic.
-- **`dashboard/`**: Glassmorphic terminal interface (Tailwind + Chart.js).
+- **`desktop/`**: The tiling desktop (Vite and TypeScript, canvas charts). Design system in [DESIGN.md](DESIGN.md); asset sources in [`desktop/design/`](desktop/design/).
 - **`logic.py`**: Mathematical bedrock (Utility, Production functions).
 
 ## Getting Started
@@ -95,21 +95,27 @@ The feedback loop ensures that one user's policy adjustment immediately reflects
    python3 simulation/train.py
    ```
 
-3. **View Dashboard**:
+3. **Open the desktop**:
 
-   Open `dashboard/index.html` in your browser.
+   ```bash
+   npm ci
+   npm run build
+   uv run python -m uvicorn server.main:app --port 8000
+   ```
+
+   The kernel serves the built desktop at http://127.0.0.1:8000. For live editing, run `npm run dev` with the kernel still on port 8000; Vite proxies `/ws`, `/state`, `/healthz` and `/export` to it.
 
 ## CI/CD Pipeline
 
-The dashboard deploys from CI, and the kernel is updated by hand. The two meet only over a WebSocket.
+The desktop deploys from CI, and the kernel is updated by hand. The two meet only over a WebSocket.
 
-A push to `main` starts CI. The secret scan, Python checks, and Playwright job gate the Vercel production hook, which builds the static dashboard with `ECONOS_KERNEL_WS_URL`. The shared kernel is updated separately with `git pull` and `docker compose up -d`; the dashboard connects to its WebSocket endpoint.
+A push to `main` starts CI. The secret scan, Python checks, and Playwright job gate the Vercel production hook, which builds the static desktop with `ECONOS_KERNEL_WS_URL`. The shared kernel is updated separately with `git pull` and `docker compose up -d`; the desktop connects to its WebSocket endpoint.
 
 | Stage | Trigger | What runs | Where it shows up |
 | --- | --- | --- | --- |
 | **CI: secret scan and pytest** | Push to `main` or `staging`, or a PR to `main` | Gitleaks, Python audits, build and lint checks, and pytest with coverage | [Actions tab](https://github.com/Builder106/econ-os/actions) and CI badge |
-| **CI: Playwright** | After the pytest job passes | TypeScript checks, dependency audit, generated Gherkin specs, and browser tests | Same Actions run; failure artifacts are uploaded |
-| **CD: Vercel frontend** | Passing CI on a push to `main` or `staging` | The deploy hook runs [`scripts/build-config.js`](scripts/build-config.js) to write `dashboard/config.js` from `ECONOS_KERNEL_WS_URL` | [econ-os.vercel.app](https://econ-os.vercel.app) for production |
+| **CI: Playwright** | After the pytest job passes | TypeScript checks, the desktop build, dependency audit, generated Gherkin specs, and browser tests | Same Actions run; failure artifacts are uploaded |
+| **CD: Vercel frontend** | Passing CI on a push to `main` or `staging` | The deploy hook runs `npm run build`; Vite bakes `ECONOS_KERNEL_WS_URL` into `desktop/dist` | [econ-os.vercel.app](https://econ-os.vercel.app) for production |
 | **CD: shared kernel** | Manual | SSH to the host, pull source, then run `docker compose up -d` | `wss://econos-kernel.<tailnet>.ts.net` |
 
 Config lives in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (CI), [`vercel.json`](vercel.json) (frontend CD), and [`deploy/docker-compose.yml`](deploy/docker-compose.yml) (backend, run manually).

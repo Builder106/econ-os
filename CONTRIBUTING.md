@@ -16,14 +16,17 @@ EconOS is **split-host**and**multi-tenant**:
   same queue the kernel pumps ticks/events into) so ack and tick frames never
   interleave bytes.
 
-- **Dashboard** ([`dashboard/`](dashboard/)) — vanilla JS + Tailwind CDN +
+- **Desktop** ([`desktop/`](desktop/)) — a tiling desktop in Vite and
 
-  Chart.js. No build step besides a one-line config injection from
-  [`scripts/build-config.js`](scripts/build-config.js).
+  TypeScript with no UI framework. `npm run build` writes `desktop/dist/`,
+  and `ECONOS_KERNEL_WS_URL` (read in
+  [`desktop/vite.config.mts`](desktop/vite.config.mts)) points it at a remote
+  kernel. Left empty, it talks to the kernel that serves it. The design
+  system is in [`DESIGN.md`](DESIGN.md).
 
 - **Deploy** — kernel runs on Oracle Always Free behind Tailscale Funnel
 
-  (outbound-only, no inbound ports needed); dashboard ships to Vercel as a
+  (outbound-only, no inbound ports needed); the desktop ships to Vercel as a
   static bundle. See [`deploy/`](deploy/) for the docker-compose + setup.sh.
 
 If you change anything in `server/`or`simulation/`, the WS contract in
@@ -39,14 +42,19 @@ update both sides in the same PR.
 
 uv sync --group dev
 
-# Node side (frontend tests / OG regen / demo recording)
+# Node side (desktop build and browser tests)
 
-npm install
+npm ci
 npx playwright install chromium
+npm run build
 
-# Run the kernel locally — serves dashboard at http://127.0.0.1:8000 too
+# Run the kernel locally; it serves desktop/dist at http://127.0.0.1:8000
 
 python3 -m uvicorn server.main:app --reload --port 8000
+
+# Or edit the desktop live: Vite on :5173 proxies the kernel on :8000
+
+npm run dev
 
 # To exercise Fed mode locally, set ADMIN_TOKEN first
 
@@ -57,12 +65,14 @@ ADMIN_TOKEN=hunter2 python3 -m uvicorn server.main:app --reload --port 8000
 
 | Suite      | Count | Command                                            | Runtime |
 |------------|------:|----------------------------------------------------|---------|
-| pytest     |    14 | `pytest`                                           | ~0.4 s  |
-| Playwright |     9 | `npx playwright test`                              | ~30 s   |
+| pytest     |    65 | `pytest`                                           | ~7 s    |
+| Playwright |    35 | `npx bddgen && npx playwright test`                | ~35 s   |
 
-Playwright's `webServer`config auto-spawns`uvicorn` with
-`ADMIN_TOKEN=test-token-abc` injected — you don't need to start a server
-yourself.
+Playwright's `webServer` config builds the desktop and starts `uvicorn` with
+`ADMIN_TOKEN=test-token`, so you don't need to start a server yourself. The
+Gherkin admin scenarios live in `e2e/features/`; the window manager, protocol,
+export and phone checks live in `e2e/specs/`. Tests run one at a time because
+they share one kernel, as production does.
 
 Both suites must stay green for a PR to land. CI parity: no CI is wired in
 yet; reviewers run them locally.
@@ -71,8 +81,8 @@ yet; reviewers run them locally.
 
 | What | How |
 | --- | --- |
-| Regenerate the OG image after editing `og-image.svg` | `node scripts/build-og-image.js` |
-| Regenerate README demo GIFs | `./scripts/record-demos.sh`(needs`ffmpeg`) |
+| Change an icon, the mark or the OG image | Edit the source in [`desktop/design/`](desktop/design/) and re-export as its README describes |
+| Regenerate README demo GIFs | `ECONOS_VIDEO=1 npx playwright test --project scenarios`, then convert the two admin scenario videos with `ffmpeg` |
 | Train fresh PPO policies | `python3 -m simulation.train`(commits to`models/*.zip`, gitignored) |
 | Provision a fresh Oracle VM end-to-end | `./deploy/oracle-provision.sh`(needs`oci` CLI + Always-Free account) |
 
