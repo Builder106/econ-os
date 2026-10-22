@@ -1,22 +1,18 @@
 {
   "compilerOptions": {
     "target": "es2022",
-    "module": "commonjs",
-    "allowJs": true,
-    "checkJs": true,
-    "strict": false,
-    "esModuleInterop": true,
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "isolatedModules": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
-  "include": [
-    "**/*.js",
-    "**/*.jsx",
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["desktop/src/**/*.ts", "desktop/vite.config.mts", "e2e/**/*.ts", "playwright*.config.ts"],
+  "exclude": ["node_modules", "desktop/dist", ".features-gen"]
 }

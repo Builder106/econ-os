@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EconOS: a tiling desktop for one shared economy</title>
+    <meta name="description" content="A tiling desktop for one shared agent-based economy: live wage, price and inequality, every agent's ledger, and a shell for policy changes." />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0b1115" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#dfe5e9" media="(prefers-color-scheme: light)" />
+    <link rel="canonical" href="https://econ-os.vercel.app/" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href="/fonts/azeret-mono-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/azeret-mono-500-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="EconOS" />
+    <meta property="og:description" content="A tiling desktop for one shared economy: live wage, price and inequality from a kernel every visitor shares." />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The EconOS mark, a Lorenz curve below the line of equality, beside the econos wordmark." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      /* First paint, before the module and its stylesheet load: the ground color, the
+         hidden-text rule, and the boot screen with the EconOS mark drawing itself. */
+      html, body { margin: 0; height: 100%; background: #dfe5e9; }
+      @media (prefers-color-scheme: dark) { html, body { background: #0b1115; } }
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+      #boot { position: fixed; inset: 0; display: grid; place-items: center; z-index: 40; }
+      #boot svg { width: 104px; height: 104px; display: block; }
+      .mark-anim svg { animation: mk-all 2.8s cubic-bezier(0.2, 0, 0, 1) infinite; }
+      .mark-anim #mark-rule-outer, .mark-anim #mark-rule-inner, .mark-anim #mark-equal, .mark-anim #mark-curve { stroke-dasharray: 1; }
+      .mark-anim #mark-rule-outer { animation: mk-outer 2.8s cubic-bezier(0.2, 0, 0, 1) infinite; }
+      .mark-anim #mark-rule-inner { animation: mk-inner 2.8s cubic-bezier(0.2, 0, 0, 1) infinite; }
+      .mark-anim #mark-equal { animation: mk-equal 2.8s cubic-bezier(0.2, 0, 0, 1) infinite; }
+      .mark-anim #mark-curve { animation: mk-curve 2.8s cubic-bezier(0.2, 0, 0, 1) infinite; stroke-linecap: butt; }
+      .mark-anim #mark-hatch { animation: mk-hatch 2.8s linear infinite; }
+      @keyframes mk-all { 0% { opacity: 0; } 6%, 86% { opacity: 1; } 100% { opacity: 0; } }
+      @keyframes mk-outer { 0% { stroke-dashoffset: 1; } 18%, 100% { stroke-dashoffset: 0; } }
+      @keyframes mk-inner { 0%, 8% { stroke-dashoffset: 1; } 26%, 100% { stroke-dashoffset: 0; } }
+      @keyframes mk-equal { 0%, 22% { stroke-dashoffset: 1; } 36%, 100% { stroke-dashoffset: 0; } }
+      @keyframes mk-curve { 0%, 32% { stroke-dashoffset: 1; } 62%, 100% { stroke-dashoffset: 0; } }
+      @keyframes mk-hatch { 0%, 52% { opacity: 0; } 72%, 100% { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) {
+        .mark-anim svg, .mark-anim svg * { animation: none !important; stroke-dasharray: none !important; }
+      }
+    </style>
+    <noscript><style>#boot { display: none; }</style></noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <div id="boot" class="mark-anim" role="status">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect id="mark-plate" x="0" y="0" width="32" height="32" fill="#0b1115" /><rect id="mark-rule-outer" pathLength="1" x="1.5" y="1.5" width="29" height="29" fill="none" stroke="#d7b25c" stroke-width="1" /><rect id="mark-rule-inner" pathLength="1" x="4" y="4" width="24" height="24" fill="none" stroke="#d7b25c" stroke-width="1" /><path id="mark-equal" pathLength="1" d="M4 28L28 4" fill="none" stroke="#5d6d77" stroke-width="1" /><path id="mark-hatch" d="M10 22V27.353M13 19V26.428M16 16V24.948M19 13V22.713M22 10V19.36M25 7V14.083" fill="none" stroke="#b58fe0" stroke-width="0.75" /><path id="mark-curve" pathLength="1" d="M4 28C17 28 25 20 28 4" fill="none" stroke="#b58fe0" stroke-width="2" stroke-linecap="square" /></svg>
+      <span class="sr-only">Loading EconOS</span>
+    </div>
+    <h1 class="sr-only">EconOS desktop</h1>
+    <p class="sr-only">EconOS runs one agent-based economy that every visitor shares. Consumers sell labor and buy goods, producers hire and set prices, and reinforcement-learning policies drive both. This tiling desktop streams the kernel's wage, price, inequality and agent balances every half second. Anyone can inspect the run from the shell; a session that holds the admin token can change the tax rate, apply wage or price shocks, redistribute the treasury, or pause and reset the kernel, and every other viewer sees the change on the next tick.</p>
+    <div id="desktop" inert>
+      <header id="bar" class="bar"></header>
+      <main id="work" class="work" aria-label="workspace"></main>
+    </div>
+    <noscript>
+      <p class="noscript">EconOS needs JavaScript to open its socket to the shared kernel. The kernel's state is also available as JSON at /state.</p>
+    </noscript>
+  </body>
+</html>

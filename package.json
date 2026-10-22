@@ -1,19 +1,23 @@
 {
-  "name": "econos-dashboard-e2e",
+  "name": "econos-desktop",
   "private": true,
-  "version": "0.0.1",
-  "description": "Headless verification harness for the EconOS dashboard against a live kernel.",
+  "version": "0.2.0",
+  "description": "The EconOS tiling desktop and its browser tests.",
   "scripts": {
+    "dev": "vite --config desktop/vite.config.mts",
+    "build": "vite build --config desktop/vite.config.mts",
+    "preview": "vite preview --config desktop/vite.config.mts",
+    "typecheck": "tsc --noEmit",
     "bddgen": "bddgen",
     "test:e2e": "bddgen && playwright test",
-    "test:live": "playwright test --config playwright.live.config.js",
-    "typecheck": "tsc --noEmit"
+    "test:live": "playwright test --config playwright.live.config.ts"
   },
   "packageManager": "npm@10.9.9",
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.5",
     "playwright-bdd": "^9.2.1",
-    "typescript": "~7.0.2"
+    "typescript": "~7.0.2",
+    "vite": "^8.3.5"
   }
 }
