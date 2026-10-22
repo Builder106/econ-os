@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EconOS: no such path</title>
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <style>
+      @font-face { font-family: 'Azeret Mono'; src: url('/fonts/azeret-mono-400-normal.woff2') format('woff2'); font-weight: 400; }
+      @font-face { font-family: 'Azeret Mono'; src: url('/fonts/azeret-mono-500-normal.woff2') format('woff2'); font-weight: 500; }
+      :root { --ground: #dfe5e9; --pane: #f3f5f7; --ink: #11181d; --muted: #4a5964; --line: #b9c4cb; --focus: #7c5a0e; --wall: url('/wall-light.webp'); }
+      @media (prefers-color-scheme: dark) {
+        :root { --ground: #0b1115; --pane: #10181d; --ink: #d9e1e6; --muted: #8d9ca6; --line: #25333c; --focus: #d7b25c; --wall: url('/wall-dark.webp'); }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100dvh; display: grid; place-items: center; padding: 16px;
+        background: var(--ground) var(--wall) center / cover no-repeat; color: var(--ink);
+        font: 400 13px/1.5 'Azeret Mono', ui-monospace, Menlo, monospace; }
+      main { width: min(520px, 100%); padding: 24px; background: var(--pane); border: 3px double var(--focus); }
+      img { display: block; width: 40px; height: 40px; }
+      h1 { margin: 12px 0 8px; font-size: 15px; font-weight: 500; }
+      p { margin: 0 0 12px; color: var(--muted); }
+      a { color: var(--ink); text-decoration-color: var(--focus); text-underline-offset: 3px; }
+      a:focus-visible { outline: 1px solid var(--focus); outline-offset: 2px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/favicon.svg" alt="" width="40" height="40" />
+      <h1>No workspace at this path</h1>
+      <p>EconOS is one page: every app opens as a pane on the desktop.</p>
+      <p><a href="/">Open the desktop</a></p>
+    </main>
+  </body>
+</html>
