@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       live_base_url:
-        description: Deployed dashboard URL
+        description: Deployed desktop URL
         required: false
         default: https://econ-os.vercel.app
 
@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   smoke:
-    name: Deployed dashboard and remote kernel smoke
+    name: Deployed desktop and remote kernel smoke
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -36,7 +36,7 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Check deployed dashboard
+      - name: Check deployed desktop
         env:
           LIVE_BASE_URL: ${{ inputs.live_base_url || 'https://econ-os.vercel.app' }}
-        run: npx playwright test --config playwright.live.config.js
+        run: npx playwright test --config playwright.live.config.ts
