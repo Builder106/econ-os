@@ -7,6 +7,7 @@ dependencies = [
     "pettingzoo",
     "supersuit",
     "stable-baselines3",
+    "torch",
     "gymnasium",
     "numpy",
     "pandas",
@@ -28,6 +29,16 @@ dev = [
 [tool.uv]
 package = false
 default-groups = []
+
+# The kernel runs PPO inference on CPU. On Linux, PyPI's torch wheel pulls
+# about 4 GB of CUDA libraries, so take torch from the CPU index there.
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [tool.setuptools]
 py-modules = []
