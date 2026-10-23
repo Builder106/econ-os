@@ -10,23 +10,32 @@ RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY desktop/ desktop/
 RUN npm run build
 
-FROM python:3.14-slim AS base
+FROM python:3.14-slim AS python-deps
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    UV_LINK_MODE=copy
+ENV UV_LINK_MODE=copy
 
-WORKDIR /app
- 
-# Install build tools for C wheels (e.g. tinyscaler on arm64)
+# Install build tools for C wheels (e.g. tinyscaler on arm64). They stay in this
+# stage; the runtime image only gets the installed packages.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential gcc && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Python deps first for better layer caching.
+# The default PyPI torch wheel bundles about 4 GB of CUDA libraries, and the
+# kernel only runs PPO inference on CPU. Install the CPU build first so the
+# project install finds torch already satisfied.
 COPY pyproject.toml uv.lock ./
-RUN uv pip install --system --no-cache .
+RUN uv pip install --system --no-cache torch --index-url https://download.pytorch.org/whl/cpu && \
+    uv pip install --system --no-cache .
+
+FROM python:3.14-slim AS base
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+
+COPY --from=python-deps /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
 
 # Copy the kernel and the simulation core. The desktop is shipped via Vercel in
 # the split-host deploy, but we bundle it here too so this image works
