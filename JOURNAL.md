@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-23: Ship CPU-only torch in the kernel image #decision
+
+The kernel image was 9.5 GB, and 4.1 GB of it was CUDA: the default PyPI torch wheel pulls the `nvidia-*` libraries and Triton even though the kernel only runs PPO inference on CPU and no host it runs on has a GPU. The Dockerfile now installs torch from PyTorch's CPU index before the project install, which then finds torch already satisfied. The compiler needed for `tinyscaler` moved to a builder stage, and only `site-packages` reaches the runtime image. The image is now 1.35 GB, and `/healthz` still reports `policies_loaded: true`. The CPU torch is not pinned by `uv.lock`, because `uv pip install .` has never read the lock; moving the image to `uv sync --locked` with a CPU torch source is a separate change.
+
 ## 2026-10-22: Rebuild the desktop as a tiling window manager #decision
 
 The old floating-window dashboard was removed and rebuilt from scratch as an i3 and sway style tiling desktop: panes share hairline borders with no gaps, numbered workspaces live in a text bar, and a dmenu-style launcher opens apps or runs shell commands. Three themes were written inside that family; "Temper" won because it gives data colors a material origin (the oxide colors of tempered steel) and marks focus with a double engraved rule instead of a borrowed dotfiles palette. `DESIGN.md` records the references, the scores and the genericness changes. The window manager is plain TypeScript with no UI framework: the layout is a small tree of containers and panes that saves to local storage and is rebuilt and validated on load, so a framework would only have added a renderer to keep in sync with it.
