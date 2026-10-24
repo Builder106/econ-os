@@ -67,6 +67,7 @@ select = [
     "B",    # flake8-bugbear
     "SIM",  # flake8-simplify
     "RUF",  # ruff-specific rules
+    "ANN401", # Reject untyped function boundaries
 ]
 ignore = [
     # B019: lru_cache on methods — PettingZoo's ParallelEnv API requires this pattern.

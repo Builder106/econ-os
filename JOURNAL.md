@@ -139,3 +139,7 @@ The economic kernel was built as a PettingZoo `ParallelEnv`with a hard design co
 ## 2026-09-14 — Filter non-critical Vercel Analytics 404s in live smoke suite #incident
 
 The scheduled live smoke workflow (`Live deployment smoke` on main) failed because production Vercel returned 404 for `/_vercel/insights/script.js`, tripping Playwright's strict zero-console-error assertion in `e2e/live.spec.js`. While the original local smoke spec had filtered this non-critical route, `e2e/live.spec.js` lacked the filter. The dashboard already gates analytics calls safely behind `typeof window.va === 'function'`, so an unprovisioned or blocked analytics script does not impair functionality. Aligned `e2e/live.spec.js` by ignoring console errors originating from `/_vercel/insights/script.js`.
+
+## 2026-10-23: Check all Python paths for Any annotations #decision
+
+Ruff ANN401 now covers lab, scripts, server, and simulation Python. The pytest job already treats warnings as errors.

@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v9
         with:
           enable-cache: true
 
@@ -63,7 +63,7 @@ jobs:
         run: uv build --no-sources || uv build
 
       - name: Lint with Ruff
-        run: uv run --frozen ruff check server simulation
+        run: uv run --frozen ruff check lab scripts server simulation
 
       - name: Format check with Ruff
         run: uv run --frozen ruff format --check server simulation
@@ -83,7 +83,7 @@ jobs:
       # The Playwright config's webServer builds the desktop and spawns uvicorn,
       # so the e2e job needs the Python deps too, not just Node and Chromium.
       - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v9
         with:
           enable-cache: true
 
