@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.3.2
         with:
           enable-cache: true
 
@@ -83,7 +83,7 @@ jobs:
       # The Playwright config's webServer builds the desktop and spawns uvicorn,
       # so the e2e job needs the Python deps too, not just Node and Chromium.
       - name: Set up uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v10.3.2
         with:
           enable-cache: true
 
