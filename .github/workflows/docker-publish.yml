@@ -12,7 +12,6 @@ concurrency:
 
 permissions:
   contents: read
-  packages: write
 
 env:
   REGISTRY: ghcr.io
@@ -21,6 +20,8 @@ env:
 jobs:
   build-and-push:
     name: Build & Push to GHCR
+    permissions:
+      packages: write
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository

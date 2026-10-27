@@ -4,6 +4,14 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-10-27: Check every Python tree in CI #ci #decision
+
+Ruff now applies `UP` checks and formatting to `lab`, `scripts`, `server`, and `simulation`.
+
+## 2026-10-27: Scope package publishing permission #ci #security
+
+The workflow defaults to read-only repository access, and its container publish job holds package write permission.
+
 ## 2026-10-23: Ship CPU-only torch in the kernel image #decision
 
 The kernel image was 9.5 GB, and 4.1 GB of it was CUDA: the default PyPI torch wheel pulls the `nvidia-*` libraries and Triton even though the kernel only runs PPO inference on CPU and no host it runs on has a GPU. The Dockerfile now installs torch from PyTorch's CPU index before the project install, which then finds torch already satisfied. The compiler needed for `tinyscaler` moved to a builder stage, and only `site-packages` reaches the runtime image. The image is now 1.35 GB, and `/healthz` still reports `policies_loaded: true`. `uv.lock` now takes torch from the same CPU index on Linux, which shrank the local test venv from 4.7 GB to under 1 GB, while macOS keeps PyPI's torch, which has no CUDA there. The image still installs torch without the lock, because `uv pip install .` has never read it; moving the image to `uv sync --locked` is a separate change. pip-audit cannot look up `+cpu` builds on PyPI, so it skips torch with a warning.

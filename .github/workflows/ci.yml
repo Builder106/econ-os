@@ -63,10 +63,10 @@ jobs:
         run: uv build --no-sources || uv build
 
       - name: Lint with Ruff
-        run: uv run --frozen ruff check lab scripts server simulation
+        run: uv run --frozen ruff check --extend-select UP lab scripts server simulation
 
       - name: Format check with Ruff
-        run: uv run --frozen ruff format --check server simulation
+        run: uv run --frozen ruff format --check lab scripts server simulation
 
       - name: Run pytest with coverage
         env:
