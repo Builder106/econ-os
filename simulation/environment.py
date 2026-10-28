@@ -53,12 +53,12 @@ class MarketEnv(ParallelEnv):
         """Cobb-Douglas utility: C^0.7 * (1-L)^0.3"""
         return float((consumption**0.7) * ((1.0 - labor) ** 0.3))
 
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def observation_space(self, agent):
         # [normalized_prev_wage, normalized_prev_price, normalized_balance]
         return Box(low=0, high=1, shape=(3,), dtype=np.float32)
 
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def action_space(self, agent):
         if "consumer" in agent:
             # [labor (0-1), consumption_percent (0-1)]

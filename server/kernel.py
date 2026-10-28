@@ -13,7 +13,7 @@ import hashlib
 import json
 import os
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from simulation.environment import MarketEnv
@@ -31,7 +31,7 @@ MAX_CYCLES = int(os.environ.get("MAX_CYCLES", "").strip() or "5000")
 
 
 def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _model_sha256(path: str) -> str:

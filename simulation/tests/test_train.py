@@ -38,7 +38,7 @@ def test_train_and_sim(mock_ppo, tmp_path):
     trace_file = tmp_path / TRACE_PATH
     assert trace_file.exists()
 
-    with open(trace_file, "r") as f:
+    with open(trace_file) as f:
         data = json.load(f)
         assert isinstance(data, list)
         assert len(data) > 0
