@@ -3,7 +3,7 @@
 
 # Build the static desktop. ECONOS_KERNEL_WS_URL stays empty, so the desktop talks to
 # the kernel that serves it.
-FROM node:24-slim AS desktop
+FROM node:25-slim AS desktop
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci --ignore-scripts --no-audit --no-fund
