@@ -1,7 +1,7 @@
 // Keys: the binding map, read from the same table the key handler uses.
 
-import { h } from '../dom';
-import { HELP } from '../wm/bindings';
+import { h } from '@/dom';
+import { HELP } from '@/wm/bindings';
 import type { AppDef } from './app';
 
 export const keys: AppDef = {

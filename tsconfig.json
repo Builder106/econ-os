@@ -11,6 +11,9 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/*": ["./desktop/src/*"]
+    },
     "types": ["node"]
   },
   "include": ["desktop/src/**/*.ts", "desktop/vite.config.mts", "e2e/**/*.ts", "playwright*.config.ts"],

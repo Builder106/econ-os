@@ -1,10 +1,10 @@
 // The window manager: owns the layout state, renders panes into the work area, and
 // carries out every tiling operation for the keyboard, the bar and the title bars.
 
-import { APPS } from '../apps';
-import type { AppInstance } from '../apps/app';
-import { button, h, icon } from '../dom';
-import { animate, effectiveTheme, load, motionOk, save, track, applyTheme, type Theme } from '../platform';
+import { APPS } from '@/apps';
+import type { AppInstance } from '@/apps/app';
+import { button, h, icon } from '@/dom';
+import { animate, effectiveTheme, load, motionOk, save, track, applyTheme, type Theme } from '@/platform';
 import { type Action, wmAction, MODE_KEY } from './bindings';
 import { type Geometry, type Rect, layoutWorkspace, neighbor, siblingStep } from './geometry';
 import {

@@ -1,4 +1,4 @@
-import type { AppId } from '../wm/tree';
+import type { AppId } from '@/wm/tree';
 
 export interface AppInstance {
   el: HTMLElement;

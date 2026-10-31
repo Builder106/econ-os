@@ -9,6 +9,11 @@ const dev = (process.env.ECONOS_DEV_KERNEL ?? '127.0.0.1:8000').trim();
 
 export default defineConfig({
   root: fileURLToPath(new URL('.', import.meta.url)),
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
   define: {
     __KERNEL_WS_URL__: JSON.stringify(kernel),
   },

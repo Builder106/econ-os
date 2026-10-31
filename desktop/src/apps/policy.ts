@@ -2,9 +2,9 @@
 // and lock again on any reconnect. Each control sends the same shell line a person
 // could type, so the kernel's own admin check is the authority.
 
-import { runLine } from '../commands';
-import { button, compact, h, icon, pct } from '../dom';
-import { session } from '../session';
+import { runLine } from '@/commands';
+import { button, compact, h, icon, pct } from '@/dom';
+import { session } from '@/session';
 import type { AppDef } from './app';
 
 export const policy: AppDef = {

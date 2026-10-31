@@ -2,9 +2,9 @@
 // A hand-drawn canvas line is the smallest route that redraws every 500 ms without a
 // charting library; each plot keeps its own scale because wage and price differ.
 
-import { compact, fixed, h, pct } from '../dom';
-import { cssVar } from '../platform';
-import { session } from '../session';
+import { compact, fixed, h, pct } from '@/dom';
+import { cssVar } from '@/platform';
+import { session } from '@/session';
 import { type AppDef, fitCanvas } from './app';
 
 interface Plot {

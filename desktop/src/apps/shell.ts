@@ -1,10 +1,10 @@
 // Shell: the EconOS command line over the kernel socket. History never stores a token,
 // and scrollback only ever shows the masked sudo line.
 
-import { KERNEL_VERBS, LOCAL_VERBS, runLine } from '../commands';
-import { h } from '../dom';
-import { maskLine } from '../protocol';
-import { session } from '../session';
+import { KERNEL_VERBS, LOCAL_VERBS, runLine } from '@/commands';
+import { h } from '@/dom';
+import { maskLine } from '@/protocol';
+import { session } from '@/session';
 import type { AppDef } from './app';
 
 const history: string[] = [];

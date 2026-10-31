@@ -1,9 +1,9 @@
 // Lorenz: consumer wealth distribution against the line of equality. The gap between
 // them is hatched, the same figure as the EconOS mark, drawn from the live tick.
 
-import { fixed, h, pct } from '../dom';
-import { cssVar } from '../platform';
-import { session } from '../session';
+import { fixed, h, pct } from '@/dom';
+import { cssVar } from '@/platform';
+import { session } from '@/session';
 import { type AppDef, fitCanvas } from './app';
 
 function share(q: number[], c: number[], at: number): number {

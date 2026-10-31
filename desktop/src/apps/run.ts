@@ -1,10 +1,10 @@
 // Run: what this tab is connected to, and the read-only run snapshot. Every field comes
 // from the kernel (/healthz, /export, ticks) or from this tab's own socket.
 
-import { KERNEL_HTTP_BASE, KERNEL_WS_URL } from '../config';
-import { button, duration, h } from '../dom';
-import { track } from '../platform';
-import { session } from '../session';
+import { KERNEL_HTTP_BASE, KERNEL_WS_URL } from '@/config';
+import { button, duration, h } from '@/dom';
+import { track } from '@/platform';
+import { session } from '@/session';
 import type { AppDef } from './app';
 
 interface RunInfo {

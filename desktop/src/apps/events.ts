@@ -1,8 +1,8 @@
 // Events: admin actions broadcast by the kernel, plus this tab's own connection changes
 // and rejected frames, newest first.
 
-import { h } from '../dom';
-import { session } from '../session';
+import { h } from '@/dom';
+import { session } from '@/session';
 import type { AppDef } from './app';
 
 export const events: AppDef = {

@@ -1,9 +1,9 @@
 // Agents: every agent's id, role, balance and latest reward. Signs are printed; color
 // only repeats them. The bar under each balance is its share of agent money.
 
-import { fixed, h, signed } from '../dom';
-import type { Agent } from '../protocol';
-import { session } from '../session';
+import { fixed, h, signed } from '@/dom';
+import type { Agent } from '@/protocol';
+import { session } from '@/session';
 import type { AppDef } from './app';
 
 type Key = 'id' | 'role' | 'balance' | 'reward';

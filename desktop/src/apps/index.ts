@@ -1,4 +1,4 @@
-import type { AppId } from '../wm/tree';
+import type { AppId } from '@/wm/tree';
 import { agents } from './agents';
 import type { AppDef } from './app';
 import { events } from './events';
