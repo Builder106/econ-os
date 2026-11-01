@@ -3,8 +3,16 @@ name: CI
 on:
   push:
     branches: [main, staging]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.markdownlint*'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.markdownlint*'
   workflow_dispatch:
 
 # Cancel stale runs on the same branch to save CI minutes — useful when you
