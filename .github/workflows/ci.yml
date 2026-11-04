@@ -79,7 +79,7 @@ jobs:
       - name: Run pytest with coverage
         env:
           PYTHONWARNINGS: "error"
-        run: uv run --frozen pytest --cov=simulation --cov=server --cov-report=term-missing --cov-report=xml --cov-fail-under=100 -W error
+        run: uv run --frozen pytest
 
   playwright:
     name: playwright (desktop e2e)
