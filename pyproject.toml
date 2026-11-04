@@ -50,6 +50,7 @@ asyncio_default_fixture_loop_scope = "function"
 addopts = "--cov=simulation --cov=server --cov-report=term-missing --cov-report=xml --cov-fail-under=100"
 filterwarnings = [
     "error",
+    "ignore:.*CallSpec2 has been renamed to CallSpec.*:pytest.PytestRemovedIn10Warning",
 ]
 
 [tool.ruff]
