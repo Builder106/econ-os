@@ -18,6 +18,10 @@
 
 > **A virtual sandbox economy powered by learning AI citizens.** Test financial policies, tax rates, and market rules in real time.
 
+<p align="center">
+  <img src="docs/screenshot.png" alt="The EconOS tiling desktop on its second workspace. A Lorenz curve of wealth share fills the left pane with the Gini coefficient and the bottom 50% and top 20% holdings beneath it. On the right are a locked policy pane for tax and shocks and an events log showing the connection to the kernel." width="880">
+</p>
+
 ## 💡 What is EconOS?
 
 Testing new economic policies in the real world is unpredictable. EconOS creates a virtual world populated by dozens of independent AI agents acting as buyers, sellers, and workers. It provides a flight-simulator desktop for researchers to test rules, tax rates, and market shocks safely before applying them in real life.
