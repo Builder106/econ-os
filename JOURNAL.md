@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-11-06: Make the social preview image absolute #fix
+
+The desktop page set `og:image` to `/og.png`, which link preview crawlers don't resolve, so shared links showed no card. The tag now points at `https://econ-os.vercel.app/og.png`, with `og:url` and `twitter:image` added. The Linux lab page has no preview tags on purpose: it is a local experiment and never deployed.
+
 ## 2026-10-27: Check every Python tree in CI #ci #decision
 
 Ruff now applies `UP` checks and formatting to `lab`, `scripts`, `server`, and `simulation`.
