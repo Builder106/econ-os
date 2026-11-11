@@ -67,6 +67,7 @@ select = [
     "I",    # isort
     "B",    # flake8-bugbear
     "SIM",  # flake8-simplify
+    "UP",   # pyupgrade (deprecated syntax & APIs)
     "RUF",  # ruff-specific rules
     "ANN401", # Reject untyped function boundaries
 ]
