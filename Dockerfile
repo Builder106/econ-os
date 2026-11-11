@@ -10,7 +10,7 @@ RUN npm ci --ignore-scripts --no-audit --no-fund
 COPY desktop/ desktop/
 RUN npm run build
 
-FROM python:3.14-slim AS python-deps
+FROM python:3.15-slim AS python-deps
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 ENV UV_LINK_MODE=copy
@@ -28,7 +28,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv pip install --system --no-cache torch --index-url https://download.pytorch.org/whl/cpu && \
     uv pip install --system --no-cache .
 
-FROM python:3.14-slim AS base
+FROM python:3.15-slim AS base
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
