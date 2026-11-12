@@ -130,16 +130,61 @@ def run_experiment(snapshot: dict, tax_rate: float, steps: int, seed: int) -> di
 def run_sweep(snapshot: dict, tax_rates: list[float], steps: int, seed: int) -> dict:
     if not tax_rates:
         raise ValueError("at least one tax rate is required")
-    trials = [run_experiment(snapshot, rate, steps, seed) for rate in tax_rates]
+    first = run_experiment(snapshot, tax_rates[0], steps, seed)
+    if any(not math.isfinite(rate) or not 0 <= rate <= 1 for rate in tax_rates):
+        raise ValueError("tax rate must be between 0 and 1")
+    env = _restore(snapshot, tax_rates[0], steps)
+    n = env.num_consumers
+    rates = np.asarray(tax_rates, dtype=float)
+    balances = np.tile([env.agent_balances[a] for a in env.agents], (len(rates), 1))
+    treasury = np.full(len(rates), env.treasury)
+    wage, price = env.market_wage, env.market_price
+    rng = np.random.default_rng(seed)
+    for _ in range(steps):
+        actions = rng.random((len(env.agents), 2))
+        wage = np.clip(wage * (1 + (np.mean(actions[n:, 0]) * 2 - 1) * 0.1), 1, 100)
+        price = np.clip(price * (1 + (np.mean(actions[n:, 1]) * 2 - 1) * 0.1), 1, 100)
+        labor = actions[:n, 0]
+        total_labor = sum(labor)
+        spending = (balances[:, :n] * actions[:n, 1]).sum(axis=1)
+        revenue = spending / env.num_producers
+        due = total_labor * wage / env.num_producers
+        paid = np.minimum(due, balances[:, n:] + revenue[:, None])
+        wage_per_labor = paid.sum(axis=1) / total_labor if total_labor else 0.0
+        gross = wage_per_labor[:, None] * labor if total_labor else np.zeros_like(balances[:, :n])
+        tax = gross * rates[:, None]
+        treasury += tax.sum(axis=1)
+        balances[:, :n] = np.maximum(
+            0, balances[:, :n] + ((gross - tax) - balances[:, :n] * actions[:n, 1])
+        )
+        balances[:, n:] = (balances[:, n:] + revenue[:, None]) - paid
+
+    starting_money = first["method"]["starting_money"]
+    control = first["baseline"]
+    trials = []
+    for i, rate in enumerate(rates):
+        total = float(sum(balances[i]) + treasury[i])
+        trial = {
+            "tax_rate": float(rate),
+            "gini": float(calculate_gini(balances[i, :n].tolist())),
+            "wage": float(wage),
+            "price": float(price),
+            "cpi": calculate_cpi(price, env.base_price),
+            "real_gdp": calculate_real_gdp(spending[i], price, env.base_price),
+            "treasury": float(treasury[i]),
+            "total_money": total,
+            "money_drift": total - starting_money,
+        }
+        trials.append(
+            {"treatment": trial, "difference": {k: trial[k] - control[k] for k in control}}
+        )
     return {
         "format": "econos-private-tax-sweep",
         "schema_version": 1,
-        "source": trials[0]["source"],
-        "method": trials[0]["method"],
-        "baseline": trials[0]["baseline"],
-        "trials": [
-            {"treatment": trial["treatment"], "difference": trial["difference"]} for trial in trials
-        ],
+        "source": first["source"],
+        "method": first["method"],
+        "baseline": control,
+        "trials": trials,
     }
 
 

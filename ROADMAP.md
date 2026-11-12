@@ -37,7 +37,7 @@ The [separate local prototype](docs/linux-lab.md) boots a Linux guest in v86 and
 ## Simulation backlog
 
 - Extend the agent-based market model to study price formation and monetary shocks. State the hypothesis and validation method for each addition.
-- Add parameter sweeps, then profile them before choosing vectorization or SIMD work.
+- Private tax sweeps run scenarios with NumPy arrays after profiling the scalar trial. Measure larger workloads and numerical agreement before extending the approach to other parameters.
 - Keep real-time phase-space visualization and statistical comparison with empirical macro data as research goals tied to reproducible runs.
 
 ## Out of scope

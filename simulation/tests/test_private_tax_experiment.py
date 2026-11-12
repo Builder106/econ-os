@@ -58,17 +58,30 @@ def test_same_rate_produces_identical_outcomes():
     assert all(change == 0 for change in result["difference"].values())
 
 
-def test_sweep_matches_individual_trials():
+@pytest.mark.parametrize("seed,steps", [(7, 10), (42, 100), (0, 1)])
+def test_sweep_matches_individual_trials(seed, steps):
     snapshot = _snapshot()
     rates = [0.0, 0.2, 1.0]
-    sweep = run_sweep(snapshot, rates, steps=10, seed=7)
+    sweep = run_sweep(snapshot, rates, steps=steps, seed=seed)
     for rate, trial in zip(rates, sweep["trials"], strict=True):
-        individual = run_experiment(snapshot, rate, steps=10, seed=7)
+        individual = run_experiment(snapshot, rate, steps=steps, seed=seed)
         assert sweep["baseline"] == individual["baseline"]
-        assert trial["treatment"] == individual["treatment"]
-        assert trial["difference"] == individual["difference"]
+        assert trial["treatment"] == pytest.approx(individual["treatment"], abs=1e-8)
+        assert trial["difference"] == pytest.approx(individual["difference"], abs=1e-8)
     with pytest.raises(ValueError, match="at least one"):
         run_sweep(snapshot, [], steps=10, seed=7)
+
+
+def test_sweep_matches_trials_with_unequal_producer_balances():
+    snapshot = _snapshot()
+    snapshot["run"]["initial_conditions"]["num_producers"] = 2
+    snapshot["state"]["agents"][2]["balance"] = 1.0
+    snapshot["state"]["agents"].append({"id": "producer_1", "balance": 199.0})
+    rates = [0.1, 0.7]
+    sweep = run_sweep(snapshot, rates, 50, 19)
+    for rate, trial in zip(rates, sweep["trials"], strict=True):
+        reference = run_experiment(snapshot, rate, 50, 19)
+        assert trial["treatment"] == pytest.approx(reference["treatment"], abs=1e-8)
 
 
 @pytest.mark.parametrize(
