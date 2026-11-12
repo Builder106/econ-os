@@ -35,7 +35,7 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
-COPY --from=python-deps /usr/local/lib/python3.14/site-packages /usr/local/lib/python3.14/site-packages
+COPY --from=python-deps /usr/local/lib/python3.15/site-packages /usr/local/lib/python3.15/site-packages
 
 # Copy the kernel and the simulation core. The desktop is shipped via Vercel in
 # the split-host deploy, but we bundle it here too so this image works
