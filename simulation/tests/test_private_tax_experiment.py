@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from scripts.private_tax_experiment import run_experiment
+from scripts.private_tax_experiment import run_experiment, run_sweep
 
 
 def _snapshot():
@@ -56,6 +56,19 @@ def test_same_rate_produces_identical_outcomes():
     result = run_experiment(_snapshot(), tax_rate=0.0, steps=10, seed=7)
     assert result["baseline"] == result["treatment"]
     assert all(change == 0 for change in result["difference"].values())
+
+
+def test_sweep_matches_individual_trials():
+    snapshot = _snapshot()
+    rates = [0.0, 0.2, 1.0]
+    sweep = run_sweep(snapshot, rates, steps=10, seed=7)
+    for rate, trial in zip(rates, sweep["trials"], strict=True):
+        individual = run_experiment(snapshot, rate, steps=10, seed=7)
+        assert sweep["baseline"] == individual["baseline"]
+        assert trial["treatment"] == individual["treatment"]
+        assert trial["difference"] == individual["difference"]
+    with pytest.raises(ValueError, match="at least one"):
+        run_sweep(snapshot, [], steps=10, seed=7)
 
 
 @pytest.mark.parametrize(

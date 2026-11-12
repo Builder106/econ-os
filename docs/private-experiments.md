@@ -10,6 +10,8 @@ uv run --frozen python -m scripts.private_tax_experiment snapshot.json --tax-rat
 
 The command reads one local file and writes JSON to standard output. It does not contact the shared kernel or send admin commands. The output identifies the source run and step, the seed and action method, both scenario summaries, and the treatment minus baseline difference. Keep the snapshot and report together to rerun the same trial.
 
+Repeat `--tax-rate` to compare several rates against the same baseline and seeded actions. The sweep returns one baseline and an ordered list of treatments and differences. Each trial currently runs separately; profile a representative workload before choosing an optimization.
+
 The trial uses uniform random actions, not the saved PPO checkpoints. It does not restore pending shocks, action history, or random generator state from the live run. Tax receipts stay in the treasury; there is no redistribution. When producers cannot fund the posted wage bill, the model pays only the amount available from their balances and current sales. Both scenario summaries include `money_drift`; it should be close to zero. A material drift means the trial is not suitable for interpretation.
 
 This is a controlled sensitivity check inside the EconOS model. Its difference is not an estimate of a real-world tax effect, and it does not replay the captured live run. An empirical comparison needs a named dataset, comparable units, and a calibration plan before adding phase-space or statistical views.

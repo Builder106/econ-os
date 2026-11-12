@@ -127,15 +127,35 @@ def run_experiment(snapshot: dict, tax_rate: float, steps: int, seed: int) -> di
     }
 
 
+def run_sweep(snapshot: dict, tax_rates: list[float], steps: int, seed: int) -> dict:
+    if not tax_rates:
+        raise ValueError("at least one tax rate is required")
+    trials = [run_experiment(snapshot, rate, steps, seed) for rate in tax_rates]
+    return {
+        "format": "econos-private-tax-sweep",
+        "schema_version": 1,
+        "source": trials[0]["source"],
+        "method": trials[0]["method"],
+        "baseline": trials[0]["baseline"],
+        "trials": [
+            {"treatment": trial["treatment"], "difference": trial["difference"]} for trial in trials
+        ],
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("snapshot", type=Path)
-    parser.add_argument("--tax-rate", type=float, required=True)
+    parser.add_argument("--tax-rate", type=float, action="append", required=True)
     parser.add_argument("--steps", type=int, default=50)
     parser.add_argument("--seed", type=int, default=0)
     args = parser.parse_args()
     try:
-        report = run_experiment(load_snapshot(args.snapshot), args.tax_rate, args.steps, args.seed)
+        snapshot = load_snapshot(args.snapshot)
+        if len(args.tax_rate) == 1:
+            report = run_experiment(snapshot, args.tax_rate[0], args.steps, args.seed)
+        else:
+            report = run_sweep(snapshot, args.tax_rate, args.steps, args.seed)
     except (OSError, KeyError, TypeError, ValueError) as exc:
         parser.exit(2, f"experiment failed: {exc}\n")
     print(json.dumps(report, indent=2, allow_nan=False))
