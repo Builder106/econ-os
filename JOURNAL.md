@@ -155,7 +155,7 @@ The scheduled live smoke workflow (`Live deployment smoke` on main) failed becau
 ## 2026-10-23: Check all Python paths for Any annotations #decision
 
 Ruff ANN401 now covers lab, scripts, server, and simulation Python. The pytest job already treats warnings as errors.
-# 2026-11-12 — Vectorized private tax sweeps
+## 2026-11-12 — Vectorized private tax sweeps
 
 The original sweep reran the baseline for every tax rate. Profiling a seeded
 21-rate, 100-step trial showed that most time was spent stepping those separate
@@ -165,4 +165,3 @@ approach zero: changing the order caused a visible Gini discrepancy at a 100%
 tax rate. Tests compare the two paths across seeds, rates, and unequal producer
 balances. NumPy chooses available SIMD implementations; no specific instruction
 set is required.
-
