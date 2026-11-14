@@ -1,8 +1,7 @@
 # Contributing to EconOS
 
-EconOS is a portfolio-scale project — small surface area, intentional design.
-PRs are welcome; this doc explains the layout, dev loop, and conventions so
-your first contribution lands cleanly.
+EconOS is a small portfolio project. PRs are welcome; this guide covers the
+repository layout, development workflow, and contribution conventions.
 
 ## Architecture in 30 seconds
 
@@ -29,7 +28,7 @@ EconOS is **split-host**and**multi-tenant**:
   (outbound-only, no inbound ports needed); the desktop ships to Vercel as a
   static bundle. See [`deploy/`](deploy/) for the docker-compose + setup.sh.
 
-If you change anything in `server/`or`simulation/`, the WS contract in
+If you change anything in `server/` or `simulation/`, the WS contract in
 [`server/main.py`](server/main.py) (snapshot shape, ack envelope, event
 envelope) is what holds the frontend and backend in sync — keep it stable or
 update both sides in the same PR.
@@ -74,8 +73,10 @@ Gherkin admin scenarios live in `e2e/features/`; the window manager, protocol,
 export and phone checks live in `e2e/specs/`. Tests run one at a time because
 they share one kernel, as production does.
 
-Both suites must stay green for a PR to land. CI parity: no CI is wired in
-yet; reviewers run them locally.
+Both suites must stay green for a PR to land. CI runs pytest and Playwright in
+`.github/workflows/ci.yml`, along with lint, build, and dependency checks. A
+separate scheduled and manually triggered live smoke workflow checks the
+deployed desktop and remote kernel.
 
 ## Common dev tasks
 
@@ -110,10 +111,8 @@ yet; reviewers run them locally.
 
 Genuinely useful additions (in rough priority order):
 
-1. **Live-deploy Playwright spec.** Targets
-
-   `https://econ-os.vercel.app`+`wss://econos-kernel.tailcb96b4.ts.net`.
-   Catches regressions on every push that the local suite can't.
+1. **Live-deploy smoke coverage.** Extend the existing scheduled and manually
+   triggered Playwright smoke checks for the deployed desktop and remote kernel.
 
 2. **Better PPO training.** Current `train.py` trains each role in a
 
@@ -121,14 +120,13 @@ Genuinely useful additions (in rough priority order):
    role-conditioned shared policy) would produce policies that hold up under
    live wage/price movement.
 
-3. **UBI redistribution mechanic.** Treasury accumulates but doesn't
+3. **UBI redistribution analysis.** The `redistribute` admin command already
+   divides treasury funds equally among consumers. Further work can study its
+   effects through reproducible experiments.
 
-   redistribute. A `redistribute` admin command that splits the treasury
-   equally to consumers as UBI would close the loop.
-
-4. **More macro analytics.** Lorenz curve, CPI tracking, real GDP — alluded
-
-   to in the README's "Deep Macro Analytics" line but not implemented.
+4. **More macro analytics.** The kernel already reports the Lorenz curve, CPI,
+   and real GDP. Extend analysis around a specific economic question and a
+   reproducible validation method.
 
 5. **ONNX-exported PPO** for sub-50 MB Docker image — current torch
 

@@ -24,9 +24,9 @@
 
 ## 💡 What is EconOS?
 
-Testing new economic policies in the real world is unpredictable. EconOS creates a virtual world populated by dozens of independent AI agents acting as buyers, sellers, and workers. It provides a flight-simulator desktop for researchers to test rules, tax rates, and market shocks safely before applying them in real life.
+EconOS simulates an economy populated by dozens of AI agents acting as buyers, sellers, and workers. Its desktop lets researchers explore how the model responds to changes in rules, tax rates, and market shocks.
 
-The interface is a tiling desktop in the i3 and sway tradition: Market, Lorenz, Agents, Shell, Policy, Events and Run open as panes on numbered workspaces, and a text bar shows the kernel's step, tax rate and Gini. Every number on screen comes from the running kernel. Using reinforcement learning (PPO), agents discover pricing, wage-setting, and consumption strategies within a closed-loop economy.
+The interface is a tiling desktop in the i3 and sway tradition. Market, Lorenz, Agents, Shell, Policy, Events and Run open as panes on numbered workspaces; a text bar shows the kernel's step, tax rate and Gini. Every number on screen comes from the running kernel. Agents use reinforcement learning (PPO) to discover pricing, wage-setting, and consumption strategies within a closed-loop economy.
 
 **Live demo:** [econ-os.vercel.app](https://econ-os.vercel.app). Every visitor watches the same running simulation. The desktop follows your system's light or dark setting; the theme button in the bar switches it. Press `` Ctrl+` `` (the key above Tab) to enter the window manager's binding mode, then `?` for the key map.
 
@@ -58,7 +58,7 @@ After `sudo <token>`, `tax 25` in one viewer's shell changes the running kernel.
 
 ## User Flow
 
-Every visitor lands in the same shared environment: the shared simulation ticks continuously regardless of how many people are watching. Authenticated administrators can adjust market parameters (taxes, price shocks, pauses) that broadcast in real time to every connected user.
+Every visitor sees the same simulation, which keeps running regardless of how many people are watching. Authenticated administrators can change parameters such as taxes, price shocks, and pauses; those changes are broadcast to connected users.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/diagrams/user-flow-dark.png">
@@ -67,7 +67,7 @@ Every visitor lands in the same shared environment: the shared simulation ticks 
 
 Every viewer sees the same kernel tick every 500 ms. Visitors can watch the panes or use read-only shell commands. A valid `sudo` token unlocks tax changes, one-shot wage or price shocks of up to ±50%, treasury redistribution, and pause, resume, or reset. Admin events broadcast to every connected viewer. An invalid token leaves the session read-only, and a dropped connection drops admin until `sudo` runs again. [Editable HTML source](assets/diagrams/user-flow.html).
 
-So one admin's policy change shows up on every other visitor's desktop within a tick.
+An admin's policy change therefore appears on other visitors' desktops within a tick.
 
 ## Key Features
 
