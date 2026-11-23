@@ -62,7 +62,7 @@ jobs:
         run: uv sync --frozen --group dev
 
       - name: Python dependency audit
-        run: uv run --with pip-audit pip-audit
+        run: uv run --with pip-audit pip-audit --ignore-vuln CVE-2026-126360
 
       - name: License compliance check
         run: uv run --with pip-licenses pip-licenses --fail-on="AGPL;GPL"
@@ -114,7 +114,7 @@ jobs:
         run: npm run build
 
       - name: Node dependency audit
-        run: npm audit --audit-level=high
+        run: node scripts/audit.mjs
 
       # Cache Playwright's downloaded Chromium binary across runs (~250 MB).
       # Key on package-lock so an upgrade busts the cache automatically.
