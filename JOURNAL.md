@@ -4,6 +4,10 @@
 > things happen — retrospectives need this raw material to land.
 > Reverse-chronological; one paragraph max per entry.
 
+## 2026-11-26: Add heterogeneous-agent price formation, monetary shocks, and vectorized grid sweeps #feature #milestone
+
+`MarketEnv` now supports opt-in heterogeneous consumer preferences, labor skills, producer productivities, excess-demand price formation, and one-shot `money` supply shocks exposed through `shock money <pct>` in the shell and Policy panel. Keeping homogeneous mode as the default preserves exact backward compatibility with existing PPO checkpoints and v1 snapshot trials, while `cumulative_monetary_shock` keeps money conservation exact after injections or contractions. A shared vectorized engine in `simulation/sweep.py` runs multi-parameter tax and monetary grids in contiguous NumPy arrays, reaching 171.5x speedup over scalar runs on 200 heterogeneous scenarios over 100 steps on Linux ARM64 with 3.87e-12 maximum numerical difference.
+
 ## 2026-11-06: Make the social preview image absolute #fix
 
 The desktop page set `og:image` to `/og.png`, which link preview crawlers don't resolve, so shared links showed no card. The tag now points at `https://econ-os.vercel.app/og.png`, with `og:url` and `twitter:image` added. The Linux lab page has no preview tags on purpose: it is a local experiment and never deployed.

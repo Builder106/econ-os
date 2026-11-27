@@ -36,8 +36,8 @@ The [separate local prototype](docs/linux-lab.md) boots a Linux guest in v86 and
 
 ## Simulation backlog
 
-- Extend the agent-based market model to study price formation and monetary shocks. State the hypothesis and validation method for each addition.
-- Private tax sweeps run scenarios with NumPy arrays after profiling the scalar trial. Measure larger workloads and numerical agreement before extending the approach to other parameters.
+- Heterogeneous-agent market simulation (complete): `MarketEnv` supports heterogeneous consumer preferences, labor skills, producer productivities, excess-demand price formation, and one-shot monetary supply shocks (`shock money <pct>`). Unit tests validate money conservation with shock tracking, excess-demand price pressure, and inflationary response to money expansion.
+- Vectorized multi-parameter sweeps (complete): `simulation/sweep.py` runs contiguous NumPy sweeps across tax rates and monetary supply shocks in both homogeneous and heterogeneous modes, with 171.5x measured speedup over scalar runs and 3.87e-12 maximum agreement difference across 200 scenarios over 100 steps.
 - Keep real-time phase-space visualization and statistical comparison with empirical macro data as research goals tied to reproducible runs.
 
 ## Out of scope
