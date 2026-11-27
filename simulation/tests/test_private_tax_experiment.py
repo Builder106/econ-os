@@ -70,6 +70,25 @@ def test_sweep_matches_individual_trials(seed, steps):
         assert trial["difference"] == pytest.approx(individual["difference"], abs=1e-8)
     with pytest.raises(ValueError, match="at least one"):
         run_sweep(snapshot, [], steps=10, seed=7)
+    with pytest.raises(ValueError, match="at least one monetary shock"):
+        run_sweep(snapshot, [0.2], steps=10, seed=7, monetary_shocks=[])
+
+
+def test_sweep_supports_monetary_shocks_and_heterogeneous_mode():
+    snapshot = _snapshot()
+    sweep = run_sweep(
+        snapshot,
+        [0.1, 0.3],
+        steps=20,
+        seed=5,
+        monetary_shocks=[0.0, 0.2],
+        heterogeneous=True,
+    )
+    assert sweep["method"]["heterogeneous"] is True
+    assert len(sweep["trials"]) == 4
+    for trial in sweep["trials"]:
+        assert "monetary_shock" in trial["treatment"]
+        assert abs(trial["treatment"]["money_drift"]) < 1e-8
 
 
 def test_sweep_matches_trials_with_unequal_producer_balances():
