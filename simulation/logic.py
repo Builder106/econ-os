@@ -76,3 +76,17 @@ def calculate_real_gdp(nominal_spend, current_price, base_price=10.0):
     if cpi <= 0:
         return 0.0
     return round(float(nominal_spend / (cpi / 100.0)), 2)
+
+
+def excess_demand_price_factor(
+    nominal_spend: float,
+    real_supply: float,
+    current_price: float,
+    sensitivity: float = 0.1,
+) -> float:
+    """Return a bounded multiplicative price adjustment driven by excess demand."""
+    safe_price = max(float(current_price), 1e-6)
+    real_demand = float(nominal_spend) / safe_price
+    scale = max(float(real_supply), 1.0)
+    excess_ratio = float(np.clip((real_demand - float(real_supply)) / scale, -0.5, 0.5))
+    return 1.0 + float(sensitivity) * excess_ratio
