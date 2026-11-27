@@ -138,7 +138,7 @@ export const shell: AppDef = {
         '',
         '  anyone      help  who  gini  inspect <agent>  top [N]',
         '  admin       sudo <token>, then',
-        '              tax <pct>  shock <wage|price> <pct>',
+        '              tax <pct>  shock <wage|price|money> <pct>',
         '              redistribute  pause  resume  reset',
         '',
       ].join('\n'));

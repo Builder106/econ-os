@@ -180,13 +180,13 @@ def _cmd_redistribute(kernel, conn: Connection, args: list[str]) -> dict:
     }
 
 
-@_register("shock", True, "shock <wage|price> <pct> — one-shot multiplicative")
+@_register("shock", True, "shock <wage|price|money> <pct> — one-shot multiplicative")
 def _cmd_shock(kernel, conn: Connection, args: list[str]) -> dict:
     if len(args) < 2:
-        raise CommandError("usage: shock <wage|price> <pct>")
+        raise CommandError("usage: shock <wage|price|money> <pct>")
     kind, pct_s = args[0], args[1]
-    if kind not in ("wage", "price"):
-        raise CommandError("shock target must be 'wage' or 'price'")
+    if kind not in ("wage", "price", "money"):
+        raise CommandError("shock target must be 'wage', 'price', or 'money'")
     try:
         pct = _parse_pct(pct_s)
     except ValueError as e:

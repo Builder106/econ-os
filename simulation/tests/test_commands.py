@@ -121,6 +121,10 @@ def test_shock_queues_pending(kernel, commands_module):
     assert res["ok"]
     assert kernel.env._pending_shocks == [("wage", 0.10)]
 
+    money_res = commands_module.dispatch(kernel, conn, "shock money 15")
+    assert money_res["ok"]
+    assert kernel.env._pending_shocks == [("wage", 0.10), ("money", 0.15)]
+
     bad_target = commands_module.dispatch(kernel, conn, "shock dollars 5")
     assert not bad_target["ok"]
 

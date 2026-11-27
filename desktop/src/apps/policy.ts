@@ -21,7 +21,7 @@ export const policy: AppDef = {
 
     const taxIn = h('input', { type: 'number', id: 'policy-tax', min: 0, max: 100, step: 0.5, inputmode: 'decimal' });
     const taxBtn = button('set tax', { class: 'act', 'data-cmd': 'tax' });
-    const shockKind = h('select', { id: 'policy-shock-kind', 'aria-label': 'shock target' }, h('option', { value: 'wage', text: 'wage' }), h('option', { value: 'price', text: 'price' }));
+    const shockKind = h('select', { id: 'policy-shock-kind', 'aria-label': 'shock target' }, h('option', { value: 'wage', text: 'wage' }), h('option', { value: 'price', text: 'price' }), h('option', { value: 'money', text: 'money' }));
     const shockIn = h('input', { type: 'number', id: 'policy-shock', min: -50, max: 50, step: 1, value: 5, inputmode: 'decimal', 'aria-label': 'shock percent' });
     const shockBtn = button('apply shock', { class: 'act', 'data-cmd': 'shock' });
     const redistBtn = button('redistribute treasury', { class: 'act', 'data-cmd': 'redistribute' });
